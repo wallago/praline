@@ -1,4 +1,4 @@
-builtins.toJSON {
+{
   enabledPlugins = {
     "claude-md-management@claude-plugins-official" = true;
     "superpowers@claude-plugins-official" = true;
