@@ -59,9 +59,14 @@
 
         # ── Claude Settings ─────────────────────────────────────
         claude = claude-code.packages.${system}.default;
-        claudeLocalSettings =
-          import ./nix/claude_plugins.nix ./nix/claude_nix_permissions.nix
-            ./nix/claude_rust_permissions.nix;
+        claudeLocalSettings = builtins.toJSON (
+          import ./nix/claude_plugins.nix
+          // {
+            permissions.allow =
+              import ./nix/claude_nix_permissions.nix ++ import ./nix/claude_rust_permissions.nix;
+          }
+        );
+        claudeSettingsFile = pkgs.writeText "settings.local.json" claudeLocalSettings;
 
         # ── Tooling shared by the dev shell and CI ───────────────
         ciTools = with pkgs; [
@@ -110,7 +115,7 @@
             ]);
           shellHook = ''
             mkdir -p .claude
-            echo '${claudeLocalSettings}' > .claude/settings.local.json
+            install -m 644 ${claudeSettingsFile} .claude/settings.local.json
           '';
         };
 
