@@ -1,3 +1,5 @@
+//! Passing CLI info and run **repo_builder**
+
 use std::process;
 use std::time::Duration;
 
@@ -7,6 +9,7 @@ use repo_builder::args::Args;
 use repo_builder::error::Result;
 use termbg::Theme;
 
+/// Main function to run the app
 fn main() -> Result<()> {
     let mut args = Args::parse();
     if args.accent_color.is_none() {
