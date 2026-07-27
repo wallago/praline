@@ -1,12 +1,12 @@
-//! Passing CLI info and run **repo_builder**
+//! Passing CLI info and run **repo-builder**
 
 use std::process;
 use std::time::Duration;
 
 use clap::Parser;
+use praline::args::Args;
+use praline::error::Result;
 use ratatui::style::Color;
-use repo_builder::args::Args;
-use repo_builder::error::Result;
 use termbg::Theme;
 
 /// Main function to run the app
@@ -23,7 +23,7 @@ fn main() -> Result<()> {
             })
             .ok();
     }
-    match repo_builder::run(args) {
+    match praline::run(args) {
         Ok(_) => process::exit(0),
         Err(e) => {
             eprintln!("{e}");

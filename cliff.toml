@@ -1,6 +1,6 @@
 [remote.github]
 owner = "wallago"
-repo = "repo-builder"
+repo  = "repo-builder"
 
 [changelog]
 header = """
