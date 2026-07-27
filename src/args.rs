@@ -1,5 +1,3 @@
-use std::{process::Command, str::FromStr};
-
 use clap::Parser;
 use ratatui::style::Color;
 
