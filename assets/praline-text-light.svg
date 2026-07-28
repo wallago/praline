@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180" width="760" height="180" role="img" aria-label="praline">
+  <title>praline</title>
+  <text x="380" y="120" text-anchor="middle"
+        font-family="'JetBrains Mono','Fira Code','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace"
+        font-size="108" font-weight="700" letter-spacing="4">
+    <tspan fill="#e05f78">&gt;&#8201;</tspan><tspan fill="#d24d6a">praline</tspan><tspan fill="#e05f78">&#9608;</tspan>
+  </text>
+</svg>
