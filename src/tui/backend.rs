@@ -1,4 +1,4 @@
-use std::{io, panic, sync::atomic::Ordering};
+use std::{io, panic};
 
 use ratatui::{
     Terminal,

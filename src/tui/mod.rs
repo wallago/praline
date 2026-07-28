@@ -9,3 +9,6 @@ pub mod event;
 
 /// Widget renderer.
 pub mod ui;
+
+/// Possible commands.
+pub mod command;
