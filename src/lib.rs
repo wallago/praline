@@ -9,8 +9,8 @@ pub mod args;
 /// Terminal user interface.
 pub mod tui;
 
-/// Possible commands.
-pub mod command;
+/// Main application.
+pub mod app;
 
 /// Common types that can be glob-imported for convenience.
 pub mod prelude;
@@ -21,13 +21,11 @@ use args::Args;
 use prelude::*;
 use ratatui::{Terminal, backend::CrosstermBackend};
 
-use crate::{
+use crate::tui::{
+    backend::Tui,
     command::Command,
-    tui::{
-        backend::Tui,
-        event::{Event, EventHandler},
-        state::State,
-    },
+    event::{Event, EventHandler},
+    state::State,
 };
 
 /// Runs praline.
