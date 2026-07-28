@@ -1,10 +1,43 @@
-# Build Your Rust Repo like a Lazy Boss
+<p align="center">
+    <img src="assets/logo.png" width="200"></a>
+    <br>
+    <img src="assets/praline-text-dark.svg#gh-dark-mode-only" width="300"></a>
+    <img src="assets/praline-text-light.svg#gh-light-mode-only" width="300"></a>
+    <br>
+    <br>
+    <em>"Build your repo like a lazy boss."</em>
+    <br>
+    <br>
+    <a href="https://crates.io/crates/praline">
+        <img src="https://img.shields.io/crates/v/praline?style=flat&labelColor=1d1d1d&color=e05f78&logo=Rust&logoColor=white"></a>
+    <a href="https://github.com/wallago/praline/releases">
+        <img src="https://img.shields.io/github/v/release/wallago/praline?style=flat&labelColor=1d1d1d&color=e05f78&logo=GitHub&logoColor=white"></a>
+    <br>
+    <a href="https://github.com/wallago/praline/actions?query=workflow%3A%22CI%22">
+        <img src="https://img.shields.io/github/actions/workflow/status/wallago/praline/ci.yml?style=flat&labelColor=1d1d1d&color=white&logo=GitHub%20Actions&logoColor=white"></a>
+    <a href="https://github.com/wallago/praline/actions?query=workflow%3A%22CD%22">
+        <img src="https://img.shields.io/github/actions/workflow/status/wallago/praline/cd.yml?style=flat&labelColor=1d1d1d&color=white&logo=GitHub%20Actions&logoColor=white&label=deploy"></a>
+    <a href="./LICENSE-MIT">
+        <img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-e05f78?style=flat&labelColor=1d1d1d"></a>
+</p>
 
-🧱 Praline can build a well made repo for rust project, all within a user-friendly terminal user interface!
+🧱 **Praline** builds a well-made repo for your Rust project — scaffolding formatters, linters, tests, security, CI/CD, and governance — all within a user-friendly terminal user interface!
 
----
+## Quickstart
 
-[![forthebadge made-with-rust](http://ForTheBadge.com/images/badges/made-with-rust.svg)](https://www.rust-lang.org/)
+Install `praline` with `cargo`:
+
+```bash
+cargo install praline
+```
+
+Then just run it in (or next to) your project:
+
+```bash
+praline
+```
+
+Pick the tools you want, and `praline` writes the configs for you. 💯
 
 ## Tools
 
@@ -70,3 +103,17 @@ Items marked 🆕 are suggested additions for a well-rounded Rust repo.
 ### Env
 
 - `flake` — Nix dev shell & reproducible builds (`package` / `claude`)
+
+## Contributing
+
+Contributions are welcome! Feel free to open an issue or a pull request.
+
+## License
+
+Licensed under either of [Apache License Version 2.0](./LICENSE-APACHE) or [The MIT License](./LICENSE-MIT) at your option.
+
+🦀 ノ( º \_ º ノ) - respect crables!
+
+## Copyright
+
+Copyright © 2026, [wallago](mailto:henrotte.hugo@gmail.com)
