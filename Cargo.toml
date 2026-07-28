@@ -20,8 +20,10 @@ clap = { version = "4.5.56", features = [
   "cargo",
 ] }
 ratatui = "0.30.2"
+strum = { version = "0.28.0", features = ["derive"] }
 termbg = "0.6.2"
 thiserror = "2.0.18"
+tui-input = "0.15.3"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"

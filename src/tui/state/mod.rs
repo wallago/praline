@@ -1,8 +1,16 @@
-use std::sync::mpsc;
+use ratatui::{
+    style::Color,
+    widgets::{List, ListState},
+};
+use tui_input::Input;
 
-use ratatui::style::Color;
+use crate::{app::RepoBuilder, error::Result};
 
-use crate::{app::RepoBuilder, error::Result, tui::command::Command, tui::event::Event};
+/// Running command.
+pub(crate) mod command;
+
+/// Helper to get key bindings.
+pub(crate) mod binds;
 
 /// Form focus.
 #[derive(PartialEq, Debug)]
@@ -43,43 +51,27 @@ pub struct State {
     pub repo: RepoBuilder,
     /// Form focus.
     pub form_focus: FormFocus,
+    /// Input.
+    pub input: Input,
+    /// Enable input.
+    pub input_mode: bool,
+    /// List of options.
+    pub options_list: ListState,
 }
 
 impl State {
     /// Constructs a new instance of [`State`].
     pub fn new(accent_color: Option<Color>) -> Result<Self> {
+        let repo = RepoBuilder::default();
         let state = Self {
             running: true,
             accent_color: accent_color.unwrap_or(Color::White),
-            repo: RepoBuilder::default(),
+            repo,
             form_focus: FormFocus::Name,
+            input: Input::default(),
+            input_mode: false,
+            options_list: ListState::default().with_selected(Some(0)),
         };
         Ok(state)
-    }
-
-    /// Returns the key bindings.
-    pub fn get_key_bindings(&self) -> Vec<(&str, &str)> {
-        vec![("q", "Quit"), ("i/e", "prev/next")]
-    }
-
-    /// Runs a command and updates the state.
-    pub fn run_command(
-        &mut self,
-        command: Command,
-        event_sender: mpsc::Sender<Event>,
-    ) -> Result<()> {
-        match command {
-            Command::Exit => {
-                self.running = false;
-            }
-            Command::NextFormFocus => {
-                self.form_focus = self.form_focus.next();
-            }
-            Command::PrevFormFocus => {
-                self.form_focus = self.form_focus.prev();
-            }
-            Command::Nothing => {}
-        }
-        Ok(())
     }
 }

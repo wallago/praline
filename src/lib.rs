@@ -23,7 +23,7 @@ use ratatui::{Terminal, backend::CrosstermBackend};
 
 use crate::tui::{
     backend::Tui,
-    command::Command,
+    command::{Command, input::InputCommand},
     event::{Event, EventHandler},
     state::State,
 };
@@ -53,7 +53,11 @@ pub fn start_tui(args: Args) -> Result<()> {
         match tui.events.next()? {
             Event::Tick => {}
             Event::Key(key_event) => {
-                let command = Command::from(key_event);
+                let command = if state.input_mode {
+                    Command::Input(InputCommand::parse(key_event, &state.input))
+                } else {
+                    Command::from(key_event)
+                };
                 state.run_command(command, tui.events.sender.clone())?;
             }
             Event::Mouse(mouse_event) => {}
