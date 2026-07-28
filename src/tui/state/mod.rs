@@ -4,7 +4,11 @@ use ratatui::{
 };
 use tui_input::Input;
 
-use crate::{app::RepoBuilder, error::Result};
+use crate::{
+    app::RepoBuilder,
+    config::{Config, binds::Keybindings},
+    error::Result,
+};
 
 /// Running command.
 pub(crate) mod command;
@@ -57,11 +61,13 @@ pub struct State {
     pub input_mode: bool,
     /// List of options.
     pub options_list: ListState,
+    /// Active key bindings (defaults merged with `config.toml`).
+    pub keybindings: Keybindings,
 }
 
 impl State {
     /// Constructs a new instance of [`State`].
-    pub fn new(accent_color: Option<Color>) -> Result<Self> {
+    pub fn new(accent_color: Option<Color>, config: Config) -> Result<Self> {
         let repo = RepoBuilder::default();
         let state = Self {
             running: true,
@@ -71,6 +77,7 @@ impl State {
             input: Input::default(),
             input_mode: false,
             options_list: ListState::default().with_selected(Some(0)),
+            keybindings: config.keybindings,
         };
         Ok(state)
     }

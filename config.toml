@@ -1,0 +1,5 @@
+[keybindings]
+scroll_down = 'e'
+scroll_up   = 'i'
+generate    = 'g'
+quit        = "q"

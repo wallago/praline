@@ -25,6 +25,10 @@ pub struct Args {
     /// Increase logging verbosity (-v, -vv, -vvv)
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
+
+    /// Path to the application config file (TOML).
+    #[arg(long, value_name = "PATH")]
+    pub config: Option<std::path::PathBuf>,
 }
 
 #[cfg(test)]

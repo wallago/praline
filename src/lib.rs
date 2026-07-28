@@ -9,6 +9,9 @@ pub mod args;
 /// Terminal user interface.
 pub mod tui;
 
+/// Config file.
+pub mod config;
+
 /// Main application.
 pub mod app;
 
@@ -21,22 +24,26 @@ use args::Args;
 use prelude::*;
 use ratatui::{Terminal, backend::CrosstermBackend};
 
-use crate::tui::{
-    backend::Tui,
-    command::{Command, input::InputCommand},
-    event::{Event, EventHandler},
-    state::State,
+use crate::{
+    config::Config,
+    tui::{
+        backend::Tui,
+        command::{Command, input::InputCommand},
+        event::{Event, EventHandler},
+        state::State,
+    },
 };
 
 /// Runs praline.
 pub fn run(args: Args) -> Result<()> {
-    start_tui(args)
+    let config = Config::load(args.config.as_deref())?;
+    start_tui(args, config)
 }
 
 /// Starts the terminal user interface.
-pub fn start_tui(args: Args) -> Result<()> {
+pub fn start_tui(args: Args, config: Config) -> Result<()> {
     // Create an application.
-    let mut state = State::new(args.accent_color)?;
+    let mut state = State::new(args.accent_color, config)?;
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(io::stdout());
@@ -56,11 +63,11 @@ pub fn start_tui(args: Args) -> Result<()> {
                 let command = if state.input_mode {
                     Command::Input(InputCommand::parse(key_event, &state.input))
                 } else {
-                    Command::from(key_event)
+                    Command::from_key(key_event, &state.keybindings)
                 };
-                state.run_command(command, tui.events.sender.clone())?;
+                state.run_command(command, tui.events.sender.clone());
             }
-            Event::Mouse(mouse_event) => {}
+            Event::Mouse(_mouse_event) => {}
             Event::Resize(_, _) => {}
         }
     }

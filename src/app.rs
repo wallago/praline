@@ -1,7 +1,5 @@
 use strum::VariantArray;
 
-use crate::app::Tag::Test;
-
 /// Repo builder.
 #[derive(Debug)]
 pub struct RepoBuilder {
@@ -66,9 +64,7 @@ impl Tool {
     pub fn desc(self) -> &'static str {
         match self {
             Self::RustFmt => "Format Rust code.",
-            Self::EditorConfig => {
-                "EditorConfig helps maintain consistent coding styles across editors."
-            }
+            Self::EditorConfig => "EditorConfig helps maintain consistent coding styles.",
             Self::Taplo => "TOML formatting.",
             Self::Clippy => "Catches common mistakes and improves code quality via lints.",
             Self::Typos => "Source code spell checker.",
@@ -97,8 +93,8 @@ impl Tool {
 impl Default for RepoBuilder {
     fn default() -> Self {
         Self {
-            name: "".to_string(),
-            desc: "".to_string(),
+            name: String::new(),
+            desc: String::new(),
             options: Tool::VARIANTS
                 .iter()
                 .map(|&tool| Opt {
