@@ -2,6 +2,7 @@ use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Stylize},
+    text::Line,
     widgets::Block,
 };
 
@@ -23,15 +24,19 @@ pub fn render(state: &mut State, frame: &mut Frame) {
     .margin(1)
     .split(frame.area());
     {
+        let gray = Color::Gray;
+        let title = Line::from(vec![
+            " > ".fg(gray),
+            env!("CARGO_PKG_NAME").bold(),
+            "-".fg(gray),
+            env!("CARGO_PKG_VERSION").into(),
+            " < ".fg(gray),
+        ])
+        // .bg(Color::Blue)
+        .bold();
         frame.render_widget(
             Block::bordered()
-                .title(vec![
-                    "|".fg(Color::Rgb(100, 100, 100)),
-                    env!("CARGO_PKG_NAME").bold(),
-                    "-".fg(Color::Rgb(100, 100, 100)),
-                    env!("CARGO_PKG_VERSION").into(),
-                    "|".fg(Color::Rgb(100, 100, 100)),
-                ])
+                .title(title)
                 .title_alignment(Alignment::Center),
             chunks[0],
         );

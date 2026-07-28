@@ -97,6 +97,7 @@ fn render_input(
     focused: bool,
     is_editable: bool,
 ) {
+    let title = format!(" {title} ").fg(Color::Gray).bold();
     let mut block = Block::bordered().title(title);
     if focused && !is_editable {
         block = block.border_style(Color::Yellow);
@@ -108,7 +109,8 @@ fn render_input(
 
 /// A list of options.
 fn render_options(state: &mut State, frame: &mut Frame, rect: Rect, focused: bool) {
-    let mut block = Block::bordered().title("Options");
+    let title = format!(" Options ").fg(Color::Gray).bold();
+    let mut block = Block::bordered().title(title);
     if focused {
         block = block.border_style(Color::Yellow);
     }

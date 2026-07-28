@@ -19,7 +19,7 @@ pub fn render_key_bindings(state: &mut State, frame: &mut Frame, rect: Rect) {
             .flat_map(|(i, (keys, desc))| {
                 vec![
                     "[".fg(Color::Rgb(100, 100, 100)),
-                    keys.yellow(),
+                    keys.clone().yellow(),
                     "→ ".fg(Color::Rgb(100, 100, 100)),
                     Span::from(*desc),
                     "]".fg(Color::Rgb(100, 100, 100)),

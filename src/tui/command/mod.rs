@@ -1,6 +1,6 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use crate::tui::command::input::InputCommand;
+use crate::{config::binds::Keybindings, tui::command::input::InputCommand};
 
 /// Input commands.
 pub(crate) mod input;
@@ -29,21 +29,25 @@ pub enum Command {
     Input(InputCommand),
 }
 
-impl From<KeyEvent> for Command {
-    fn from(key_event: KeyEvent) -> Self {
-        match key_event.code {
-            KeyCode::Esc | KeyCode::Char('q') => Self::Exit,
-            KeyCode::Down | KeyCode::Char('e') => Self::Next(ScrollType::Options),
-            KeyCode::Up | KeyCode::Char('i') => Self::Previous(ScrollType::Options),
-            KeyCode::Tab => {
-                if key_event.modifiers == KeyModifiers::CONTROL {
+impl Command {
+    pub fn from_key(event: KeyEvent, binds: &Keybindings) -> Self {
+        if binds.quit.matches(&event) {
+            Self::Exit
+        } else if binds.scroll_down.matches(&event) {
+            Self::Next(ScrollType::Options)
+        } else if binds.scroll_up.matches(&event) {
+            Self::Previous(ScrollType::Options)
+        } else if binds.generate.matches(&event) {
+            Self::Nothing
+        } else {
+            match event.code {
+                KeyCode::Tab if event.modifiers == KeyModifiers::CONTROL => {
                     Self::Previous(ScrollType::Form)
-                } else {
-                    Self::Next(ScrollType::Form)
                 }
+                KeyCode::Tab => Self::Next(ScrollType::Form),
+                KeyCode::Enter => Self::Input(InputCommand::Enter),
+                _ => Self::Nothing,
             }
-            KeyCode::Enter => Self::Input(InputCommand::Enter),
-            _ => Self::Nothing,
         }
     }
 }

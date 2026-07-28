@@ -2,22 +2,15 @@ use std::sync::mpsc;
 
 use tui_input::{Input, backend::crossterm::EventHandler};
 
-use crate::{
-    error::Result,
-    tui::{
-        command::{Command, ScrollType, input::InputCommand},
-        event::Event,
-        state::{FormFocus, State},
-    },
+use crate::tui::{
+    command::{Command, ScrollType, input::InputCommand},
+    event::Event,
+    state::{FormFocus, State},
 };
 
 impl State {
     /// Runs a command and updates the state.
-    pub fn run_command(
-        &mut self,
-        command: Command,
-        event_sender: mpsc::Sender<Event>,
-    ) -> Result<()> {
+    pub fn run_command(&mut self, command: Command, _event_sender: mpsc::Sender<Event>) {
         match command {
             Command::Exit => {
                 self.running = false;
@@ -46,13 +39,22 @@ impl State {
                     }
                 }
                 InputCommand::Enter => {
-                    let value = match self.form_focus {
-                        FormFocus::Name => self.repo.name.clone(),
-                        FormFocus::Desc => self.repo.desc.clone(),
-                        FormFocus::Options => return Ok(()), // not a text field
-                    };
-                    self.input = Input::new(value);
-                    self.input_mode = true;
+                    if self.form_focus == FormFocus::Options
+                        && let Some(id) = self.options_list.selected()
+                    {
+                        self.repo
+                            .options
+                            .get_mut(id)
+                            .map(|opt| opt.checked = !opt.checked);
+                    } else {
+                        let value = match self.form_focus {
+                            FormFocus::Name => self.repo.name.clone(),
+                            FormFocus::Desc => self.repo.desc.clone(),
+                            FormFocus::Options => return, // not a text field
+                        };
+                        self.input = Input::new(value);
+                        self.input_mode = true;
+                    }
                 }
                 InputCommand::Confirm => {
                     self.input_mode = false;
@@ -63,6 +65,5 @@ impl State {
                 }
             },
         }
-        Ok(())
     }
 }
