@@ -9,14 +9,20 @@ use ratatui::{
 
 use crate::tui::state::State;
 
-/// Core Part.
+/// Core part.
 mod core;
+
+/// Stage part.
+mod stage;
 
 /// Key bindings.
 mod binds;
 
 /// Utils functions.
 mod utils;
+
+/// Content highlight.
+mod highlight;
 
 /// Renders the user interface widgets.
 pub fn render(state: &mut State, frame: &mut Frame) {
@@ -53,6 +59,8 @@ pub fn render(state: &mut State, frame: &mut Frame) {
         core::render_core(state, frame, chunks[1]);
         binds::render_key_bindings(state, frame, chunks[1]);
     } else {
+        stage::render_stage(state, frame, chunks[1]);
+        binds::render_key_bindings(state, frame, chunks[1]);
     }
 
     // Draw the current toast (if any) as a compact single row in the top-right.
