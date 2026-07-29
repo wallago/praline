@@ -1,18 +1,22 @@
 use ratatui::{
     Frame,
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Stylize},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    style::{Color, Style, Stylize},
+    symbols,
     text::Line,
-    widgets::Block,
+    widgets::{Block, Borders, Clear, Padding, Paragraph},
 };
 
 use crate::tui::state::State;
 
-/// Core Module
+/// Core Part.
 mod core;
 
-/// Key bindings
+/// Key bindings.
 mod binds;
+
+/// Utils functions.
+mod utils;
 
 /// Renders the user interface widgets.
 pub fn render(state: &mut State, frame: &mut Frame) {
@@ -32,15 +36,41 @@ pub fn render(state: &mut State, frame: &mut Frame) {
             env!("CARGO_PKG_VERSION").into(),
             " < ".fg(gray),
         ])
-        // .bg(Color::Blue)
         .bold();
-        frame.render_widget(
-            Block::bordered()
-                .title(title)
-                .title_alignment(Alignment::Center),
-            chunks[0],
-        );
+
+        let block = Block::bordered()
+            .title(title)
+            .title_alignment(Alignment::Center);
+        let inner = block.inner(chunks[0]);
+        frame.render_widget(block, chunks[0]);
+
+        let desc = Paragraph::new(env!("CARGO_PKG_DESCRIPTION").fg(Color::Blue))
+            .alignment(Alignment::Center)
+            .bold();
+        frame.render_widget(desc, inner);
     }
-    core::render_core(state, frame, chunks[1]);
-    binds::render_key_bindings(state, frame, chunks[1]);
+    if !state.generated_mode {
+        core::render_core(state, frame, chunks[1]);
+        binds::render_key_bindings(state, frame, chunks[1]);
+    } else {
+    }
+
+    // Draw the current toast (if any) as a compact single row in the top-right.
+    if let Some(toast) = &state.toast {
+        let full = frame.area();
+        let text = format!(" {} ", toast.message);
+        let width = (text.chars().count() as u16 + 2).min(full.width);
+        let area = Rect {
+            x: full.x + full.width.saturating_sub(width) - 1,
+            y: full.y,
+            width,
+            height: 1,
+        };
+        let block = Block::default()
+            .borders(Borders::LEFT | Borders::RIGHT)
+            .border_set(symbols::border::QUADRANT_OUTSIDE)
+            .border_style(Style::default().fg(toast.kind.color()));
+        frame.render_widget(Clear, area);
+        frame.render_widget(Paragraph::new(text).block(block), area);
+    }
 }

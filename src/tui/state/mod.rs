@@ -1,13 +1,11 @@
-use ratatui::{
-    style::Color,
-    widgets::{List, ListState},
-};
+use std::time::{Duration, Instant};
+
+use ratatui::{style::Color, widgets::ListState};
 use tui_input::Input;
 
 use crate::{
     app::RepoBuilder,
     config::{Config, binds::Keybindings},
-    error::Result,
 };
 
 /// Running command.
@@ -16,36 +14,13 @@ pub(crate) mod command;
 /// Helper to get key bindings.
 pub(crate) mod binds;
 
-/// Form focus.
-#[derive(PartialEq, Debug)]
-pub enum FormFocus {
-    Name,
-    Desc,
-    Options,
-}
+/// Toast.
+mod toast;
 
-impl FormFocus {
-    /// The next field in the cycle, wrapping around.
-    fn next(&self) -> Self {
-        match self {
-            Self::Name => Self::Desc,
-            Self::Desc => Self::Options,
-            Self::Options => Self::Name,
-        }
-    }
-
-    /// The previous field in the cycle, wrapping around.
-    fn prev(&self) -> Self {
-        match self {
-            Self::Name => Self::Options,
-            Self::Desc => Self::Name,
-            Self::Options => Self::Desc,
-        }
-    }
-}
+/// Form.
+pub(crate) mod form;
 
 /// Application state.
-#[derive(Debug)]
 pub struct State {
     /// Is the application running?
     pub running: bool,
@@ -54,7 +29,7 @@ pub struct State {
     /// Repo builder.
     pub repo: RepoBuilder,
     /// Form focus.
-    pub form_focus: FormFocus,
+    pub form_focus: form::FormFocus,
     /// Input.
     pub input: Input,
     /// Enable input.
@@ -63,22 +38,49 @@ pub struct State {
     pub options_list: ListState,
     /// Active key bindings (defaults merged with `config.toml`).
     pub keybindings: Keybindings,
+    /// Show generated repo.
+    pub generated_mode: bool,
+    /// Current toast, if any (non-tokio: we manage timing ourselves).
+    pub toast: Option<toast::Toast>,
+    /// When the current toast should be hidden.
+    pub toast_expires_at: Option<Instant>,
 }
 
 impl State {
     /// Constructs a new instance of [`State`].
-    pub fn new(accent_color: Option<Color>, config: Config) -> Result<Self> {
+    pub(crate) fn new(accent_color: Option<Color>, config: Config) -> Self {
         let repo = RepoBuilder::default();
-        let state = Self {
+        Self {
             running: true,
             accent_color: accent_color.unwrap_or(Color::White),
             repo,
-            form_focus: FormFocus::Name,
+            form_focus: form::FormFocus::Name,
             input: Input::default(),
             input_mode: false,
             options_list: ListState::default().with_selected(Some(0)),
             keybindings: config.keybindings,
-        };
-        Ok(state)
+            generated_mode: false,
+            toast: None,
+            toast_expires_at: None,
+        }
+    }
+
+    fn show_toast(&mut self, msg: &str, kind: toast::ToastType) {
+        self.toast = Some(toast::Toast {
+            message: msg.to_string(),
+            kind,
+        });
+        self.toast_expires_at = Some(Instant::now() + Duration::from_secs(3));
+    }
+
+    /// Hide the current toast once its lifetime has elapsed. Must be called
+    /// every loop iteration since we manage toast timing ourselves (non-tokio).
+    pub(crate) fn tick_toasts(&mut self) {
+        if let Some(expiry) = self.toast_expires_at
+            && Instant::now() >= expiry
+        {
+            self.toast = None;
+            self.toast_expires_at = None;
+        }
     }
 }
