@@ -2,15 +2,22 @@ use std::sync::mpsc;
 
 use tui_input::{Input, backend::crossterm::EventHandler};
 
-use crate::tui::{
-    command::{Command, ScrollType, input::InputCommand},
-    event::Event,
-    state::{FormFocus, State},
+use crate::{
+    error::Result,
+    tui::{
+        command::{Command, ScrollType, input::InputCommand},
+        event::Event,
+        state::{State, form::FormFocus, toast::ToastType},
+    },
 };
 
 impl State {
     /// Runs a command and updates the state.
-    pub fn run_command(&mut self, command: Command, _event_sender: mpsc::Sender<Event>) {
+    pub(crate) fn run_command(
+        &mut self,
+        command: Command,
+        _event_sender: mpsc::Sender<Event>,
+    ) -> Result<()> {
         match command {
             Command::Exit => {
                 self.running = false;
@@ -28,7 +35,24 @@ impl State {
                 }
             }
             Command::Nothing => {}
-
+            Command::Generate => {
+                if self.repo.check() {
+                    self.repo.generate()?;
+                    self.generated_mode = true;
+                } else {
+                    self.show_toast("Name is required", ToastType::Error);
+                }
+            }
+            Command::Confirm => {
+                if self.generated_mode {
+                    // TODO validate repo creation
+                }
+            }
+            Command::Back => {
+                if self.generated_mode {
+                    self.generated_mode = false;
+                }
+            }
             Command::Input(command) => match command {
                 InputCommand::Handle(event) => {
                     self.input.handle_event(&event);
@@ -42,15 +66,14 @@ impl State {
                     if self.form_focus == FormFocus::Options
                         && let Some(id) = self.options_list.selected()
                     {
-                        self.repo
-                            .options
-                            .get_mut(id)
-                            .map(|opt| opt.checked = !opt.checked);
+                        if let Some(opt) = self.repo.options.get_mut(id) {
+                            opt.checked = !opt.checked;
+                        }
                     } else {
                         let value = match self.form_focus {
                             FormFocus::Name => self.repo.name.clone(),
                             FormFocus::Desc => self.repo.desc.clone(),
-                            FormFocus::Options => return, // not a text field
+                            FormFocus::Options => return Ok(()), // not a text field
                         };
                         self.input = Input::new(value);
                         self.input_mode = true;
@@ -65,5 +88,6 @@ impl State {
                 }
             },
         }
+        Ok(())
     }
 }

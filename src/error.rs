@@ -5,16 +5,22 @@ use thiserror::Error as ThisError;
 pub enum Error {
     /// Error that may occur during I/O operations.
     #[error("IO error: `{0}`")]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
     /// Error that may occur while receiving messages from the channel.
     #[error("Channel receive error: `{0}`")]
-    ChannelReceiveError(#[from] std::sync::mpsc::RecvError),
+    ChannelReceive(#[from] std::sync::mpsc::RecvError),
     /// Error that may occur while loading the application config file.
     #[error("Config file error: `{0}`")]
-    ConfigError(String),
+    Config(String),
     /// Error that may occur while parsing serde.
     #[error("Failed to parse serde: `{0}`")]
-    SerdeParseError(#[from] serde_json::Error),
+    SerdeParse(#[from] serde_json::Error),
+    /// Error that may occur while parsing key from config file.
+    #[error("Failed to parse Keybindings from config file: `{0}`")]
+    KeyParse(String),
+    /// Error that may occur while handling event.
+    #[error("Failed to handle event: `{0}`")]
+    Event(String),
 }
 
 /// Type alias for the standard [`Result`] type.

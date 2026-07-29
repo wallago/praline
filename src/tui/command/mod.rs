@@ -27,10 +27,17 @@ pub enum Command {
     Previous(ScrollType),
     /// Input command.
     Input(InputCommand),
+    /// Generate repo.
+    Generate,
+    /// Confirm.
+    Confirm,
+    /// Back.
+    Back,
 }
 
 impl Command {
-    pub fn from_key(event: KeyEvent, binds: &Keybindings) -> Self {
+    /// Command parsing.
+    pub(crate) fn from_key(event: KeyEvent, binds: &Keybindings) -> Self {
         if binds.quit.matches(&event) {
             Self::Exit
         } else if binds.scroll_down.matches(&event) {
@@ -38,16 +45,27 @@ impl Command {
         } else if binds.scroll_up.matches(&event) {
             Self::Previous(ScrollType::Options)
         } else if binds.generate.matches(&event) {
-            Self::Nothing
+            Self::Generate
         } else {
             match event.code {
-                KeyCode::Tab if event.modifiers == KeyModifiers::CONTROL => {
-                    Self::Previous(ScrollType::Form)
-                }
+                KeyCode::BackTab => Self::Previous(ScrollType::Form),
                 KeyCode::Tab => Self::Next(ScrollType::Form),
                 KeyCode::Enter => Self::Input(InputCommand::Enter),
                 _ => Self::Nothing,
             }
+        }
+    }
+
+    /// Command parsing while viewing the generated repo.
+    pub(crate) fn from_generated_key(event: KeyEvent, binds: &Keybindings) -> Self {
+        if binds.quit.matches(&event) {
+            Self::Exit
+        } else if binds.leave.matches(&event) {
+            Self::Back
+        } else if binds.confirm.matches(&event) {
+            Self::Confirm
+        } else {
+            Self::Nothing
         }
     }
 }

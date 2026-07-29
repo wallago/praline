@@ -35,15 +35,19 @@ use crate::{
 };
 
 /// Runs praline.
-pub fn run(args: Args) -> Result<()> {
+///
+/// # Errors
+///
+/// Returns an error if the config fails to load or if the TUI fails to start.
+pub fn run(args: &Args) -> Result<()> {
     let config = Config::load(args.config.as_deref())?;
     start_tui(args, config)
 }
 
 /// Starts the terminal user interface.
-pub fn start_tui(args: Args, config: Config) -> Result<()> {
+fn start_tui(args: &Args, config: Config) -> Result<()> {
     // Create an application.
-    let mut state = State::new(args.accent_color, config)?;
+    let mut state = State::new(args.accent_color, config);
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(io::stdout());
@@ -54,21 +58,24 @@ pub fn start_tui(args: Args, config: Config) -> Result<()> {
 
     // Start the main loop.
     while state.running {
+        // Expire any toast whose lifetime has elapsed before drawing.
+        state.tick_toasts();
         // Render the user interface.
         tui.draw(&mut state)?;
         // Handle events.
         match tui.events.next()? {
-            Event::Tick => {}
             Event::Key(key_event) => {
                 let command = if state.input_mode {
                     Command::Input(InputCommand::parse(key_event, &state.input))
+                } else if state.generated_mode {
+                    Command::from_generated_key(key_event, &state.keybindings)
                 } else {
                     Command::from_key(key_event, &state.keybindings)
                 };
-                state.run_command(command, tui.events.sender.clone());
+                state.run_command(command, tui.events.sender.clone())?;
             }
             Event::Mouse(_mouse_event) => {}
-            Event::Resize(_, _) => {}
+            Event::Tick | Event::Resize(_, _) => {}
         }
     }
 

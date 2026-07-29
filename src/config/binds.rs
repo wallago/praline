@@ -27,13 +27,13 @@ pub struct Keybindings {
 impl Default for Keybindings {
     fn default() -> Self {
         Self {
-            quit: key("q"),
-            generate: key("g"),
-            scroll_up: key("k"),
-            scroll_down: key("j"),
-            leave: key("esc"),
-            confirm: key("enter"),
-            enter: key("enter"),
+            quit: KeyPattern::plain(KeyCode::Char('q')),
+            generate: KeyPattern::plain(KeyCode::Char('g')),
+            scroll_up: KeyPattern::plain(KeyCode::Char('k')),
+            scroll_down: KeyPattern::plain(KeyCode::Char('j')),
+            leave: KeyPattern::plain(KeyCode::Esc),
+            confirm: KeyPattern::plain(KeyCode::Enter),
+            enter: KeyPattern::plain(KeyCode::Enter),
         }
     }
 }
@@ -48,15 +48,18 @@ pub struct KeyPattern {
 }
 
 impl KeyPattern {
+    /// A modifier-less key chord; used for compile-time known defaults.
+    const fn plain(code: KeyCode) -> Self {
+        Self {
+            code,
+            modifiers: KeyModifiers::NONE,
+        }
+    }
+
     /// Whether this pattern matches a pressed key event.
-    pub fn matches(&self, event: &KeyEvent) -> bool {
+    pub(crate) fn matches(&self, event: &KeyEvent) -> bool {
         self.code == event.code && self.modifiers == event.modifiers
     }
-}
-
-/// Builds a [`KeyPattern`] from literal key names; only used for defaults.
-fn key(key: &str) -> KeyPattern {
-    key.parse().expect("invalid default key")
 }
 
 impl<'de> Deserialize<'de> for KeyPattern {

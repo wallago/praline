@@ -1,10 +1,10 @@
-use crate::tui::state::{FormFocus, State};
+use crate::tui::state::{State, form::FormFocus};
 
 impl State {
     /// Returns the key bindings.
-    pub fn get_key_bindings(&self) -> Vec<(String, &'static str)> {
+    pub(crate) fn get_key_bindings(&self) -> Vec<(String, &'static str)> {
         let mut binds = Vec::new();
-        if self.input_mode {
+        if self.input_mode || self.generated_mode {
             binds.push((self.keybindings.leave.to_string(), "Leave"));
             binds.push((self.keybindings.confirm.to_string(), "Confirm"));
         } else {

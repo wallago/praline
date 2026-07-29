@@ -23,8 +23,8 @@ fn main() -> Result<()> {
             })
             .ok();
     }
-    match praline::run(args) {
-        Ok(_) => process::exit(0),
+    match praline::run(&args) {
+        Ok(()) => process::exit(0),
         Err(e) => {
             eprintln!("{e}");
             process::exit(1)

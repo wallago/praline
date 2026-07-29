@@ -7,6 +7,7 @@ use crate::{
     error::{Error, Result},
 };
 
+/// App keybindings.
 pub(crate) mod binds;
 
 /// Configuration loaded from `config.toml`.
@@ -20,6 +21,10 @@ pub struct Config {
 impl Config {
     /// Loads the config: explicit `--config` path, else
     /// `$XDG_CONFIG_HOME/flamingo/config.toml` if present, else defaults.
+    ///  
+    /// # Errors
+    ///
+    /// Returns an error if a config file is found but cannot be read or parsed.
     pub fn load(cli_path: Option<&Path>) -> Result<Self> {
         if let Some(path) = cli_path {
             return Self::from_file(path);
@@ -31,12 +36,16 @@ impl Config {
     }
 
     /// Reads and parses a config file; any failure is a hard error.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file cannot be read, or if its contents are not
+    /// valid TOML for this config.
     pub fn from_file(path: &Path) -> Result<Self> {
         // Get raw content
         let raw = std::fs::read_to_string(path)
-            .map_err(|error| Error::ConfigError(format!("{}: {error}", path.display())))?;
+            .map_err(|error| Error::Config(format!("{}: {error}", path.display())))?;
         // Deserialize content in TOML format
-        toml::from_str(&raw)
-            .map_err(|error| Error::ConfigError(format!("{}: {error}", path.display())))
+        toml::from_str(&raw).map_err(|error| Error::Config(format!("{}: {error}", path.display())))
     }
 }
