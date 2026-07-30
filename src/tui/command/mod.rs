@@ -12,6 +12,8 @@ pub enum ScrollType {
     Form,
     /// Options.
     Options,
+    /// Staged.
+    Staged,
 }
 
 /// Application command.
@@ -64,6 +66,10 @@ impl Command {
             Self::Back
         } else if binds.confirm.matches(&event) {
             Self::Confirm
+        } else if binds.scroll_down.matches(&event) {
+            Self::Next(ScrollType::Staged)
+        } else if binds.scroll_up.matches(&event) {
+            Self::Previous(ScrollType::Staged)
         } else {
             Self::Nothing
         }
