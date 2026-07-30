@@ -1,7 +1,7 @@
 use ratatui::style::Color;
 use strum::VariantArray;
 
-/// Tool Categories
+/// Tool categories.
 #[derive(Debug, strum::Display)]
 pub(crate) enum Category {
     /// Format code.
@@ -25,7 +25,7 @@ pub(crate) enum Category {
 }
 
 impl Category {
-    /// Get color for a Category
+    /// Get color for a Category.
     pub(crate) fn color(&self) -> Color {
         match self {
             Self::Format => Color::Blue,
@@ -41,7 +41,7 @@ impl Category {
     }
 }
 
-/// Available Tools
+/// Available tools.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, VariantArray)]
 pub(crate) enum Tool {
     /// rustfmt — Rust code formatter.
@@ -67,7 +67,7 @@ pub(crate) enum Tool {
 }
 
 impl Tool {
-    /// Get label for a Tool
+    /// Get label for a Tool.
     pub(crate) fn label(self) -> &'static str {
         match self {
             Self::RustFmt => "rustfmt",
@@ -128,7 +128,7 @@ impl Tool {
         })
     }
 
-    /// Get file body, embedded in the binary at compile time.
+    /// Raw template body, embedded at compile time.
     pub(crate) fn template(self) -> Option<&'static str> {
         Some(match self {
             Self::RustFmt => include_str!("../../../templates/rustfmt.toml"),

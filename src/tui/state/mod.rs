@@ -35,7 +35,7 @@ pub struct State {
     /// Enable input.
     pub input_mode: bool,
     /// List of options.
-    pub options_list: ListState,
+    pub option_list: ListState,
     /// Active key bindings (defaults merged with `config.toml`).
     pub keybindings: Keybindings,
     /// Show generated repo.
@@ -44,6 +44,8 @@ pub struct State {
     pub toast: Option<toast::Toast>,
     /// When the current toast should be hidden.
     pub toast_expires_at: Option<Instant>,
+    /// List of staged files.
+    pub staged_list: ListState,
 }
 
 impl State {
@@ -57,11 +59,12 @@ impl State {
             form_focus: form::FormFocus::Name,
             input: Input::default(),
             input_mode: false,
-            options_list: ListState::default().with_selected(Some(0)),
+            option_list: ListState::default().with_selected(Some(0)),
             keybindings: config.keybindings,
             generated_mode: false,
             toast: None,
             toast_expires_at: None,
+            staged_list: ListState::default().with_selected(Some(0)),
         }
     }
 

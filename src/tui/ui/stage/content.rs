@@ -4,14 +4,23 @@ use ratatui::{
     Frame,
     layout::{Alignment, Rect},
     style::{Color, Stylize},
-    widgets::{Block, Paragraph},
+    widgets::{Block, Padding, Paragraph},
 };
 
-use crate::tui::{state::State, ui::highlight::highlight};
+use crate::tui::{
+    state::State,
+    ui::highlight::{self, highlight},
+};
 
 /// Render file content.
 pub(super) fn render_content(state: &mut State, frame: &mut Frame, rect: Rect) {
-    let content = "isnritnrsi";
+    let mut entries = state.repo.inspect_stage();
+    let Some(Some((name, (content, path)))) = entries
+        .as_mut()
+        .map(|entries| entries.get_index(state.staged_list.selected().unwrap_or_default()))
+    else {
+        return;
+    };
 
     let content_height = content.lines().count();
     let viewport_height = rect.height.saturating_sub(2) as usize;
@@ -21,16 +30,12 @@ pub(super) fn render_content(state: &mut State, frame: &mut Frame, rect: Rect) {
     //     module_tab.scroll_index = max_scroll;
     // }
 
+    let (highlight, ext) = highlight(path, content);
+    let title = format!(" {name} -> {ext} ").fg(Color::Gray).bold();
+    let content = Paragraph::new(highlight);
+    let block = Block::bordered().title(title).padding(Padding::uniform(1));
     frame.render_widget(
-        Paragraph::new(highlight(Path::new("./"), &content)).block(
-            Block::bordered()
-                .title(vec![
-                    "|".fg(Color::Gray),
-                    "ienien".fg(Color::Gray).bold(),
-                    "| ".fg(Color::Gray),
-                ])
-                .title_alignment(Alignment::Center),
-        ),
+        content.block(block),
         // .scroll((module_tab.scroll_index as u16, 0)),
         rect,
     );

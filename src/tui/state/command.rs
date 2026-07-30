@@ -26,12 +26,14 @@ impl State {
             Command::Previous(ScrollType::Form) => self.form_focus = self.form_focus.prev(),
             Command::Next(ScrollType::Options) => {
                 if self.form_focus == FormFocus::Options {
-                    self.options_list.select_next();
+                    self.option_list.select_next();
                 }
             }
+            Command::Previous(ScrollType::Staged) => self.staged_list.select_previous(),
+            Command::Next(ScrollType::Staged) => self.staged_list.select_next(),
             Command::Previous(ScrollType::Options) => {
                 if self.form_focus == FormFocus::Options {
-                    self.options_list.select_previous();
+                    self.option_list.select_previous();
                 }
             }
             Command::Nothing => {}
@@ -64,7 +66,7 @@ impl State {
                 }
                 InputCommand::Enter => {
                     if self.form_focus == FormFocus::Options
-                        && let Some(id) = self.options_list.selected()
+                        && let Some(id) = self.option_list.selected()
                     {
                         if let Some(opt) = self.repo.options.get_mut(id) {
                             opt.checked = !opt.checked;

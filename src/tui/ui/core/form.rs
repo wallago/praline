@@ -84,10 +84,10 @@ fn render_options(state: &mut State, frame: &mut Frame, rect: Rect, focused: boo
         .collect();
 
     let list = List::new(items).block(block).highlight_symbol("> ");
-    frame.render_stateful_widget(list, rect, &mut state.options_list);
+    frame.render_stateful_widget(list, rect, &mut state.option_list);
 
     let mut sb = ScrollbarState::new(state.repo.options.len())
-        .position(state.options_list.selected().unwrap_or(0));
+        .position(state.option_list.selected().unwrap_or(0));
     frame.render_stateful_widget(
         Scrollbar::new(ScrollbarOrientation::VerticalRight),
         rect.inner(Margin {
@@ -105,7 +105,7 @@ fn render_option_desc(state: &State, frame: &mut Frame, area: Rect) {
         return;
     }
     let Some(opt) = state
-        .options_list
+        .option_list
         .selected()
         .and_then(|i| state.repo.options.get(i))
     else {
