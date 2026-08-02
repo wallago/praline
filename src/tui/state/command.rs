@@ -59,6 +59,7 @@ impl State {
                 InputCommand::Handle(event) => {
                     self.input.handle_event(&event);
                     match self.form_focus {
+                        FormFocus::Owner => self.repo.owner = self.input.value().to_string(),
                         FormFocus::Name => self.repo.name = self.input.value().to_string(),
                         FormFocus::Desc => self.repo.desc = self.input.value().to_string(),
                         FormFocus::Options => {}
@@ -73,6 +74,7 @@ impl State {
                         }
                     } else {
                         let value = match self.form_focus {
+                            FormFocus::Owner => self.repo.owner.clone(),
                             FormFocus::Name => self.repo.name.clone(),
                             FormFocus::Desc => self.repo.desc.clone(),
                             FormFocus::Options => return Ok(()), // not a text field
