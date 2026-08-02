@@ -21,6 +21,7 @@ mod toast;
 pub(crate) mod form;
 
 /// Application state.
+#[derive(Debug)]
 pub struct State {
     /// Is the application running?
     pub running: bool,
@@ -68,6 +69,7 @@ impl State {
         }
     }
 
+    /// Display toast on call.
     fn show_toast(&mut self, msg: &str, kind: toast::ToastType) {
         self.toast = Some(toast::Toast {
             message: msg.to_string(),

@@ -96,26 +96,28 @@ impl RepoBuilder {
         !self.name.is_empty() && !self.desc.is_empty() && self.options.iter().any(|opt| opt.checked)
     }
 
-    /// Get content of stage dir with a HashMap of path and associated content.
+    /// Get content of stage dir with a `IndexMap` of path and associated content.
     pub(crate) fn inspect_stage(&mut self) -> Option<IndexMap<String, (String, PathBuf)>> {
-        let Some(path) = self.dir.as_mut().map(|dir| dir.path()) else {
-            return None;
-        };
-        let mut entries = IndexMap::new();
-        for entry in fs::read_dir(path).ok()? {
-            let entry = entry.ok()?;
-            if entry.file_type().ok()?.is_file() {
-                let content = fs::read_to_string(entry.path()).ok()?;
-                entries.insert(
-                    entry.file_name().to_str()?.to_string(),
-                    (content, entry.path()),
-                );
+        if let Some(path) = self.dir.as_mut().map(|dir| dir.path()) {
+            let mut entries = IndexMap::new();
+            for entry in fs::read_dir(path).ok()? {
+                let entry = entry.ok()?;
+                if entry.file_type().ok()?.is_file() {
+                    let content = fs::read_to_string(entry.path()).ok()?;
+                    entries.insert(
+                        entry.file_name().to_str()?.to_string(),
+                        (content, entry.path()),
+                    );
+                }
             }
+            Some(entries)
+        } else {
+            None
         }
-        Some(entries)
     }
 }
 
+/// Create the file inside the directory.
 fn write_entry(root: &Path, name: &str, content: &[u8]) -> Result<()> {
     let path = root.join(name);
     if let Some(parent) = path.parent() {

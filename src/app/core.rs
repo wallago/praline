@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use strum::VariantArray;
 
 use crate::app::RepoBuilder;
@@ -50,37 +52,52 @@ impl Core {
     }
 }
 
+/// Macro to send a list of path, valid at compile time.
+macro_rules! push_just {
+    ($out:expr, $($path:literal),+ $(,)?) => {
+        $(
+            $out.push('\n');
+            $out.push_str(include_str!($path));
+        )+
+    };
+}
+
 /// Assemble the justfile from the base header plus each selected tool's recipe.
 fn build_justfile(repo: &RepoBuilder) -> String {
-    use std::fmt::Write;
+    // use std::fmt::Write;
 
-    // Selected tools, in a stable (enum) order.
-    let selected: Vec<_> = repo
+    let tools: Vec<_> = repo
         .options
         .iter()
         .filter(|opt| opt.checked)
         .map(|opt| opt.tool)
         .collect();
 
-    // 1. Static base: `default:`, run/build/check/test, etc.
     let mut out = Core::Justfile.template().to_string();
+    push_just!(
+        out,
+        "../../templates/just/jj.just",
+        "../../templates/just/rust.just",
+        "../../templates/just/nix.just",
+    );
 
-    // 2. Per-tool recipes (each fragment carries its own [group(...)]).
-    for tool in &selected {
+    for &tool in &tools {
         if let Some(recipe) = tool.recipe() {
             out.push('\n');
             out.push_str(recipe);
         }
     }
 
-    // 3. Synthesized `ci:` — tracks the selection automatically.
-    out.push_str("\n[group('ci')]\nci:\n");
-    for tool in &selected {
-        if let Some(step) = tool.ci_step() {
-            let _ = writeln!(out, "    @echo '▶ {}'\n    {step}", tool.label());
+    out.push_str("\n# Mirror the full CI pipeline locally. Run before pushing.\n");
+    out.push_str("[group('ci')]\nci:\n");
+    for &tool in &tools {
+        if let Some(step) = tool.ci() {
+            let _ = write!(out, "    @echo \"▶ {}\"\n    {step}\n", tool.label());
         }
     }
-    let _ = writeln!(out, "    @echo '✅ CI mirror passed'");
+    out.push_str("    @echo \"▶ test\"\n    cargo nextest run\n");
+    out.push_str("    @echo \"▶ nix\"\n    nix flake check --print-build-logs --all-systems\n");
+    out.push_str("    @echo \"✅ CI mirror passed\"\n");
 
     out
 }
