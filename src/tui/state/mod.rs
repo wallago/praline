@@ -56,7 +56,7 @@ impl State {
             running: true,
             accent_color: accent_color.unwrap_or(Color::White),
             repo,
-            form_focus: form::FormFocus::Name,
+            form_focus: form::FormFocus::Owner,
             input: Input::default(),
             input_mode: false,
             option_list: ListState::default().with_selected(Some(0)),

@@ -20,13 +20,22 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, rect: Rect) {
         horizontal: 2,
         vertical: 1,
     });
-    let [name, desc, options] = Layout::vertical([
+    let [owner, name, desc, options] = Layout::vertical([
+        Constraint::Length(3),
         Constraint::Length(3),
         Constraint::Length(3),
         Constraint::Min(0),
     ])
     .areas(inner);
 
+    render_input(
+        frame,
+        owner,
+        "Owner",
+        &state.repo.owner,
+        state.form_focus == FormFocus::Owner,
+        state.input_mode,
+    );
     render_input(
         frame,
         name,

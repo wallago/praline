@@ -1,5 +1,4 @@
 use std::{
-    collections::{BTreeMap, HashMap},
     fs,
     path::{Path, PathBuf},
 };
@@ -26,6 +25,8 @@ pub struct RepoBuilder {
     pub name: String,
     /// Repo description.
     pub desc: String,
+    /// Repo owner.
+    pub owner: String,
     /// Options available.
     pub(crate) options: Vec<Opt>,
     /// Core code.
@@ -49,6 +50,7 @@ impl Default for RepoBuilder {
         Self {
             name: String::new(),
             desc: String::new(),
+            owner: String::new(),
             options: Tool::VARIANTS
                 .iter()
                 .map(|&tool| Opt {
@@ -80,9 +82,7 @@ impl RepoBuilder {
 
         // Optional tools — only the checked ones.
         for opt in self.options.iter().filter(|opt| opt.checked) {
-            let (Some(name), Some(content)) = (opt.tool.filename(), opt.tool.template()) else {
-                continue;
-            };
+            let (name, content) = (opt.tool.filename(), opt.tool.render(self));
             write_entry(dir.path(), name, content.as_bytes())?;
         }
 

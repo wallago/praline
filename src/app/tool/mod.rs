@@ -1,6 +1,8 @@
 use ratatui::style::Color;
 use strum::VariantArray;
 
+use crate::app::RepoBuilder;
+
 /// Tool categories.
 #[derive(Debug, strum::Display)]
 pub(crate) enum Category {
@@ -54,16 +56,19 @@ pub(crate) enum Tool {
     Clippy,
     /// typos — source code spell checker.
     Typos,
-    /// cargo-machete — find unused dependencies.
-    Machete,
     /// Codecov — code coverage reporting.
     Codecov,
-    /// cargo-nextest — next-generation test runner.
-    Nextest,
     /// cargo-deny — dependency lint / license checks.
     Deny,
-    /// cargo-audit — vulnerability scanning of dependencies.
-    Audit,
+    /// committed — check commit message format.
+    Committed,
+    /// git-cliff — changelog generator.
+    Cliff, // /// cargo-machete — find unused dependencies.
+           // Machete,
+           // /// cargo-nextest — next-generation test runner.
+           // Nextest,
+           // /// cargo-audit — vulnerability scanning of dependencies.
+           // Audit,
 }
 
 impl Tool {
@@ -75,11 +80,13 @@ impl Tool {
             Self::Taplo => "taplo",
             Self::Clippy => "clippy",
             Self::Typos => "typos",
-            Self::Machete => "machete",
             Self::Codecov => "codecov",
-            Self::Nextest => "nextest",
             Self::Deny => "deny",
-            Self::Audit => "audit",
+            Self::Committed => "committed",
+            Self::Cliff => "cliff",
+            // Self::Machete => "machete",
+            // Self::Audit => "audit",
+            // Self::Nextest => "nextest",
         }
     }
 
@@ -91,11 +98,13 @@ impl Tool {
             Self::Taplo => "TOML formatting.",
             Self::Clippy => "Catches common mistakes and improves code quality via lints.",
             Self::Typos => "Source code spell checker.",
-            Self::Machete => "Unused-dependency detection.",
             Self::Codecov => "Coverage reporting.",
-            Self::Nextest => "A next-generation test runner for Rust.",
             Self::Deny => "Dependency / License / Advisory bans.",
-            Self::Audit => "RUSTSEC advisory scanning.",
+            Self::Committed => "Conventional commit message linting.",
+            Self::Cliff => "Changelog generation from git history.",
+            // Self::Machete => "Unused-dependency detection.",
+            // Self::Audit => "RUSTSEC advisory scanning.",
+            // Self::Nextest => "A next-generation test runner for Rust.",
         }
     }
 
@@ -103,20 +112,32 @@ impl Tool {
     pub(crate) fn category(self) -> Category {
         match self {
             Self::RustFmt | Self::EditorConfig | Self::Taplo => Category::Format,
-            Self::Clippy | Self::Machete | Self::Typos => Category::Lint,
-            Self::Nextest | Self::Codecov => Category::Test,
-            Self::Deny | Self::Audit => Category::Security,
+            Self::Clippy | Self::Typos => Category::Lint,
+            Self::Codecov => Category::Test,
+            Self::Deny => Category::Security,
+            Self::Committed | Self::Cliff => Category::Release,
         }
     }
 
     /// Get check status for a Tool
     pub(crate) fn default_checked(self) -> bool {
-        matches!(self, Self::Taplo | Self::Clippy)
+        matches!(
+            self,
+            Self::Taplo
+                | Self::Clippy
+                | Self::Codecov
+                | Self::Deny
+                | Self::Committed
+                | Self::RustFmt
+                | Self::Cliff
+                | Self::EditorConfig
+                | Self::Typos
+        )
     }
 
     /// Get relative path of the file this tool emits, if any.
-    pub(crate) fn filename(self) -> Option<&'static str> {
-        Some(match self {
+    pub(crate) fn filename(self) -> &'static str {
+        match self {
             Self::RustFmt => "rustfmt.toml",
             Self::EditorConfig => ".editorconfig",
             Self::Taplo => "taplo.toml",
@@ -124,13 +145,14 @@ impl Tool {
             Self::Typos => "typos.toml",
             Self::Deny => "deny.toml",
             Self::Codecov => "codecov.yml",
-            Self::Machete | Self::Nextest | Self::Audit => return None,
-        })
+            Self::Committed => "committed.toml",
+            Self::Cliff => "cliff.toml",
+        }
     }
 
     /// Raw template body, embedded at compile time.
-    pub(crate) fn template(self) -> Option<&'static str> {
-        Some(match self {
+    pub(crate) fn template(self) -> &'static str {
+        match self {
             Self::RustFmt => include_str!("../../../templates/rustfmt.toml"),
             Self::EditorConfig => include_str!("../../../templates/.editorconfig"),
             Self::Taplo => include_str!("../../../templates/taplo.toml"),
@@ -138,6 +160,30 @@ impl Tool {
             Self::Typos => include_str!("../../../templates/typos.toml"),
             Self::Deny => include_str!("../../../templates/deny.toml"),
             Self::Codecov => include_str!("../../../templates/codecov.yml"),
+            Self::Committed => include_str!("../../../templates/committed.toml"),
+            Self::Cliff => include_str!("../../../templates/cliff.toml"),
+        }
+    }
+
+    /// Template with the variant's fields substituted in.
+    pub(crate) fn render(self, repo: &RepoBuilder) -> String {
+        match self {
+            Self::Cliff => self
+                .template()
+                .replace("{name}", &repo.name)
+                .replace("{owner}", &repo.owner),
+            _ => self.template().to_string(),
+        }
+    }
+
+    /// The just recipe this tool contributes, if any.
+    pub(crate) fn recipe(self) -> Option<&'static str> {
+        Some(match self {
+            Self::Typos => include_str!("../../../templates/just/tool/typos.just"),
+            Self::Deny => include_str!("../../../templates/just/tool/deny.just"),
+            Self::Committed => include_str!("../../../templates/just/tool/committed.just"),
+            Self::Cliff => include_str!("../../../templates/just/tool/cliff.just"),
+            // config-only tools contribute no recipe:
             _ => return None,
         })
     }
