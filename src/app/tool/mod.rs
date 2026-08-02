@@ -14,16 +14,16 @@ pub(crate) enum Category {
     Test,
     /// Scan for security issues.
     Security,
-    /// Build the project.
-    Build,
+    // /// Build the project.
+    // Build,
     /// Publish or release.
     Release,
-    /// Version control.
-    Git,
-    /// CI/CD and automation.
-    DevOps,
-    /// Environment and tooling setup.
-    Env,
+    // /// Version control.
+    // Git,
+    // /// CI/CD and automation.
+    // DevOps,
+    // /// Environment and tooling setup.
+    // Env,
 }
 
 impl Category {
@@ -34,11 +34,11 @@ impl Category {
             Self::Lint => Color::Red,
             Self::Test => Color::Magenta,
             Self::Security => Color::Green,
-            Self::Build => Color::LightBlue,
+            // Self::Build => Color::LightBlue,
             Self::Release => Color::Cyan,
-            Self::Git => Color::Yellow,
-            Self::DevOps => Color::LightGreen,
-            Self::Env => Color::DarkGray,
+            // Self::Git => Color::Yellow,
+            // Self::DevOps => Color::LightGreen,
+            // Self::Env => Color::DarkGray,
         }
     }
 }
@@ -179,12 +179,31 @@ impl Tool {
     /// The just recipe this tool contributes, if any.
     pub(crate) fn recipe(self) -> Option<&'static str> {
         Some(match self {
-            Self::Typos => include_str!("../../../templates/just/tool/typos.just"),
-            Self::Deny => include_str!("../../../templates/just/tool/deny.just"),
-            Self::Committed => include_str!("../../../templates/just/tool/committed.just"),
-            Self::Cliff => include_str!("../../../templates/just/tool/cliff.just"),
-            // config-only tools contribute no recipe:
-            _ => return None,
+            Self::Typos => include_str!("../../../templates/just/typos.just"),
+            Self::Deny => include_str!("../../../templates/just/deny.just"),
+            Self::Committed => include_str!("../../../templates/just/committed.just"),
+            Self::Cliff => include_str!("../../../templates/just/cliff.just"),
+            Self::Codecov => include_str!("../../../templates/just/codecov.just"),
+            Self::Clippy => include_str!("../../../templates/just/clippy.just"),
+            Self::Taplo => include_str!("../../../templates/just/taplo.just"),
+            Self::EditorConfig => include_str!("../../../templates/just/editorconfig.just"),
+            // Self::Machete => include_str!("../../../templates/just/machete.just"),
+            // Self::Audit => include_str!("../../../templates/just/audit.just"),
+            Self::RustFmt => return None,
+        })
+    }
+
+    /// The CI check this tool contributes to `just ci`, if any.
+    pub(crate) fn ci(self) -> Option<&'static str> {
+        Some(match self {
+            Self::RustFmt => "cargo fmt --check",
+            Self::Taplo => "taplo fmt --check",
+            Self::Clippy => "cargo clippy --all-targets -- -D warnings",
+            Self::Typos => "typos",
+            Self::Deny => "cargo deny check",
+            Self::Committed => "committed -vv HEAD",
+            Self::EditorConfig => "editorconfig-checker",
+            Self::Codecov | Self::Cliff => return None,
         })
     }
 }

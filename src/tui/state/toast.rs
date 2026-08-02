@@ -26,6 +26,7 @@ impl ToastType {
 }
 
 /// A toast notification: a short message rendered on a single row.
+#[derive(Debug)]
 pub struct Toast {
     /// Message text.
     pub message: String,

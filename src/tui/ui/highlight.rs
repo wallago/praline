@@ -10,7 +10,7 @@ thread_local! {
 
 /// Highlights source into styled lines. The syntax is chosen from the
 /// file's extension, falling back to the first line, then to plain text.
-pub fn highlight(path: &Path, content: &str) -> (Text<'static>, String) {
+pub(crate) fn highlight(path: &Path, content: &str) -> (Text<'static>, String) {
     ASSETS.with(|assets| {
         let Ok(syntax_set) = assets.get_syntax_set() else {
             return (Text::raw(content.to_string()), String::from("None"));

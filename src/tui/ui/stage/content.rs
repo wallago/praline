@@ -1,16 +1,11 @@
-use std::path::Path;
-
 use ratatui::{
     Frame,
-    layout::{Alignment, Rect},
+    layout::Rect,
     style::{Color, Stylize},
     widgets::{Block, Padding, Paragraph},
 };
 
-use crate::tui::{
-    state::State,
-    ui::highlight::{self, highlight},
-};
+use crate::tui::{state::State, ui::highlight::highlight};
 
 /// Render file content.
 pub(super) fn render_content(state: &mut State, frame: &mut Frame, rect: Rect) {
@@ -22,9 +17,9 @@ pub(super) fn render_content(state: &mut State, frame: &mut Frame, rect: Rect) {
         return;
     };
 
-    let content_height = content.lines().count();
-    let viewport_height = rect.height.saturating_sub(2) as usize;
-    let max_scroll = content_height.saturating_sub(viewport_height);
+    // let content_height = content.lines().count();
+    // let viewport_height = rect.height.saturating_sub(2) as usize;
+    // let max_scroll = content_height.saturating_sub(viewport_height);
     // TODO scroll
     // if module_tab.scroll_index > max_scroll {
     //     module_tab.scroll_index = max_scroll;

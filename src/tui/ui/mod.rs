@@ -4,7 +4,7 @@ use ratatui::{
     style::{Color, Style, Stylize},
     symbols,
     text::Line,
-    widgets::{Block, Borders, Clear, Padding, Paragraph},
+    widgets::{Block, Borders, Clear, Paragraph},
 };
 
 use crate::tui::state::State;
@@ -55,11 +55,11 @@ pub fn render(state: &mut State, frame: &mut Frame) {
             .bold();
         frame.render_widget(desc, inner);
     }
-    if !state.generated_mode {
-        core::render_core(state, frame, chunks[1]);
+    if state.generated_mode {
+        stage::render_stage(state, frame, chunks[1]);
         binds::render_key_bindings(state, frame, chunks[1]);
     } else {
-        stage::render_stage(state, frame, chunks[1]);
+        core::render_core(state, frame, chunks[1]);
         binds::render_key_bindings(state, frame, chunks[1]);
     }
 
@@ -67,7 +67,8 @@ pub fn render(state: &mut State, frame: &mut Frame) {
     if let Some(toast) = &state.toast {
         let full = frame.area();
         let text = format!(" {} ", toast.message);
-        let width = (text.chars().count() as u16 + 2).min(full.width);
+        let len = u16::try_from(text.chars().count()).unwrap_or(u16::MAX);
+        let width = (len + 2).min(full.width);
         let area = Rect {
             x: full.x + full.width.saturating_sub(width) - 1,
             y: full.y,
