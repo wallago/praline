@@ -17,7 +17,13 @@
       claude-code,
       ...
     }:
-    flake-utils.lib.eachDefaultSystem (
+    # ── System-agnostic outputs (modules) live out here ──
+    {
+      nixosModules.default = import ./nix/module.nix self;
+      homeModules.default = import ./nix/hm-module.nix self;
+    }
+    # ── Then merge the per-system outputs onto it ──
+    // flake-utils.lib.eachDefaultSystem (
       system:
       let
         overlays = [ (import rust-overlay) ];

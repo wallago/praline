@@ -1,0 +1,34 @@
+use std::path::Path;
+
+use super::write_entry;
+use crate::{
+    app::{RepoBuilder, Tool, tool::category::Category},
+    error::Result,
+};
+
+#[derive(Debug)]
+pub(crate) struct Typos;
+
+impl Tool for Typos {
+    fn name(&self) -> String {
+        "typos".to_string()
+    }
+
+    fn desc(&self) -> String {
+        "TBD.".to_string()
+    }
+
+    fn category(&self) -> Category {
+        Category::Lint
+    }
+
+    fn default_setup(&self) -> bool {
+        true
+    }
+
+    fn gen_template(&self, root: &Path, _: &RepoBuilder) -> Result<()> {
+        let content = include_str!("../../../templates/typos.toml");
+        write_entry(root, "typos.toml", content.as_bytes())?;
+        Ok(())
+    }
+}
