@@ -75,7 +75,7 @@ fn render_options(state: &mut State, frame: &mut Frame, rect: Rect, focused: boo
             let glyph = if opt.checked { "󰄲 " } else { "󰄱 " };
 
             let spans = vec![
-                Span::raw(format!("{glyph}{}", opt.tool.label())),
+                Span::raw(format!("{glyph}{}", opt.tool.name())),
                 Span::raw(" "),
                 badge(&opt.tool.category()),
             ];
@@ -130,7 +130,7 @@ fn render_option_desc(state: &State, frame: &mut Frame, area: Rect) {
         height,
     };
 
-    let title = format!(" {} ", opt.tool.label()).fg(Color::Gray).bold();
+    let title = format!(" {} ", opt.tool.name()).fg(Color::Gray).bold();
     let block = Block::bordered().title(title).border_style(Color::Yellow);
     let paragraph = Paragraph::new(opt.tool.desc())
         .block(block)

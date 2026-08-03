@@ -15,17 +15,23 @@ pub(crate) enum Core {
     Envrc,
     /// just — task runner (assembled from selected tools).
     Justfile,
+    /// flake — .
+    Flake,
+    /// claude — task runner (assembled from selected tools).
+    Claude,
 }
 
 impl Core {
     /// Get relative path of the file this tool emits, if any.
-    pub(crate) fn filename(self) -> &'static str {
-        match self {
+    pub(crate) fn filename(self) -> Option<&'static str> {
+        Some(match self {
             Self::Cargo => "Cargo.toml",
             Self::Gitignore => ".gitignore",
             Self::Envrc => ".envrc",
             Self::Justfile => "justfile",
-        }
+            Self::Claude => return None,
+            Self::Flake => return None,
+        })
     }
 
     /// Raw template body, embedded at compile time.

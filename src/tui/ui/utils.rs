@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{Block, Paragraph},
 };
 
-use crate::app::tool::Category;
+use crate::app::tool::category::Category;
 
 /// A colored pill/badge: ` TEXT ` with a background.
 pub(crate) fn badge(category: &Category) -> Span<'static> {
