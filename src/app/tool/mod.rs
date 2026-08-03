@@ -9,7 +9,20 @@ use crate::{
 
 pub(crate) mod category;
 pub(super) mod claude;
+pub(super) mod cliff;
+pub(super) mod clippy;
+pub(super) mod codecov;
+pub(super) mod committed;
+pub(super) mod deny;
+pub(super) mod editorconfig;
+pub(super) mod envrc;
+pub(super) mod flake;
+pub(super) mod git;
+pub(super) mod just;
+pub(super) mod rust;
+pub(super) mod rustfmt;
 pub(super) mod taplo;
+pub(super) mod typos;
 
 pub(crate) trait Tool: std::fmt::Debug {
     fn name(&self) -> String;

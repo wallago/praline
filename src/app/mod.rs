@@ -7,15 +7,16 @@ use indexmap::IndexMap;
 use tempfile::{TempDir, tempdir};
 
 use crate::{
-    app::tool::{Tool, claude::Claude, taplo::Taplo},
+    app::tool::{
+        Tool, claude::Claude, cliff::Cliff, clippy::Clippy, codecov::Codecov, committed::Committed,
+        deny::Deny, editorconfig::EditorConfig, envrc::Envrc, flake::Flake, git::Git, just::Just,
+        rust::Rust, rustfmt::RustFmt, taplo::Taplo, typos::Typos,
+    },
     error::Result,
 };
 
 /// Optional tools.
 pub(crate) mod tool;
-
-// /// Core code.
-// pub(crate) mod core;
 
 /// Repo builder.
 #[derive(Debug)]
@@ -43,7 +44,25 @@ pub(crate) struct Opt {
 
 impl Default for RepoBuilder {
     fn default() -> Self {
-        let tools: Vec<Box<dyn Tool>> = vec![Box::new(Taplo), Box::new(Claude)];
+        let tools: Vec<Box<dyn Tool>> = vec![
+            Box::new(Taplo),
+            Box::new(Claude),
+            Box::new(Typos),
+            Box::new(RustFmt),
+            Box::new(EditorConfig),
+            Box::new(Clippy),
+            Box::new(Cliff),
+            Box::new(Codecov),
+            Box::new(Deny),
+            Box::new(Committed),
+            Box::new(Just),
+            Box::new(Envrc),
+            Box::new(Git),
+            Box::new(Flake),
+            Box::new(Rust),
+            // Box::new(Audit),
+            // Box::new(Machete),
+        ];
         Self {
             name: String::new(),
             desc: String::new(),
@@ -55,7 +74,6 @@ impl Default for RepoBuilder {
                     tool,
                 })
                 .collect(),
-            // core: Core::VARIANTS.to_vec(),
             dir: None,
         }
     }
@@ -70,12 +88,6 @@ impl RepoBuilder {
     /// writing any selected tool's template file to disk fails.
     pub fn generate(&mut self) -> Result<()> {
         let dir = tempdir()?;
-
-        // // Core files — always written.
-        // for core in &self.core {
-        //     let (name, content) = (core.filename(), core.render(self));
-        //     write_entry(dir.path(), name, content.as_bytes())?;
-        // }
 
         // Optional tools — only the checked ones.
         for opt in self.options.iter().filter(|opt| opt.checked) {
