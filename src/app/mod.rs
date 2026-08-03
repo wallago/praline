@@ -4,19 +4,18 @@ use std::{
 };
 
 use indexmap::IndexMap;
-use strum::VariantArray;
 use tempfile::{TempDir, tempdir};
 
 use crate::{
-    app::{core::Core, tool::Tool},
+    app::tool::{Tool, claude::Claude, taplo::Taplo},
     error::Result,
 };
 
 /// Optional tools.
 pub(crate) mod tool;
 
-/// Core code.
-pub(crate) mod core;
+// /// Core code.
+// pub(crate) mod core;
 
 /// Repo builder.
 #[derive(Debug)]
@@ -29,9 +28,6 @@ pub struct RepoBuilder {
     pub owner: String,
     /// Options available.
     pub(crate) options: Vec<Opt>,
-    /// Core code.
-    core: Vec<Core>,
-
     /// Directory to test my stuff
     pub dir: Option<TempDir>,
 }
@@ -40,25 +36,26 @@ pub struct RepoBuilder {
 #[derive(Debug)]
 pub(crate) struct Opt {
     /// Tool.
-    pub tool: Tool,
+    pub tool: Box<dyn Tool>,
     /// Status to know if it will be added.
     pub checked: bool,
 }
 
 impl Default for RepoBuilder {
     fn default() -> Self {
+        let tools: Vec<Box<dyn Tool>> = vec![Box::new(Taplo), Box::new(Claude)];
         Self {
             name: String::new(),
             desc: String::new(),
             owner: String::new(),
-            options: Tool::VARIANTS
-                .iter()
-                .map(|&tool| Opt {
+            options: tools
+                .into_iter()
+                .map(|tool| Opt {
+                    checked: tool.default_setup(),
                     tool,
-                    checked: tool.default_checked(),
                 })
                 .collect(),
-            core: Core::VARIANTS.to_vec(),
+            // core: Core::VARIANTS.to_vec(),
             dir: None,
         }
     }
@@ -74,16 +71,15 @@ impl RepoBuilder {
     pub fn generate(&mut self) -> Result<()> {
         let dir = tempdir()?;
 
-        // Core files — always written.
-        for core in &self.core {
-            let (name, content) = (core.filename(), core.render(self));
-            write_entry(dir.path(), name, content.as_bytes())?;
-        }
+        // // Core files — always written.
+        // for core in &self.core {
+        //     let (name, content) = (core.filename(), core.render(self));
+        //     write_entry(dir.path(), name, content.as_bytes())?;
+        // }
 
         // Optional tools — only the checked ones.
         for opt in self.options.iter().filter(|opt| opt.checked) {
-            let (name, content) = (opt.tool.filename(), opt.tool.render(self));
-            write_entry(dir.path(), name, content.as_bytes())?;
+            opt.tool.gen_template(dir.path(), self)?;
         }
 
         self.dir = Some(dir);
@@ -98,31 +94,33 @@ impl RepoBuilder {
 
     /// Get content of stage dir with a `IndexMap` of path and associated content.
     pub(crate) fn inspect_stage(&mut self) -> Option<IndexMap<String, (String, PathBuf)>> {
-        if let Some(path) = self.dir.as_mut().map(|dir| dir.path()) {
-            let mut entries = IndexMap::new();
-            for entry in fs::read_dir(path).ok()? {
-                let entry = entry.ok()?;
-                if entry.file_type().ok()?.is_file() {
-                    let content = fs::read_to_string(entry.path()).ok()?;
-                    entries.insert(
-                        entry.file_name().to_str()?.to_string(),
-                        (content, entry.path()),
-                    );
-                }
-            }
-            Some(entries)
-        } else {
-            None
-        }
+        let root = self.dir.as_ref().map(|dir| dir.path().to_path_buf())?;
+        let mut entries = IndexMap::new();
+        collect_files(&root, &root, &mut entries)?;
+        Some(entries)
     }
 }
 
-/// Create the file inside the directory.
-fn write_entry(root: &Path, name: &str, content: &[u8]) -> Result<()> {
-    let path = root.join(name);
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
+fn collect_files(
+    root: &Path,
+    dir: &Path,
+    entries: &mut IndexMap<String, (String, PathBuf)>,
+) -> Option<()> {
+    for entry in fs::read_dir(dir).ok()? {
+        let entry = entry.ok()?;
+        let ty = entry.file_type().ok()?;
+        if ty.is_dir() {
+            collect_files(root, &entry.path(), entries)?; // recurse
+        } else if ty.is_file() {
+            let content = fs::read_to_string(entry.path()).ok()?;
+            let key = entry
+                .path()
+                .strip_prefix(root)
+                .ok()?
+                .to_string_lossy()
+                .into_owned();
+            entries.insert(key, (content, entry.path()));
+        }
     }
-    fs::write(&path, content)?;
-    Ok(())
+    Some(())
 }
