@@ -4,7 +4,9 @@
     flake-utils.url = "github:numtide/flake-utils";
     naersk.url = "github:nix-community/naersk";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    # {if:claude}
     claude-code.url = "github:sadjow/claude-code-nix";
+    # {endif:claude}
   };
 
   outputs =
@@ -14,7 +16,9 @@
       flake-utils,
       rust-overlay,
       naersk,
+      # {if:claude}
       claude-code,
+      # {endif:claude}
       ...
     }:
     # ── System-agnostic outputs (modules) live out here ──
@@ -57,8 +61,10 @@
             src = ./.;
           };
 
+        # {if:claude}
         # ── Claude Settings ─────────────────────────────────────
         claude = claude-code.packages.${system}.default;
+        # {endif:claude}
 
         # ── Tooling shared by the dev shell and CI ───────────────
         ciTools = with pkgs; [
@@ -66,15 +72,21 @@
 
           # rust tooling
           cargo-nextest
+          # {if:deny}
           cargo-deny
+          # {endif:deny}
           cargo-audit
           cargo-machete
           cargo-edit
-
-          # repo tooling
+          # {if:typos}
           typos
+          # {endif:typos}
+          # {if:committed}
           committed
+          # {endif:committed}
+          # {if:cliff}
           git-cliff
+          # {endif:cliff}
 
           # nix tooling
           nixfmt
@@ -102,7 +114,9 @@
             ++ (with pkgs; [
               rust-analyzer
               just
+              # {if:claude}
               claude
+              # {endif:claude}
               nodejs
             ]);
         };
