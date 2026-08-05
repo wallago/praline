@@ -7,6 +7,7 @@ use crate::{
     error::Result,
 };
 
+pub(super) mod audit;
 pub(crate) mod category;
 pub(super) mod claude;
 pub(super) mod cliff;
@@ -19,6 +20,7 @@ pub(super) mod envrc;
 pub(super) mod flake;
 pub(super) mod git;
 pub(super) mod just;
+pub(super) mod machete;
 pub(super) mod rust;
 pub(super) mod rustfmt;
 pub(super) mod taplo;

@@ -20,7 +20,7 @@ impl Tool for Claude {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Claude Code setup: CLAUDE.md, agents, commands.".to_string()
     }
 
     fn category(&self) -> Category {

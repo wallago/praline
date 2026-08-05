@@ -15,7 +15,7 @@ impl Tool for Committed {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Enforces conventional commit messages.".to_string()
     }
 
     fn category(&self) -> Category {

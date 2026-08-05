@@ -16,6 +16,10 @@ pub struct Keybindings {
     pub scroll_down: KeyPattern,
     /// Generate repo.
     pub generate: KeyPattern,
+    /// Export repo.
+    pub export: KeyPattern,
+    /// Create repo.
+    pub create: KeyPattern,
     /// Leave focus.
     pub leave: KeyPattern,
     /// Confirm.
@@ -29,6 +33,8 @@ impl Default for Keybindings {
         Self {
             quit: KeyPattern::plain(KeyCode::Char('q')),
             generate: KeyPattern::plain(KeyCode::Char('g')),
+            export: KeyPattern::plain(KeyCode::Char('x')),
+            create: KeyPattern::plain(KeyCode::Char('c')),
             scroll_up: KeyPattern::plain(KeyCode::Char('k')),
             scroll_down: KeyPattern::plain(KeyCode::Char('j')),
             leave: KeyPattern::plain(KeyCode::Esc),

@@ -16,11 +16,11 @@ pub(crate) struct Rust;
 
 impl Tool for Rust {
     fn name(&self) -> String {
-        "claude".to_string()
+        "rust".to_string()
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Cargo manifest and starter crate layout.".to_string()
     }
 
     fn category(&self) -> Category {

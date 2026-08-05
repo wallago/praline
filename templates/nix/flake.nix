@@ -69,7 +69,6 @@
         # ── Tooling shared by the dev shell and CI ───────────────
         ciTools = with pkgs; [
           rust
-
           # rust tooling
           cargo-nextest
           # {if:deny}

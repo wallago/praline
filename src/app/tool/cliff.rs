@@ -18,7 +18,7 @@ impl Tool for Cliff {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Changelog generated from conventional commits.".to_string()
     }
 
     fn category(&self) -> Category {

@@ -56,6 +56,12 @@ impl State {
                 self.staged_panel_focus = self.staged_panel_focus.prev();
                 self.staged_content_viewport = 0;
             }
+            Command::Next(ScrollType::Exported) => {
+                self.explorer.handle(ratatui_explorer::Input::Down)?
+            }
+            Command::Previous(ScrollType::Exported) => {
+                self.explorer.handle(ratatui_explorer::Input::Up)?
+            }
             Command::Nothing => {}
             Command::Generate => {
                 if self.repo.check() {
@@ -65,14 +71,26 @@ impl State {
                     self.show_toast("Name is required", ToastType::Error);
                 }
             }
+            Command::Export => {
+                self.generated_mode = false;
+                self.exported_mode = true;
+            }
             Command::Confirm => {
-                if self.generated_mode {
-                    // TODO validate repo creation
+                if self.exported_mode {
+                    self.explorer.handle(ratatui_explorer::Input::Right)?
                 }
+            }
+            Command::Create => {
+                self.repo.create(self.explorer.cwd())?;
+                self.exported_mode = false;
+                self.running = false;
             }
             Command::Back => {
                 if self.generated_mode {
                     self.generated_mode = false;
+                } else if self.exported_mode {
+                    self.exported_mode = false;
+                    self.generated_mode = true;
                 }
             }
             Command::Input(command) => match command {
@@ -97,7 +115,7 @@ impl State {
                             FormFocus::Owner => self.repo.owner.clone(),
                             FormFocus::Name => self.repo.name.clone(),
                             FormFocus::Desc => self.repo.desc.clone(),
-                            FormFocus::Options => return Ok(()), // not a text field
+                            FormFocus::Options => return Ok(()),
                         };
                         self.input = Input::new(value);
                         self.input_mode = true;

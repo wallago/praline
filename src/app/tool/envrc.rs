@@ -15,7 +15,7 @@ impl Tool for Envrc {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "direnv hook loading the Nix dev shell.".to_string()
     }
 
     fn category(&self) -> Category {
