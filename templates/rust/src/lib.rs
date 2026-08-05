@@ -1,27 +1,30 @@
 //! {desc}
 
-/// Errors that can occur while running [`run`].
-#[derive(Debug)]
-#[non_exhaustive]
-pub enum Error {}
+/// Error handler implementation.
+pub mod error;
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match *self {}
-    }
-}
+/// Main application.
+pub mod app;
 
-impl std::error::Error for Error {}
+/// Command-line arguments parser.
+pub mod args;
 
-/// A [`Result`](std::result::Result) alias for this crate.
-pub type Result<T, E = Error> = std::result::Result<T, E>;
+/// Config file.
+pub mod config;
+
+/// Common types that can be glob-imported for convenience.
+pub mod prelude;
+
+use prelude::*;
 
 /// Runs `{name}`.
 ///
 /// # Errors
 ///
 /// Returns an [`Error`] if the run fa
-pub fn run() -> Result<()> {
+pub fn run(args: &Args) -> Result<()> {
+    better_panic::install();
+    let config = Config::load(args.config.as_deref())?;
     Ok(())
 }
 
