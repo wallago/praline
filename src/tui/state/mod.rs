@@ -20,6 +20,9 @@ mod toast;
 /// Form.
 pub(crate) mod form;
 
+/// Staged Panel.
+pub(crate) mod staged_panel;
+
 /// Application state.
 #[derive(Debug)]
 pub struct State {
@@ -47,6 +50,10 @@ pub struct State {
     pub toast_expires_at: Option<Instant>,
     /// List of staged files.
     pub staged_list: ListState,
+    /// Staged panel focus.
+    pub staged_panel_focus: staged_panel::StagedPanelFocus,
+    /// Scroll staged content viewport.
+    pub staged_content_viewport: usize,
 }
 
 impl State {
@@ -66,6 +73,8 @@ impl State {
             toast: None,
             toast_expires_at: None,
             staged_list: ListState::default().with_selected(Some(0)),
+            staged_panel_focus: staged_panel::StagedPanelFocus::List,
+            staged_content_viewport: 0,
         }
     }
 

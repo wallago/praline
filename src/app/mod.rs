@@ -99,6 +99,13 @@ impl RepoBuilder {
         Ok(())
     }
 
+    /// Whether the tool with the given name is selected.
+    pub(crate) fn is_selected(&self, tool: &str) -> bool {
+        self.options
+            .iter()
+            .any(|opt| opt.checked && opt.tool.name() == tool)
+    }
+
     /// Whether all conditions are met to generate the repo.
     pub(crate) fn check(&self) -> bool {
         !self.name.is_empty() && !self.desc.is_empty() && self.options.iter().any(|opt| opt.checked)

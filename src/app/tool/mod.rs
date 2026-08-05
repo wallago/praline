@@ -56,10 +56,55 @@ fn write_entry(root: &Path, name: &str, content: &[u8]) -> Result<()> {
     Ok(())
 }
 
+/// Marker opening a tool-conditional template block.
+const IF_MARKER: &str = "{if:";
+/// Marker closing a tool-conditional template block.
+const ENDIF_MARKER: &str = "{endif:";
+
 fn substitute(content: &str, repo: &RepoBuilder) -> Vec<u8> {
-    content
+    strip_conditionals(content, repo)
         .replace("{name}", &repo.name)
         .replace("{desc}", &repo.desc)
         .replace("{owner}", &repo.owner)
         .into_bytes()
+}
+
+/// Extracts the tool name out of a `{<marker><tool>}` line, if it has one.
+///
+/// The marker is matched anywhere in the line, so it can sit behind whatever
+/// comment syntax the template's file format uses.
+fn marker_tool<'a>(line: &'a str, marker: &str) -> Option<&'a str> {
+    let start = line.find(marker)? + marker.len();
+    let end = start + line[start..].find('}')?;
+    Some(line[start..end].trim())
+}
+
+/// Drops `{if:<tool>}` / `{endif:<tool>}` blocks whose tool is not selected,
+/// keeping the body of the ones whose tool is. The marker lines themselves are
+/// removed either way.
+fn strip_conditionals(content: &str, repo: &RepoBuilder) -> String {
+    if !content.contains(IF_MARKER) {
+        return content.to_string();
+    }
+    let mut out = String::with_capacity(content.len());
+    let mut skipping: Option<&str> = None;
+    for line in content.lines() {
+        if let Some(tool) = marker_tool(line, ENDIF_MARKER) {
+            if skipping == Some(tool) {
+                skipping = None;
+            }
+            continue;
+        }
+        if let Some(tool) = marker_tool(line, IF_MARKER) {
+            if skipping.is_none() && !repo.is_selected(tool) {
+                skipping = Some(tool);
+            }
+            continue;
+        }
+        if skipping.is_none() {
+            out.push_str(line);
+            out.push('\n');
+        }
+    }
+    out
 }

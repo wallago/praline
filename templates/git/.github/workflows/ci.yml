@@ -8,52 +8,51 @@ on:
       - main
   schedule:
     - cron: "0 0 * * 0"
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  BIN_NAME: "{name}"
+  CARGO_TERM_COLOR: always
 jobs:
   build:
-    name: Build on ${{ matrix.build.OS }} (${{ matrix.build.TARGET }})
-    runs-on: ${{ matrix.build.OS }}
+    name: Build for ${{ matrix.target }}
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        build:
-          - {OS: ubuntu-22.04, TOOLCHAIN: stable, TARGET: x86_64-unknown-linux-gnu, ALL_FEATURES: true}
-          - {OS: ubuntu-22.04, TOOLCHAIN: stable, TARGET: aarch64-unknown-linux-gnu, ALL_FEATURES: true}
-          - {OS: ubuntu-22.04, TOOLCHAIN: stable, TARGET: riscv64gc-unknown-linux-gnu, ALL_FEATURES: true}
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - riscv64gc-unknown-linux-gnu
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
-      - name: Install dependencies
-        if: matrix.build.TARGET == 'x86_64-unknown-linux-musl'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            --no-install-recommends \
-            --allow-unauthenticated \
-              musl-tools
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ matrix.build.TOOLCHAIN }}
-          targets: ${{ matrix.build.TARGET }}
+          targets: ${{ matrix.target }}
+      - name: Install cross
+        uses: taiki-e/install-action@cross
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
       - name: Build the project
-        shell: bash
-        run: |
-          if [ "${{ matrix.build.ALL_FEATURES }}" = true ]; then
-            cargo build --locked --verbose
-          else
-            cargo build --no-default-features --locked --verbose
-          fi
+        run: cross build --locked --verbose --target ${{ matrix.target }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: binsider-${{ matrix.build.TARGET }}-assets
-          path: target/debug/binsider*
+          name: ${{ env.BIN_NAME }}-${{ matrix.target }}
+          path: target/${{ matrix.target }}/debug/${{ env.BIN_NAME }}
+          if-no-files-found: error
   nix-flake:
     name: Build Nix flake
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       actions: write
     steps:
       - name: Checkout the repository
@@ -147,7 +146,7 @@ jobs:
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
       - name: Check lints
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
   deny:
     name: Deny
     runs-on: ubuntu-latest
@@ -165,9 +164,9 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
       - name: Run lychee
-        uses: lycheeverse/lychee-action@v1
+        uses: lycheeverse/lychee-action@v2
         with:
-          args: -v *.md
+          args: --verbose --no-progress '*.md'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   typos:
