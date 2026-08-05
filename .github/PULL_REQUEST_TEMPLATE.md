@@ -1,4 +1,4 @@
-<!--- Thank you for contributing to repo-builder! -->
+<!--- Thank you for contributing to praline! -->
 
 ## Description of change
 

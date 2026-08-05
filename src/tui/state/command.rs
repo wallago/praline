@@ -7,7 +7,7 @@ use crate::{
     tui::{
         command::{Command, ScrollType, input::InputCommand},
         event::Event,
-        state::{State, form::FormFocus, toast::ToastType},
+        state::{State, form::FormFocus, staged_panel, toast::ToastType},
     },
 };
 
@@ -24,17 +24,37 @@ impl State {
             }
             Command::Next(ScrollType::Form) => self.form_focus = self.form_focus.next(),
             Command::Previous(ScrollType::Form) => self.form_focus = self.form_focus.prev(),
-            Command::Next(ScrollType::Options) => {
+            Command::Next(ScrollType::Option) => {
                 if self.form_focus == FormFocus::Options {
                     self.option_list.select_next();
                 }
             }
-            Command::Previous(ScrollType::Staged) => self.staged_list.select_previous(),
-            Command::Next(ScrollType::Staged) => self.staged_list.select_next(),
-            Command::Previous(ScrollType::Options) => {
+            Command::Previous(ScrollType::Option) => {
                 if self.form_focus == FormFocus::Options {
                     self.option_list.select_previous();
                 }
+            }
+            Command::Next(ScrollType::Staged) => {
+                if self.staged_panel_focus == staged_panel::StagedPanelFocus::List {
+                    self.staged_list.select_next();
+                } else if self.staged_panel_focus == staged_panel::StagedPanelFocus::Content {
+                    self.staged_content_viewport += 1;
+                }
+            }
+            Command::Previous(ScrollType::Staged) => {
+                if self.staged_panel_focus == staged_panel::StagedPanelFocus::List {
+                    self.staged_list.select_previous();
+                } else if self.staged_panel_focus == staged_panel::StagedPanelFocus::Content {
+                    self.staged_content_viewport = self.staged_content_viewport.saturating_sub(1);
+                }
+            }
+            Command::Next(ScrollType::StagedPanel) => {
+                self.staged_panel_focus = self.staged_panel_focus.next();
+                self.staged_content_viewport = 0;
+            }
+            Command::Previous(ScrollType::StagedPanel) => {
+                self.staged_panel_focus = self.staged_panel_focus.prev();
+                self.staged_content_viewport = 0;
             }
             Command::Nothing => {}
             Command::Generate => {

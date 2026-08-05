@@ -11,9 +11,11 @@ pub enum ScrollType {
     /// Form.
     Form,
     /// Options.
-    Options,
+    Option,
     /// Staged.
     Staged,
+    /// Staged Panel.
+    StagedPanel,
 }
 
 /// Application command.
@@ -43,9 +45,9 @@ impl Command {
         if binds.quit.matches(&event) {
             Self::Exit
         } else if binds.scroll_down.matches(&event) {
-            Self::Next(ScrollType::Options)
+            Self::Next(ScrollType::Option)
         } else if binds.scroll_up.matches(&event) {
-            Self::Previous(ScrollType::Options)
+            Self::Previous(ScrollType::Option)
         } else if binds.generate.matches(&event) {
             Self::Generate
         } else {
@@ -71,7 +73,11 @@ impl Command {
         } else if binds.scroll_up.matches(&event) {
             Self::Previous(ScrollType::Staged)
         } else {
-            Self::Nothing
+            match event.code {
+                KeyCode::BackTab => Self::Previous(ScrollType::StagedPanel),
+                KeyCode::Tab => Self::Next(ScrollType::StagedPanel),
+                _ => Self::Nothing,
+            }
         }
     }
 }
