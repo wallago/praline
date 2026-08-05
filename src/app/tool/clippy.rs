@@ -15,7 +15,7 @@ impl Tool for Clippy {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Rust lint rules and their severity.".to_string()
     }
 
     fn category(&self) -> Category {

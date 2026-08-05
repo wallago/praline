@@ -1,21 +1,20 @@
 use std::path::Path;
 
-use super::write_entry;
 use crate::{
     app::{RepoBuilder, Tool, tool::category::Category},
     error::Result,
 };
 
 #[derive(Debug)]
-pub(crate) struct Deny;
+pub(crate) struct Audit;
 
-impl Tool for Deny {
+impl Tool for Audit {
     fn name(&self) -> String {
-        "deny".to_string()
+        "audit".to_string()
     }
 
     fn desc(&self) -> String {
-        "License, advisory and crate ban policy.".to_string()
+        "Scans dependencies for RustSec advisories.".to_string()
     }
 
     fn category(&self) -> Category {
@@ -26,9 +25,7 @@ impl Tool for Deny {
         true
     }
 
-    fn gen_template(&self, root: &Path, _: &RepoBuilder) -> Result<()> {
-        let content = include_str!("../../../templates/deny.toml");
-        write_entry(root, "deny.toml", content.as_bytes())?;
+    fn gen_template(&self, _: &Path, _: &RepoBuilder) -> Result<()> {
         Ok(())
     }
 }

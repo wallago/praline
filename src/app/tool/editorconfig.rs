@@ -15,7 +15,7 @@ impl Tool for EditorConfig {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Indent and whitespace rules shared by editors.".to_string()
     }
 
     fn category(&self) -> Category {

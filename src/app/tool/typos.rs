@@ -15,7 +15,7 @@ impl Tool for Typos {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Catches misspellings in code and docs.".to_string()
     }
 
     fn category(&self) -> Category {

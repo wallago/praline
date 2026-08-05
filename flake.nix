@@ -83,6 +83,7 @@
           typos
           committed
           git-cliff
+          act
 
           # nix tooling
           nixfmt

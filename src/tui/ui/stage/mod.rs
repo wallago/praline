@@ -19,7 +19,7 @@ pub(crate) fn render_stage(state: &mut State, frame: &mut Frame, rect: Rect) {
         horizontal: 2,
         vertical: 1,
     });
-    let title = String::from(" Staged ").fg(Color::Gray).bold();
+    let title = String::from(" Staged [2/3] ").fg(Color::Gray).bold();
     frame.render_widget(
         Block::bordered()
             .title(title)

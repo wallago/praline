@@ -15,6 +15,9 @@ mod core;
 /// Stage part.
 mod stage;
 
+/// Export part.
+mod export;
+
 /// Key bindings.
 mod binds;
 
@@ -57,11 +60,12 @@ pub fn render(state: &mut State, frame: &mut Frame) {
     }
     if state.generated_mode {
         stage::render_stage(state, frame, chunks[1]);
-        binds::render_key_bindings(state, frame, chunks[1]);
+    } else if state.exported_mode {
+        export::render_export(state, frame, chunks[1]);
     } else {
         core::render_core(state, frame, chunks[1]);
-        binds::render_key_bindings(state, frame, chunks[1]);
     }
+    binds::render_key_bindings(state, frame, chunks[1]);
 
     // Draw the current toast (if any) as a compact single row in the top-right.
     if let Some(toast) = &state.toast {

@@ -1,6 +1,13 @@
-use std::time::{Duration, Instant};
+use std::{
+    path::PathBuf,
+    time::{Duration, Instant},
+};
 
-use ratatui::{style::Color, widgets::ListState};
+use ratatui::{
+    style::{Color, Style},
+    widgets::ListState,
+};
+use ratatui_explorer::{FileExplorer, FileExplorerBuilder, Theme};
 use tui_input::Input;
 
 use crate::{
@@ -54,12 +61,28 @@ pub struct State {
     pub staged_panel_focus: staged_panel::StagedPanelFocus,
     /// Scroll staged content viewport.
     pub staged_content_viewport: usize,
+    /// File explorer.
+    pub explorer: FileExplorer,
+    /// Show exported repo.
+    pub exported_mode: bool,
 }
 
 impl State {
     /// Constructs a new instance of [`State`].
     pub(crate) fn new(accent_color: Option<Color>, config: Config) -> Self {
         let repo = RepoBuilder::default();
+        let theme = Theme::default()
+            .with_highlight_symbol("> ")
+            .with_highlight_item_style(
+                Style::default()
+                    .fg(accent_color.unwrap_or(Color::Gray))
+                    .bold(),
+            )
+            .with_highlight_dir_style(
+                Style::default()
+                    .fg(accent_color.unwrap_or(Color::Gray))
+                    .bold(),
+            );
         Self {
             running: true,
             accent_color: accent_color.unwrap_or(Color::White),
@@ -75,6 +98,8 @@ impl State {
             staged_list: ListState::default().with_selected(Some(0)),
             staged_panel_focus: staged_panel::StagedPanelFocus::List,
             staged_content_viewport: 0,
+            explorer: FileExplorerBuilder::build_with_theme(theme).expect("File explorer creation"),
+            exported_mode: false,
         }
     }
 

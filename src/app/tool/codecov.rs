@@ -15,7 +15,7 @@ impl Tool for Codecov {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Coverage targets and PR report layout.".to_string()
     }
 
     fn category(&self) -> Category {

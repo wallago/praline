@@ -20,7 +20,7 @@ impl Tool for Flake {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Nix flake pinning the toolchain and dev shell.".to_string()
     }
 
     fn category(&self) -> Category {

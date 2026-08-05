@@ -16,6 +16,8 @@ pub enum ScrollType {
     Staged,
     /// Staged Panel.
     StagedPanel,
+    /// Exported.
+    Exported,
 }
 
 /// Application command.
@@ -33,6 +35,10 @@ pub enum Command {
     Input(InputCommand),
     /// Generate repo.
     Generate,
+    /// Export repo.
+    Export,
+    /// Create repo.
+    Create,
     /// Confirm.
     Confirm,
     /// Back.
@@ -60,8 +66,8 @@ impl Command {
         }
     }
 
-    /// Command parsing while viewing the generated repo.
-    pub(crate) fn from_generated_key(event: KeyEvent, binds: &Keybindings) -> Self {
+    /// Command parsing while viewing the staged repo.
+    pub(crate) fn from_staged_key(event: KeyEvent, binds: &Keybindings) -> Self {
         if binds.quit.matches(&event) {
             Self::Exit
         } else if binds.leave.matches(&event) {
@@ -72,12 +78,33 @@ impl Command {
             Self::Next(ScrollType::Staged)
         } else if binds.scroll_up.matches(&event) {
             Self::Previous(ScrollType::Staged)
+        } else if binds.export.matches(&event) {
+            Self::Export
         } else {
             match event.code {
                 KeyCode::BackTab => Self::Previous(ScrollType::StagedPanel),
                 KeyCode::Tab => Self::Next(ScrollType::StagedPanel),
                 _ => Self::Nothing,
             }
+        }
+    }
+
+    /// Command parsing while viewing the exported repo.
+    pub(crate) fn from_exported_key(event: KeyEvent, binds: &Keybindings) -> Self {
+        if binds.quit.matches(&event) {
+            Self::Exit
+        } else if binds.leave.matches(&event) {
+            Self::Back
+        } else if binds.confirm.matches(&event) {
+            Self::Confirm
+        } else if binds.create.matches(&event) {
+            Self::Create
+        } else if binds.scroll_down.matches(&event) {
+            Self::Next(ScrollType::Exported)
+        } else if binds.scroll_up.matches(&event) {
+            Self::Previous(ScrollType::Exported)
+        } else {
+            Self::Nothing
         }
     }
 }

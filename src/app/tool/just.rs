@@ -15,7 +15,7 @@ impl Tool for Just {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Task runner recipes: check, lint, fmt, ci.".to_string()
     }
 
     fn category(&self) -> Category {

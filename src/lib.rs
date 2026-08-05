@@ -68,7 +68,9 @@ fn start_tui(args: &Args, config: Config) -> Result<()> {
                 let command = if state.input_mode {
                     Command::Input(InputCommand::parse(key_event, &state.input))
                 } else if state.generated_mode {
-                    Command::from_generated_key(key_event, &state.keybindings)
+                    Command::from_staged_key(key_event, &state.keybindings)
+                } else if state.exported_mode {
+                    Command::from_exported_key(key_event, &state.keybindings)
                 } else {
                     Command::from_key(key_event, &state.keybindings)
                 };

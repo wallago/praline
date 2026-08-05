@@ -20,7 +20,7 @@ impl Tool for Git {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Gitignore, CI/CD workflows, issue and PR templates.".to_string()
     }
 
     fn category(&self) -> Category {

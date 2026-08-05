@@ -15,7 +15,7 @@ impl Tool for RustFmt {
     }
 
     fn desc(&self) -> String {
-        "TBD.".to_string()
+        "Rust formatting style.".to_string()
     }
 
     fn category(&self) -> Category {
