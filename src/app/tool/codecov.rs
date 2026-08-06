@@ -1,11 +1,9 @@
 use std::path::Path;
 
-use super::write_entry;
-use crate::{
-    app::{RepoBuilder, Tool, tool::category::Category},
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
 
+/// Coverage targets and PR report layout.
 #[derive(Debug)]
 pub(crate) struct Codecov;
 

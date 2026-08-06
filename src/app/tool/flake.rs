@@ -2,15 +2,13 @@ use std::path::Path;
 
 use include_dir::{Dir, include_dir};
 
-use crate::{
-    app::{
-        RepoBuilder, Tool,
-        tool::{category::Category, write_dir},
-    },
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
+
+/// Nix file templates path.
 static FLAKE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/nix");
 
+/// Nix flake pinning the toolchain and dev shell.
 #[derive(Debug)]
 pub(crate) struct Flake;
 

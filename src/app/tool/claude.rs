@@ -2,15 +2,13 @@ use std::path::Path;
 
 use include_dir::{Dir, include_dir};
 
-use crate::{
-    app::{
-        RepoBuilder, Tool,
-        tool::{category::Category, write_dir},
-    },
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
+
+/// Claude file templates path.
 static CLAUDE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/claude");
 
+/// Claude Code setup: CLAUDE.md, agents, commands.
 #[derive(Debug)]
 pub(crate) struct Claude;
 

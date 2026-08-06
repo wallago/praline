@@ -5,6 +5,7 @@ use crate::{
     error::Result,
 };
 
+/// Scans dependencies for `RustSec` advisories.
 #[derive(Debug)]
 pub(crate) struct Audit;
 

@@ -1,11 +1,9 @@
 use std::path::Path;
 
-use super::write_entry;
-use crate::{
-    app::{RepoBuilder, Tool, tool::category::Category},
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
 
+/// `direnv` hook loading the Nix dev shell.
 #[derive(Debug)]
 pub(crate) struct Envrc;
 

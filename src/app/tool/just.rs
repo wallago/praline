@@ -1,11 +1,9 @@
 use std::path::Path;
 
-use super::write_entry;
-use crate::{
-    app::{RepoBuilder, Tool, tool::category::Category},
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
 
+/// Task runner recipes: check, lint, fmt, ci.
 #[derive(Debug)]
 pub(crate) struct Just;
 
@@ -26,9 +24,9 @@ impl Tool for Just {
         true
     }
 
-    fn gen_template(&self, root: &Path, _: &RepoBuilder) -> Result<()> {
-        let content = include_str!("../../../templates/justfile");
-        write_entry(root, "justfile", content.as_bytes())?;
+    fn gen_template(&self, root: &Path, repo: &RepoBuilder) -> Result<()> {
+        let content = substitute(include_str!("../../../templates/justfile"), repo);
+        write_entry(root, "justfile", &content)?;
         Ok(())
     }
 }
