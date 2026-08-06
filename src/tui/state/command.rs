@@ -57,10 +57,10 @@ impl State {
                 self.staged_content_viewport = 0;
             }
             Command::Next(ScrollType::Exported) => {
-                self.explorer.handle(ratatui_explorer::Input::Down)?
+                self.explorer.handle(ratatui_explorer::Input::Down)?;
             }
             Command::Previous(ScrollType::Exported) => {
-                self.explorer.handle(ratatui_explorer::Input::Up)?
+                self.explorer.handle(ratatui_explorer::Input::Up)?;
             }
             Command::Nothing => {}
             Command::Generate => {
@@ -77,7 +77,7 @@ impl State {
             }
             Command::Confirm => {
                 if self.exported_mode {
-                    self.explorer.handle(ratatui_explorer::Input::Right)?
+                    self.explorer.handle(ratatui_explorer::Input::Right)?;
                 }
             }
             Command::Create => {

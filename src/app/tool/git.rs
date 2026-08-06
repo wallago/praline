@@ -2,15 +2,13 @@ use std::path::Path;
 
 use include_dir::{Dir, include_dir};
 
-use crate::{
-    app::{
-        RepoBuilder, Tool,
-        tool::{category::Category, write_dir},
-    },
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
+
+/// Git file templates path.
 static GIT: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/git");
 
+/// Gitignore, CI/CD workflows, issue and PR templates.
 #[derive(Debug)]
 pub(crate) struct Git;
 

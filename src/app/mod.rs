@@ -1,20 +1,15 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use indexmap::IndexMap;
 use tempfile::{TempDir, tempdir};
 
-use crate::{
-    app::tool::{
-        Tool, audit::Audit, claude::Claude, cliff::Cliff, clippy::Clippy, codecov::Codecov,
-        committed::Committed, deny::Deny, editorconfig::EditorConfig, envrc::Envrc, flake::Flake,
-        git::Git, just::Just, machete::Machete, rust::Rust, rustfmt::RustFmt, taplo::Taplo,
-        typos::Typos,
-    },
-    error::{Error, Result},
+use crate::app::tool::{
+    Tool, audit::Audit, claude::Claude, cliff::Cliff, clippy::Clippy, codecov::Codecov,
+    committed::Committed, deny::Deny, editorconfig::EditorConfig, envrc::Envrc, flake::Flake,
+    git::Git, just::Just, machete::Machete, rust::Rust, rustfmt::RustFmt, taplo::Taplo,
+    typos::Typos,
 };
+use crate::prelude::*;
 
 /// Optional tools.
 pub(crate) mod tool;
@@ -139,45 +134,4 @@ impl RepoBuilder {
         collect_files(&root, &root, &mut entries)?;
         Some(entries)
     }
-}
-
-fn collect_files(
-    root: &Path,
-    dir: &Path,
-    entries: &mut IndexMap<String, (String, PathBuf)>,
-) -> Option<()> {
-    for entry in fs::read_dir(dir).ok()? {
-        let entry = entry.ok()?;
-        let ty = entry.file_type().ok()?;
-        if ty.is_dir() {
-            collect_files(root, &entry.path(), entries)?; // recurse
-        } else if ty.is_file() {
-            let content = fs::read_to_string(entry.path()).ok()?;
-            let key = entry
-                .path()
-                .strip_prefix(root)
-                .ok()?
-                .to_string_lossy()
-                .into_owned();
-            entries.insert(key, (content, entry.path()));
-        }
-    }
-    Some(())
-}
-
-/// Recursively copies `src` into `dst`, creating `dst` and any missing parents.
-///
-/// `read_dir` yields dot-entries, so hidden files and directories are included.
-fn copy_dir_all(src: &Path, dst: &Path) -> Result<()> {
-    fs::create_dir_all(dst)?;
-    for entry in fs::read_dir(src)? {
-        let entry = entry?;
-        let target = dst.join(entry.file_name());
-        if entry.file_type()?.is_dir() {
-            copy_dir_all(&entry.path(), &target)?;
-        } else {
-            fs::copy(entry.path(), &target)?;
-        }
-    }
-    Ok(())
 }

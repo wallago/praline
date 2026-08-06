@@ -1,112 +1,58 @@
-use std::{fs, path::Path};
+use std::path::Path;
 
-use include_dir::Dir;
+use crate::app::{RepoBuilder, tool::category::Category};
+use crate::prelude::*;
 
-use crate::{
-    app::{RepoBuilder, tool::category::Category},
-    error::Result,
-};
-
+/// Tool emitting no files; gates `{if:audit}` blocks elsewhere.
 pub(super) mod audit;
+/// Categories tools are grouped and colored by.
 pub(crate) mod category;
+/// Tool emitting `templates/claude/` — `CLAUDE.md`, agents, commands.
 pub(super) mod claude;
+/// Tool emitting `cliff.toml`.
 pub(super) mod cliff;
+/// Tool emitting `clippy.toml`.
 pub(super) mod clippy;
+/// Tool emitting `codecov.yml`.
 pub(super) mod codecov;
+/// Tool emitting `committed.toml`.
 pub(super) mod committed;
+/// Tool emitting `deny.toml`.
 pub(super) mod deny;
+/// Tool emitting `.editorconfig`.
 pub(super) mod editorconfig;
+/// Tool emitting `.envrc`.
 pub(super) mod envrc;
+/// Tool emitting `templates/nix/` — `flake.nix` and lockfile.
 pub(super) mod flake;
+/// Tool emitting `templates/git/` — gitignore, workflows, issue and PR templates.
 pub(super) mod git;
+/// Tool emitting `justfile`.
 pub(super) mod just;
+/// Tool emitting no files; gates `{if:machete}` blocks elsewhere.
 pub(super) mod machete;
+/// Tool emitting `templates/rust/` — `Cargo.toml` and starter crate layout.
 pub(super) mod rust;
+/// Tool emitting `rustfmt.toml`.
 pub(super) mod rustfmt;
+/// Tool emitting `taplo.toml`.
 pub(super) mod taplo;
+/// Tool emitting `typos.toml`.
 pub(super) mod typos;
 
+/// A config-file template praline can write into a generated repo.
 pub(crate) trait Tool: std::fmt::Debug {
+    /// Identifier shown in the TUI and matched by `{if:<tool>}` markers.
     fn name(&self) -> String;
+    /// One-line blurb shown beside the name in the tool list.
     fn desc(&self) -> String;
+    /// Group the tool is listed and colored under.
     fn category(&self) -> Category;
+    /// Whether the tool starts checked.
     fn default_setup(&self) -> bool;
+    /// Writes this tool's files into `root`.
+    ///
+    /// A tool whose only effect is gating `{if:}` blocks elsewhere writes
+    /// nothing and returns `Ok(())`.
     fn gen_template(&self, root: &Path, repo: &RepoBuilder) -> Result<()>;
-}
-
-fn write_dir(dir: &Dir<'_>, root: &Path, repo: &RepoBuilder) -> Result<()> {
-    for file in dir.files() {
-        let name = file.path().to_string_lossy();
-        let bytes = match file.contents_utf8() {
-            Some(text) => substitute(text, repo),
-            None => file.contents().to_vec(),
-        };
-        write_entry(root, &name, &bytes)?;
-    }
-    for sub in dir.dirs() {
-        write_dir(sub, root, repo)?;
-    }
-    Ok(())
-}
-
-fn write_entry(root: &Path, name: &str, content: &[u8]) -> Result<()> {
-    let path = root.join(name);
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    fs::write(&path, content)?;
-    Ok(())
-}
-
-/// Marker opening a tool-conditional template block.
-const IF_MARKER: &str = "{if:";
-/// Marker closing a tool-conditional template block.
-const ENDIF_MARKER: &str = "{endif:";
-
-fn substitute(content: &str, repo: &RepoBuilder) -> Vec<u8> {
-    strip_conditionals(content, repo)
-        .replace("{name}", &repo.name)
-        .replace("{desc}", &repo.desc)
-        .replace("{owner}", &repo.owner)
-        .into_bytes()
-}
-
-/// Extracts the tool name out of a `{<marker><tool>}` line, if it has one.
-///
-/// The marker is matched anywhere in the line, so it can sit behind whatever
-/// comment syntax the template's file format uses.
-fn marker_tool<'a>(line: &'a str, marker: &str) -> Option<&'a str> {
-    let start = line.find(marker)? + marker.len();
-    let end = start + line[start..].find('}')?;
-    Some(line[start..end].trim())
-}
-
-/// Drops `{if:<tool>}` / `{endif:<tool>}` blocks whose tool is not selected,
-/// keeping the body of the ones whose tool is. The marker lines themselves are
-/// removed either way.
-fn strip_conditionals(content: &str, repo: &RepoBuilder) -> String {
-    if !content.contains(IF_MARKER) {
-        return content.to_string();
-    }
-    let mut out = String::with_capacity(content.len());
-    let mut skipping: Option<&str> = None;
-    for line in content.lines() {
-        if let Some(tool) = marker_tool(line, ENDIF_MARKER) {
-            if skipping == Some(tool) {
-                skipping = None;
-            }
-            continue;
-        }
-        if let Some(tool) = marker_tool(line, IF_MARKER) {
-            if skipping.is_none() && !repo.is_selected(tool) {
-                skipping = Some(tool);
-            }
-            continue;
-        }
-        if skipping.is_none() {
-            out.push_str(line);
-            out.push('\n');
-        }
-    }
-    out
 }

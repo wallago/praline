@@ -2,15 +2,13 @@ use std::path::Path;
 
 use include_dir::{Dir, include_dir};
 
-use crate::{
-    app::{
-        RepoBuilder, Tool,
-        tool::{category::Category, write_dir},
-    },
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
+
+/// Rust file templates path.
 static RUST: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust");
 
+/// Cargo manifest and starter crate layout.
 #[derive(Debug)]
 pub(crate) struct Rust;
 

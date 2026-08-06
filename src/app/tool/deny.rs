@@ -1,11 +1,9 @@
 use std::path::Path;
 
-use super::write_entry;
-use crate::{
-    app::{RepoBuilder, Tool, tool::category::Category},
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
 
+/// License, advisory and crate ban policy.
 #[derive(Debug)]
 pub(crate) struct Deny;
 

@@ -15,6 +15,9 @@ pub mod config;
 /// Main application.
 pub mod app;
 
+/// Helper functions.
+pub mod help;
+
 /// Common types that can be glob-imported for convenience.
 pub mod prelude;
 

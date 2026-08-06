@@ -1,10 +1,9 @@
 use std::path::Path;
 
-use crate::{
-    app::{RepoBuilder, Tool, tool::category::Category},
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
 
+/// Finds unused dependencies in Cargo.toml.
 #[derive(Debug)]
 pub(crate) struct Machete;
 

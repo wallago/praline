@@ -1,14 +1,9 @@
 use std::path::Path;
 
-use super::write_entry;
-use crate::{
-    app::{
-        RepoBuilder, Tool,
-        tool::{category::Category, substitute},
-    },
-    error::Result,
-};
+use crate::app::{RepoBuilder, Tool, tool::category::Category};
+use crate::prelude::*;
 
+/// Changelog generated from conventional commits.
 #[derive(Debug)]
 pub(crate) struct Cliff;
 
