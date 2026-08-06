@@ -7,6 +7,7 @@ use ratatui::{
 use ratatui_explorer::{FileExplorer, FileExplorerBuilder, Theme};
 use tui_input::Input;
 
+use crate::prelude::*;
 use crate::{
     app::RepoBuilder,
     config::{Config, binds::Keybindings},
@@ -20,6 +21,9 @@ pub(crate) mod binds;
 
 /// Toast.
 mod toast;
+
+/// Screen mode.
+pub(crate) mod screen;
 
 /// Form.
 pub(crate) mod form;
@@ -40,14 +44,12 @@ pub struct State {
     pub form_focus: form::FormFocus,
     /// Input.
     pub input: Input,
-    /// Enable input.
-    pub input_mode: bool,
+    /// Screen mode.
+    pub screen_mode: screen::Screen,
     /// List of options.
     pub option_list: ListState,
     /// Active key bindings (defaults merged with `config.toml`).
     pub keybindings: Keybindings,
-    /// Show generated repo.
-    pub generated_mode: bool,
     /// Current toast, if any (non-tokio: we manage timing ourselves).
     pub toast: Option<toast::Toast>,
     /// When the current toast should be hidden.
@@ -60,13 +62,11 @@ pub struct State {
     pub staged_content_viewport: usize,
     /// File explorer.
     pub explorer: FileExplorer,
-    /// Show exported repo.
-    pub exported_mode: bool,
 }
 
 impl State {
     /// Constructs a new instance of [`State`].
-    pub(crate) fn new(accent_color: Option<Color>, config: Config) -> Self {
+    pub(crate) fn new(accent_color: Option<Color>, config: Config) -> Result<Self> {
         let repo = RepoBuilder::default();
         let theme = Theme::default()
             .with_highlight_symbol("> ")
@@ -80,24 +80,22 @@ impl State {
                     .fg(accent_color.unwrap_or(Color::Gray))
                     .bold(),
             );
-        Self {
+        Ok(Self {
             running: true,
             accent_color: accent_color.unwrap_or(Color::White),
             repo,
             form_focus: form::FormFocus::Owner,
             input: Input::default(),
-            input_mode: false,
+            screen_mode: screen::Screen::Form,
             option_list: ListState::default().with_selected(Some(0)),
             keybindings: config.keybindings,
-            generated_mode: false,
             toast: None,
             toast_expires_at: None,
             staged_list: ListState::default().with_selected(Some(0)),
             staged_panel_focus: staged_panel::StagedPanelFocus::List,
             staged_content_viewport: 0,
-            explorer: FileExplorerBuilder::build_with_theme(theme).expect("File explorer creation"),
-            exported_mode: false,
-        }
+            explorer: FileExplorerBuilder::build_with_theme(theme)?,
+        })
     }
 
     /// Display toast on call.

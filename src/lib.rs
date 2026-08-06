@@ -33,7 +33,7 @@ use crate::{
         backend::Tui,
         command::{Command, input::InputCommand},
         event::{Event, EventHandler},
-        state::State,
+        state::{State, screen::Screen},
     },
 };
 
@@ -50,7 +50,7 @@ pub fn run(args: &Args) -> Result<()> {
 /// Starts the terminal user interface.
 fn start_tui(args: &Args, config: Config) -> Result<()> {
     // Create an application.
-    let mut state = State::new(args.accent_color, config);
+    let mut state = State::new(args.accent_color, config)?;
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(io::stdout());
@@ -68,14 +68,11 @@ fn start_tui(args: &Args, config: Config) -> Result<()> {
         // Handle events.
         match tui.events.next()? {
             Event::Key(key_event) => {
-                let command = if state.input_mode {
-                    Command::Input(InputCommand::parse(key_event, &state.input))
-                } else if state.generated_mode {
-                    Command::from_staged_key(key_event, &state.keybindings)
-                } else if state.exported_mode {
-                    Command::from_exported_key(key_event, &state.keybindings)
-                } else {
-                    Command::from_key(key_event, &state.keybindings)
+                let command = match state.screen_mode {
+                    Screen::Form => Command::from_key(key_event, &state.keybindings),
+                    Screen::Editing => Command::Input(InputCommand::parse(key_event, &state.input)),
+                    Screen::Generated => Command::from_staged_key(key_event, &state.keybindings),
+                    Screen::Exported => Command::from_exported_key(key_event, &state.keybindings),
                 };
                 state.run_command(command, tui.events.sender.clone())?;
             }

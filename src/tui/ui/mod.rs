@@ -7,7 +7,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, Paragraph},
 };
 
-use crate::tui::state::State;
+use crate::tui::state::{State, screen::Screen};
 
 /// Core part.
 mod core;
@@ -58,9 +58,9 @@ pub fn render(state: &mut State, frame: &mut Frame) {
             .bold();
         frame.render_widget(desc, inner);
     }
-    if state.generated_mode {
+    if state.screen_mode == Screen::Generated {
         stage::render_stage(state, frame, chunks[1]);
-    } else if state.exported_mode {
+    } else if state.screen_mode == Screen::Exported {
         export::render_export(state, frame, chunks[1]);
     } else {
         core::render_core(state, frame, chunks[1]);

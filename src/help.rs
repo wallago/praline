@@ -11,6 +11,11 @@ use crate::{app::RepoBuilder, prelude::*};
 /// Recursively copies `src` into `dst`, creating `dst` and any missing parents.
 ///
 /// `read_dir` yields dot-entries, so hidden files and directories are included.
+///
+/// # Errors
+///
+/// Returns an error if `dst` cannot be created, `src` cannot be read, or any
+/// file copy fails.
 pub fn copy_dir_all(src: &Path, dst: &Path) -> Result<()> {
     fs::create_dir_all(dst)?;
     for entry in fs::read_dir(src)? {
@@ -59,6 +64,11 @@ pub fn collect_files(
 /// `include_dir` paths are relative to the embedded root, so nesting is
 /// reproduced as-is. UTF-8 files go through [`substitute`]; anything else is
 /// copied byte-for-byte, which is what keeps binary templates intact.
+///
+/// # Errors
+///
+/// Returns an error if a directory cannot be created or a file cannot be
+/// written.
 pub fn write_dir(dir: &Dir<'_>, root: &Path, repo: &RepoBuilder) -> Result<()> {
     for file in dir.files() {
         let name = file.path().to_string_lossy();
@@ -73,7 +83,13 @@ pub fn write_dir(dir: &Dir<'_>, root: &Path, repo: &RepoBuilder) -> Result<()> {
     }
     Ok(())
 }
+
 /// Writes `content` to `root`/`name`, creating any missing parent directories.
+///
+/// # Errors
+///
+/// Returns an error if the parent directories cannot be created or the write
+/// fails.
 pub fn write_entry(root: &Path, name: &str, content: &[u8]) -> Result<()> {
     let path = root.join(name);
     if let Some(parent) = path.parent() {
@@ -94,6 +110,7 @@ const ENDIF_MARKER: &str = "{endif:";
 /// Order matters — conditionals are resolved before placeholders, so a
 /// `{name}` sitting inside a block belonging to an unselected tool is dropped
 /// rather than substituted.
+#[must_use]
 pub fn substitute(content: &str, repo: &RepoBuilder) -> Vec<u8> {
     strip_conditionals(content, repo)
         .replace("{name}", &repo.name)
