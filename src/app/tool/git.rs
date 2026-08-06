@@ -22,7 +22,7 @@ impl Tool for Git {
     }
 
     fn category(&self) -> Category {
-        Category::Env
+        Category::Git
     }
 
     fn default_setup(&self) -> bool {

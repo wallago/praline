@@ -17,7 +17,7 @@ impl Tool for Just {
     }
 
     fn category(&self) -> Category {
-        Category::Env
+        Category::Build
     }
 
     fn default_setup(&self) -> bool {

@@ -10,7 +10,7 @@ use ratatui::{
 };
 
 use crate::tui::{
-    state::{State, form::FormFocus},
+    state::{State, form::FormFocus, screen::Screen},
     ui::utils::{badge, render_input},
 };
 
@@ -34,7 +34,7 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, rect: Rect) {
         "Owner",
         &state.repo.owner,
         state.form_focus == FormFocus::Owner,
-        state.input_mode,
+        state.screen_mode == Screen::Editing,
     );
     render_input(
         frame,
@@ -42,7 +42,7 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, rect: Rect) {
         "Name",
         &state.repo.name,
         state.form_focus == FormFocus::Name,
-        state.input_mode,
+        state.screen_mode == Screen::Editing,
     );
     render_input(
         frame,
@@ -50,7 +50,7 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, rect: Rect) {
         "Desc",
         &state.repo.desc,
         state.form_focus == FormFocus::Desc,
-        state.input_mode,
+        state.screen_mode == Screen::Editing,
     );
     render_options(
         state,

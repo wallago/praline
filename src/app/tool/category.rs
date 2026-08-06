@@ -17,8 +17,6 @@ pub(crate) enum Category {
     Release,
     /// Version control.
     Git,
-    /// CI/CD and automation.
-    DevOps,
     /// Environment and tooling setup.
     Env,
 }
@@ -34,8 +32,7 @@ impl Category {
             Self::Build => Color::LightBlue,
             Self::Release => Color::Cyan,
             Self::Git => Color::Yellow,
-            Self::DevOps => Color::LightGreen,
-            Self::Env => Color::DarkGray,
+            Self::Env => Color::LightRed,
         }
     }
 }
