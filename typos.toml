@@ -3,7 +3,7 @@
 [default.extend-words]
 # Whitelist false positives: format is word = "word"
 # Example:
-# ratatui = "ratatui"
+ratatui = "ratatui"
 # kubernetes = "kubernetes"
 
 [files]
