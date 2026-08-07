@@ -1,3 +1,5 @@
+//! Config file setup.
+
 use std::path::Path;
 
 use serde::Deserialize;

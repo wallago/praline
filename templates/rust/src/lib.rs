@@ -12,10 +12,15 @@ pub mod args;
 /// Config file.
 pub mod config;
 
+/// Helper functions.
+pub mod help;
+
 /// Common types that can be glob-imported for convenience.
 pub mod prelude;
 
 use prelude::*;
+
+use crate::config::Config;
 
 /// Runs `{name}`.
 ///
@@ -24,7 +29,7 @@ use prelude::*;
 /// Returns an [`Error`] if the run fa
 pub fn run(args: &Args) -> Result<()> {
     better_panic::install();
-    let config = Config::load(args.config.as_deref())?;
+    let _config = Config::load(args.config.as_deref())?;
     Ok(())
 }
 
@@ -32,10 +37,10 @@ pub fn run(args: &Args) -> Result<()> {
 mod tests {
     use pretty_assertions::assert_eq;
 
-    use super::run;
+    use super::*;
 
     #[test]
     fn run_succeeds() {
-        assert_eq!(run().is_ok(), true);
+        assert_eq!(run(Args::default()).is_ok(), true);
     }
 }

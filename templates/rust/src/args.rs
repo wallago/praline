@@ -1,3 +1,5 @@
+//! Command-line arguments parser.
+
 use clap::Parser;
 
 /// Argument parser powered by [`clap`].

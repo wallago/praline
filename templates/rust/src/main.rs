@@ -1,10 +1,14 @@
-//! Command line entry point for `{name}`.
+//! Command line entry point for `{ident}`.
 
 use std::process::ExitCode;
 
+use clap::Parser;
+use {ident}::prelude::*;
+use tracing::Level;
+
 /// Runs the crate and maps the outcome to a process exit code.
 fn main() -> ExitCode {
-    let mut args = Args::parse();
+    let args = Args::parse();
     let level = match args.verbose {
         0 => Level::WARN, // default: warnings + errors only
         1 => Level::INFO,
@@ -12,10 +16,10 @@ fn main() -> ExitCode {
         _ => Level::TRACE, // -vvv and beyond
     };
     tracing_subscriber::fmt().with_max_level(level).init();
-    match {name}::run(args) {
+    match {ident}::run(&args) {
         Ok(()) => ExitCode::SUCCESS,
         Err(err) => {
-            eprintln!("{name}: {err}");
+            eprintln!("{}: {err}", version());
             ExitCode::FAILURE
         }
     }
