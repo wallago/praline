@@ -1,3 +1,5 @@
+//! Error handler implementation.
+
 use thiserror::Error as ThisError;
 
 /// Errors that can occur while running [`run`].
@@ -6,6 +8,9 @@ pub enum Error {
     /// Error that may occur during I/O operations.
     #[error("IO error: `{0}`")]
     Io(#[from] std::io::Error),
+    /// Error that may occur while loading the application config file.
+    #[error("Config file error: `{0}`")]
+    Config(String),
 }
 
 /// Type alias for the standard [`Result`] type.

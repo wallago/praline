@@ -113,6 +113,7 @@ const ENDIF_MARKER: &str = "{endif:";
 #[must_use]
 pub fn substitute(content: &str, repo: &RepoBuilder) -> Vec<u8> {
     strip_conditionals(content, repo)
+        .replace("{ident}", &ident(&repo.name))
         .replace("{name}", &repo.name)
         .replace("{desc}", &repo.desc)
         .replace("{owner}", &repo.owner)
@@ -155,6 +156,26 @@ fn strip_conditionals(content: &str, repo: &RepoBuilder) -> String {
             out.push_str(line);
             out.push('\n');
         }
+    }
+    out
+}
+
+/// `{name}` folded into a Rust identifier: lowercased, with every character
+/// that is not ASCII alphanumeric replaced by `_`, and a leading `_` if the
+/// result would start with a digit.
+fn ident(name: &str) -> String {
+    let mut out: String = name
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() {
+                c.to_ascii_lowercase()
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    if out.starts_with(|c: char| c.is_ascii_digit()) {
+        out.insert(0, '_');
     }
     out
 }
