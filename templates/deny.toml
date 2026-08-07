@@ -26,6 +26,10 @@ unknown-git = "warn"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 
 [advisories]
+# only flag unmaintained crates you depend on directly — a transitive one is
+# rarely actionable, and "unmaintained" is a maintenance signal, not a
+# vulnerability. Security advisories are still denied everywhere, regardless.
+unmaintained = "workspace"
 # ignore specific RustSec advisories (e.g. no fix available yet)
 # review periodically and remove once fixed
 ignore = [
