@@ -9,7 +9,7 @@ repository   = "https://github.com/wallago/praline"
 keywords     = ["tui", "repo", "builder", "devops", "cli"]
 categories   = ["command-line-utilities", "development-tools"]
 edition      = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 include      = ["src/**/*", "templates/**/*", "Cargo.*", "LICENSE*", "README.md", "CHANGELOG.md"]
 
 [dependencies]

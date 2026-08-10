@@ -14,6 +14,10 @@ pub struct Keybindings {
     pub scroll_up: KeyPattern,
     /// Scroll DOWN.
     pub scroll_down: KeyPattern,
+    /// Scroll Left.
+    pub scroll_left: KeyPattern,
+    /// Scroll Right.
+    pub scroll_right: KeyPattern,
     /// Generate repo.
     pub generate: KeyPattern,
     /// Export repo.
@@ -37,6 +41,8 @@ impl Default for Keybindings {
             create: KeyPattern::plain(KeyCode::Char('c')),
             scroll_up: KeyPattern::plain(KeyCode::Char('k')),
             scroll_down: KeyPattern::plain(KeyCode::Char('j')),
+            scroll_left: KeyPattern::plain(KeyCode::Char('h')),
+            scroll_right: KeyPattern::plain(KeyCode::Char('l')),
             leave: KeyPattern::plain(KeyCode::Esc),
             confirm: KeyPattern::plain(KeyCode::Enter),
             enter: KeyPattern::plain(KeyCode::Enter),

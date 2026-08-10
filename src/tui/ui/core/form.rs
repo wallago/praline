@@ -9,9 +9,12 @@ use ratatui::{
     },
 };
 
-use crate::tui::{
-    state::{State, form::FormFocus, screen::Screen},
-    ui::utils::{badge, render_input},
+use crate::{
+    app::preset::Preset,
+    tui::{
+        state::{State, form::FormFocus, screen::Screen},
+        ui::utils::{badge, render_input},
+    },
 };
 
 /// Left column: form.
@@ -20,7 +23,8 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, rect: Rect) {
         horizontal: 2,
         vertical: 1,
     });
-    let [owner, name, desc, options] = Layout::vertical([
+    let [owner, name, desc, preset, options] = Layout::vertical([
+        Constraint::Length(3),
         Constraint::Length(3),
         Constraint::Length(3),
         Constraint::Length(3),
@@ -52,6 +56,7 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, rect: Rect) {
         state.form_focus == FormFocus::Desc,
         state.screen_mode == Screen::Editing,
     );
+    render_presets(state, frame, preset, state.form_focus == FormFocus::Preset);
     render_options(
         state,
         frame,
@@ -141,4 +146,35 @@ fn render_option_desc(state: &State, frame: &mut Frame, area: Rect) {
     });
     frame.render_widget(Clear, popup);
     frame.render_widget(paragraph, popup);
+}
+
+/// A horizontal row of preset pills: cursor in brackets, applied one filled.
+fn render_presets(state: &State, frame: &mut Frame, rect: Rect, focused: bool) {
+    let title = String::from(" Preset ").fg(Color::Gray).bold();
+    let mut block = Block::bordered().title(title);
+    if focused {
+        block = block.border_style(Color::Yellow);
+    }
+
+    let active = state.repo.active_preset();
+    let mut spans = Vec::new();
+    for (i, preset) in Preset::ALL.iter().enumerate() {
+        // Brackets mark the cursor, a filled pill marks what is actually applied.
+        let (open, close) = if focused && i == state.preset_cursor {
+            ("[", "]")
+        } else {
+            (" ", " ")
+        };
+        let pill = Span::raw(format!(" {} ", preset.name()));
+        let pill = if active == Some(*preset) {
+            pill.bg(Color::Green).fg(Color::Black).bold()
+        } else {
+            pill.fg(Color::Gray)
+        };
+        spans.push(open.fg(Color::Yellow).bold());
+        spans.push(pill);
+        spans.push(close.fg(Color::Yellow).bold());
+    }
+
+    frame.render_widget(Paragraph::new(Line::from(spans)).block(block), rect);
 }

@@ -87,6 +87,7 @@
               cargo-audit
               cargo-machete
               cargo-edit
+              cargo-msrv
 
               # repo tooling
               typos
@@ -94,13 +95,12 @@
               git-cliff
               act
               gh
+              lychee
 
               # nix tooling
               nixfmt
               statix
               deadnix
-
-              # crate deps
             ];
           in
           {

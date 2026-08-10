@@ -1,5 +1,6 @@
 use std::sync::mpsc;
 
+use crate::app::preset::Preset;
 use crate::prelude::*;
 use crate::tui::{
     command::{Command, ScrollType},
@@ -60,6 +61,15 @@ impl State {
             }
             Command::Previous(ScrollType::Exported) => {
                 self.explorer.handle(ratatui_explorer::Input::Up)?;
+            }
+            Command::Next(ScrollType::Preset) => {
+                self.preset_cursor = self.preset_cursor.saturating_add(1) % Preset::ALL.len();
+            }
+            Command::Previous(ScrollType::Preset) => {
+                self.preset_cursor = self
+                    .preset_cursor
+                    .checked_sub(1)
+                    .unwrap_or(Preset::ALL.len().saturating_sub(1));
             }
             Command::Nothing => {}
             Command::Generate => {
