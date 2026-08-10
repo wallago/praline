@@ -19,6 +19,8 @@ env:
 jobs:
   build:
     name: Build for ${{ matrix.target }}
+    # cross needs a nested container engine; it cannot run under act
+    if: ${{ github.actor != 'nektos/act' }}
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false

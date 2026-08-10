@@ -82,3 +82,9 @@ ci:
     @echo "▶ flake check"
     nix flake check --print-build-logs --all-systems
     @echo "✅ CI mirror passed"
+
+# Run the full CI pipeline locally. Run before pushing.
+[group('ci')]
+ci-deep:
+    act -W .github/workflows/ci.yml -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat
+    # act -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat

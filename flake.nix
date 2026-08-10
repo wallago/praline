@@ -93,6 +93,7 @@
               committed
               git-cliff
               act
+              gh
 
               # nix tooling
               nixfmt
