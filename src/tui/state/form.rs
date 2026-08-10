@@ -7,6 +7,8 @@ pub enum FormFocus {
     Name,
     /// Desc field.
     Desc,
+    /// Preset row.
+    Preset,
     /// Tool options field.
     Options,
 }
@@ -17,7 +19,8 @@ impl FormFocus {
         match self {
             Self::Owner => Self::Name,
             Self::Name => Self::Desc,
-            Self::Desc => Self::Options,
+            Self::Desc => Self::Preset,
+            Self::Preset => Self::Options,
             Self::Options => Self::Owner,
         }
     }
@@ -28,7 +31,8 @@ impl FormFocus {
             Self::Owner => Self::Options,
             Self::Name => Self::Owner,
             Self::Desc => Self::Name,
-            Self::Options => Self::Desc,
+            Self::Preset => Self::Desc,
+            Self::Options => Self::Preset,
         }
     }
 }

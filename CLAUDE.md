@@ -3,6 +3,13 @@
 praline is a TUI that scaffolds new repos. It ships a set of config-file
 templates and writes the selected ones into a fresh project.
 
+## Rules
+
+Standalone rules live in `.claude/rules/` and are imported here — only files
+reachable from `CLAUDE.md` get loaded, so a new rule needs a line below.
+
+@.claude/rules/propose-before-writing.md
+
 ## Commands
 
 Use `just` — it is the entry point, not raw cargo. `just --list` for the rest.
@@ -64,7 +71,7 @@ Arithmetic on `usize` state (scroll offsets, indices) panics on overflow in dev
 builds — use `saturating_sub`/`saturating_add`. `clamp` panics when `min > max`,
 so clamp the floor to the ceiling first when both are computed.
 
-Edition 2024, MSRV 1.85 (CI enforces it via cargo-msrv).
+Edition 2024, MSRV 1.88 (CI enforces it via cargo-msrv).
 
 ## Verifying changes
 

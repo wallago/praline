@@ -1,7 +1,7 @@
 use ratatui::style::Color;
 
 /// Tool categories.
-#[derive(Debug, strum::Display)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, strum::Display)]
 pub(crate) enum Category {
     /// Format code.
     Format,
@@ -22,6 +22,18 @@ pub(crate) enum Category {
 }
 
 impl Category {
+    /// Every category, in the order they appear in the summary.
+    pub(crate) const ALL: [Self; 8] = [
+        Self::Git,
+        Self::Env,
+        Self::Build,
+        Self::Format,
+        Self::Lint,
+        Self::Test,
+        Self::Security,
+        Self::Release,
+    ];
+
     /// Get color for a Category.
     pub(crate) fn color(&self) -> Color {
         match self {

@@ -27,6 +27,10 @@ impl State {
                 if self.form_focus == FormFocus::Options {
                     binds.push((self.keybindings.scroll_up.to_string(), "Scroll UP"));
                     binds.push((self.keybindings.scroll_down.to_string(), "Scroll DOWN"));
+                } else if self.form_focus == FormFocus::Preset {
+                    binds.push((self.keybindings.scroll_left.to_string(), "Scroll Left"));
+                    binds.push((self.keybindings.scroll_right.to_string(), "Scroll Right"));
+                    binds.push((self.keybindings.enter.to_string(), "Apply"));
                 } else {
                     binds.push((self.keybindings.enter.to_string(), "Enter"));
                 }

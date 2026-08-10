@@ -29,6 +29,8 @@ pub(super) mod flake;
 pub(super) mod git;
 /// Tool emitting `justfile`.
 pub(super) mod just;
+/// Tool emitting no files; gates `{if:lychee}` blocks elsewhere.
+pub(super) mod lychee;
 /// Tool emitting no files; gates `{if:machete}` blocks elsewhere.
 pub(super) mod machete;
 /// Tool emitting `templates/rust/` — `Cargo.toml` and starter crate layout.

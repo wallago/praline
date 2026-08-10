@@ -7,11 +7,11 @@ use ratatui::{
 use ratatui_explorer::{FileExplorer, FileExplorerBuilder, Theme};
 use tui_input::Input;
 
-use crate::prelude::*;
 use crate::{
     app::RepoBuilder,
     config::{Config, binds::Keybindings},
 };
+use crate::{app::preset::Preset, prelude::*};
 
 /// Running command.
 pub(crate) mod command;
@@ -62,6 +62,8 @@ pub struct State {
     pub staged_content_viewport: usize,
     /// File explorer.
     pub explorer: FileExplorer,
+    /// Cursor into [`Preset::ALL`] for the preset row.
+    pub preset_cursor: usize,
 }
 
 impl State {
@@ -80,6 +82,11 @@ impl State {
                     .fg(accent_color.unwrap_or(Color::Gray))
                     .bold(),
             );
+        // Open on whichever preset the default tool selection already matches.
+        let preset_cursor = repo
+            .active_preset()
+            .and_then(|active| Preset::ALL.iter().position(|preset| *preset == active))
+            .unwrap_or(0);
         Ok(Self {
             running: true,
             accent_color: accent_color.unwrap_or(Color::White),
@@ -95,6 +102,7 @@ impl State {
             staged_panel_focus: staged_panel::StagedPanelFocus::List,
             staged_content_viewport: 0,
             explorer: FileExplorerBuilder::build_with_theme(theme)?,
+            preset_cursor,
         })
     }
 

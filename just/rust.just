@@ -59,7 +59,7 @@ deny:
 
 # Mirror the full CI pipeline locally. Run before pushing.
 [group('ci')]
-ci:
+ci-light:
     @echo "▶ format"
     cargo fmt --check
     @echo "▶ clippy"
@@ -88,3 +88,13 @@ ci:
 ci-deep:
     act -W .github/workflows/ci.yml -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat
     # act -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat
+
+# Run a single CI job locally. Usage: just ci-job msrv
+[group('ci')]
+ci-job JOB:
+    act -W .github/workflows/ci.yml -j {{ JOB }} -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat
+
+# List the CI job IDs
+[group('ci')]
+ci-jobs:
+    act -l -W .github/workflows/ci.yml

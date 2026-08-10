@@ -10,8 +10,10 @@ pub(crate) mod input;
 pub enum ScrollType {
     /// Form.
     Form,
-    /// Options.
+    /// Option.
     Option,
+    /// Preset.
+    Preset,
     /// Staged.
     Staged,
     /// Staged Panel.
@@ -56,6 +58,10 @@ impl Command {
             Self::Previous(ScrollType::Option)
         } else if binds.generate.matches(&event) {
             Self::Generate
+        } else if binds.scroll_right.matches(&event) {
+            Self::Next(ScrollType::Preset)
+        } else if binds.scroll_left.matches(&event) {
+            Self::Previous(ScrollType::Preset)
         } else {
             match event.code {
                 KeyCode::BackTab => Self::Previous(ScrollType::Form),

@@ -3,16 +3,20 @@ use std::path::{Path, PathBuf};
 use indexmap::IndexMap;
 use tempfile::{TempDir, tempdir};
 
+use crate::app::preset::Preset;
 use crate::app::tool::{
     Tool, audit::Audit, claude::Claude, cliff::Cliff, clippy::Clippy, codecov::Codecov,
     committed::Committed, deny::Deny, editorconfig::EditorConfig, envrc::Envrc, flake::Flake,
-    git::Git, just::Just, machete::Machete, rust::Rust, rustfmt::RustFmt, taplo::Taplo,
-    typos::Typos,
+    git::Git, just::Just, lychee::Lychee, machete::Machete, rust::Rust, rustfmt::RustFmt,
+    taplo::Taplo, typos::Typos,
 };
 use crate::prelude::*;
 
 /// Optional tools.
 pub(crate) mod tool;
+
+/// Named bundles of tools selectable in one keystroke.
+pub(crate) mod preset;
 
 /// Repo builder.
 #[derive(Debug)]
@@ -58,6 +62,7 @@ impl Default for RepoBuilder {
             Box::new(Rust),
             Box::new(Audit),
             Box::new(Machete),
+            Box::new(Lychee),
         ];
         Self {
             name: String::new(),
@@ -133,5 +138,23 @@ impl RepoBuilder {
         let mut entries = IndexMap::new();
         collect_files(&root, &root, &mut entries)?;
         Some(entries)
+    }
+
+    /// Checks exactly the tools `preset` selects, unchecking every other one.
+    pub(crate) fn apply_preset(&mut self, preset: Preset) {
+        for opt in &mut self.options {
+            opt.checked = preset.selects(&opt.tool.name());
+        }
+    }
+
+    /// The preset whose tool set matches the current selection exactly, if any.
+    ///
+    /// `None` means the user has hand-picked a set no preset describes.
+    pub(crate) fn active_preset(&self) -> Option<Preset> {
+        Preset::ALL.into_iter().find(|preset| {
+            self.options
+                .iter()
+                .all(|opt| opt.checked == preset.selects(&opt.tool.name()))
+        })
     }
 }
