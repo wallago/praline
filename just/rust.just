@@ -57,6 +57,12 @@ deny:
 
 # ── CI ────────────────────────────────────────────────────────
 
+# act's default image ships no Rust and no sqlite3; full-latest mirrors the
+# real GitHub runner, so a local run predicts the hosted one. act also leaves
+# USER unset, which trips scripts running under `set -u`; the image runs as
+# uid 1001 (runner), which is what the hosted runner reports too.
+act_flags := '-W .github/workflows/ci.yml -P ubuntu-latest=catthehacker/ubuntu:full-latest --env USER=runner --env GIT_PAGER=cat --env PAGER=cat'
+
 # Mirror the full CI pipeline locally. Run before pushing.
 [group('ci')]
 ci-light:
@@ -76,6 +82,8 @@ ci-light:
     cargo audit
     @echo "▶ commits"
     committed -vv HEAD
+    @echo "▶ lychee"
+    lychee --verbose --no-progress '*.md'
     @echo "▶ nix lint"
     statix check .
     deadnix --fail .
@@ -86,13 +94,12 @@ ci-light:
 # Run the full CI pipeline locally. Run before pushing.
 [group('ci')]
 ci-deep:
-    act -W .github/workflows/ci.yml -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat
-    # act -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat
+    act {{ act_flags }} -s GITHUB_TOKEN="$(gh auth token)"
 
 # Run a single CI job locally. Usage: just ci-job msrv
 [group('ci')]
 ci-job JOB:
-    act -W .github/workflows/ci.yml -j {{ JOB }} -s GITHUB_TOKEN="$(gh auth token)" --env GIT_PAGER=cat --env PAGER=cat
+    act {{ act_flags }} -j {{ JOB }} -s GITHUB_TOKEN="$(gh auth token)"
 
 # List the CI job IDs
 [group('ci')]
