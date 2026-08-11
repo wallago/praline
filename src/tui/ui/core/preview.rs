@@ -67,6 +67,8 @@ fn render_identity(state: &State, frame: &mut Frame, rect: Rect) {
 
 /// Which preset is applied and how much of the tool list it covers.
 fn render_selection(state: &State, frame: &mut Frame, rect: Rect) {
+    /// Width of the fill bar, in cells.
+    const BAR: usize = 20;
     let total = state.repo.options.len();
     let checked = state.repo.options.iter().filter(|opt| opt.checked).count();
 
@@ -83,13 +85,7 @@ fn render_selection(state: &State, frame: &mut Frame, rect: Rect) {
         ]),
     };
 
-    /// Width of the fill bar, in cells.
-    const BAR: usize = 20;
-    let filled = if total == 0 {
-        0
-    } else {
-        checked.saturating_mul(BAR) / total
-    };
+    let filled = checked.saturating_mul(BAR).checked_div(total).unwrap_or(0);
     let bar = Line::from(vec![
         Span::raw("█".repeat(filled)).fg(Color::Green),
         Span::raw("░".repeat(BAR.saturating_sub(filled))).fg(Color::DarkGray),
@@ -120,7 +116,7 @@ fn render_groups(state: &State, frame: &mut Frame, rect: Rect) {
             continue;
         }
         lines.push(Line::from(vec![
-            badge(&category),
+            badge(category),
             Span::raw(" "),
             Span::raw(tools.join(" ")).fg(Color::Gray),
         ]));
