@@ -9,7 +9,7 @@ use ratatui::{
 use crate::app::tool::category::Category;
 
 /// A colored pill/badge: ` TEXT ` with a background.
-pub(crate) fn badge(category: &Category) -> Span<'static> {
+pub(crate) fn badge(category: Category) -> Span<'static> {
     format!("|{category}|")
         .bg(category.color())
         .fg(Color::Black)

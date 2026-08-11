@@ -35,7 +35,7 @@ impl Category {
     ];
 
     /// Get color for a Category.
-    pub(crate) fn color(&self) -> Color {
+    pub(crate) fn color(self) -> Color {
         match self {
             Self::Format => Color::Blue,
             Self::Lint => Color::Red,

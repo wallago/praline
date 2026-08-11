@@ -82,7 +82,7 @@ fn render_options(state: &mut State, frame: &mut Frame, rect: Rect, focused: boo
             let spans = vec![
                 Span::raw(format!("{glyph}{}", opt.tool.name())),
                 Span::raw(" "),
-                badge(&opt.tool.category()),
+                badge(opt.tool.category()),
             ];
 
             let line = Line::from(spans);
