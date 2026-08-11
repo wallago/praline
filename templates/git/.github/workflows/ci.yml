@@ -17,6 +17,7 @@ env:
   BIN_NAME: "{name}"
   CARGO_TERM_COLOR: always
 jobs:
+  # {if:rust}
   build:
     name: Build for ${{ matrix.target }}
     # cross needs a nested container engine; it cannot run under act
@@ -50,8 +51,9 @@ jobs:
           name: ${{ env.BIN_NAME }}-${{ matrix.target }}
           path: target/${{ matrix.target }}/debug/${{ env.BIN_NAME }}
           if-no-files-found: error
+  # {endif:rust}
   # {if:flake}
-  nix-flake:
+  nix:
     name: Build Nix flake
     runs-on: ubuntu-latest
     permissions:
@@ -74,7 +76,10 @@ jobs:
           purge-primary-key: never
       - name: Check Nix flake
         run: nix flake check --all-systems
+      - name: Build Nix flake
+        run: nix build
   # {endif:flake}
+  # {if:rust}
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -95,6 +100,8 @@ jobs:
         env:
           OUT_DIR: target
       - name: Upload coverage to Codecov
+        # codecov cannot do a tokenless upload under act
+        if: ${{ github.actor != 'nektos/act' }}
         uses: codecov/codecov-action@v5
         with:
           name: code-coverage-report
@@ -103,7 +110,9 @@ jobs:
           verbose: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      # {endif:codecov}
+          # {endif:codecov}
+  # {endif:rust}
+  # {if:rust}
   docs:
     name: Docs
     runs-on: ubuntu-latest
@@ -118,6 +127,7 @@ jobs:
         env:
           RUSTDOCFLAGS: -D warnings
         run: cargo doc --no-deps --all-features
+  # {endif:rust}
   # {if:committed}
   commit-format:
     name: Commit format
@@ -170,6 +180,8 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-binstall
         uses: taiki-e/install-action@cargo-binstall
       - name: Install taplo
@@ -212,6 +224,8 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-binstall
         uses: taiki-e/install-action@cargo-binstall
       - name: Install cargo-machete
@@ -219,6 +233,7 @@ jobs:
       - name: Check for unused dependencies
         run: cargo machete
   # {endif:machete}
+  # {if:lychee}
   links:
     name: Links
     runs-on: ubuntu-latest
@@ -231,6 +246,7 @@ jobs:
           args: --verbose --no-progress '*.md'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # {endif:lychee}
   # {if:typos}
   typos:
     name: Typos
@@ -241,17 +257,19 @@ jobs:
       - name: Check typos
         uses: crate-ci/typos@master
   # {endif:typos}
+  # {if:rust}
   msrv:
     name: MSRV
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-binstall
         uses: taiki-e/install-action@cargo-binstall
       - name: Install cargo-msrv
         run: cargo binstall -y --force cargo-msrv
       - name: Run cargo-msrv
-        run: |
-          cargo msrv --output-format json verify 2>&1 \
-            | jq -e 'select(.type=="subcommand_result") | .result.is_compatible'
+        run: cargo msrv verify
+  # {if:rust}

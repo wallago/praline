@@ -101,6 +101,9 @@
               nixfmt
               statix
               deadnix
+
+              # deps
+              sqlite
             ];
           in
           {
