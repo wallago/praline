@@ -20,7 +20,7 @@ pub struct Config {
 
 impl Config {
     /// Loads the config: explicit `--config` path, else
-    /// `$XDG_CONFIG_HOME/flamingo/config.toml` if present, else defaults.
+    /// `$XDG_CONFIG_HOME/env!("CARGO_PKG_NAME")/config.toml` if present, else defaults.
     ///  
     /// # Errors
     ///
@@ -29,7 +29,9 @@ impl Config {
         if let Some(path) = cli_path {
             return Self::from_file(path);
         }
-        match dirs::config_dir().map(|dir| dir.join("flamingo/config.toml")) {
+        match dirs::config_dir()
+            .map(|dir| dir.join(format!("{}/config.toml", env!("CARGO_PKG_NAME"))))
+        {
             Some(path) if path.exists() => Self::from_file(&path),
             _ => Ok(Self::default()),
         }
