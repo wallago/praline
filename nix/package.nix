@@ -13,6 +13,7 @@ naersk'.buildPackage {
     description = desc;
     license = with lib.licenses; [
       asl20
+      mit
     ];
   };
 }
