@@ -11,7 +11,7 @@ let
   configFile = settingsFormat.generate "config.toml" cfg.settings;
 in
 {
-  options.services.griffon-server = {
+  options.programs.praline = {
     enable = lib.mkEnableOption "Helper TUI app to scaffold an idiomatic repo.";
 
     package = lib.mkOption {
@@ -41,7 +41,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
+    home.packages = [ cfg.package ];
 
     xdg.configFile."praline/config.toml" = lib.mkIf (cfg.settings != { }) {
       source = configFile;
