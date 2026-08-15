@@ -118,6 +118,7 @@ jobs:
           overwrite: true
           tag: ${{ github.ref }}
           release_name: Release ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
           # {if:cliff}
           body: ${{ steps.git-cliff.outputs.content }}
           # {endif:cliff}
