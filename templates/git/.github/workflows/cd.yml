@@ -126,6 +126,8 @@ jobs:
   publish-crates-io:
     name: Publish on crates.io
     needs: release
+    # Prerelease tags (v1.2.3-alpha.1) stay off crates.io.
+    if: ${{ !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
     env:
       CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

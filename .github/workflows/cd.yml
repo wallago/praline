@@ -107,6 +107,8 @@ jobs:
   publish-crates-io:
     name: Publish on crates.io
     needs: release
+    # Prerelease tags (v1.2.3-alpha.1) stay off crates.io.
+    if: ${{ !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
