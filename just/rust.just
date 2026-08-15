@@ -72,6 +72,8 @@ ci-light:
     cargo clippy --all-targets -- -D warnings
     @echo "▶ test"
     cargo nextest run
+    @echo "▶ doc"
+    RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --all-features
     @echo "▶ typos"
     typos
     @echo "▶ unused deps"
@@ -80,6 +82,12 @@ ci-light:
     cargo deny check
     @echo "▶ audit"
     cargo audit
+    @echo "▶ msrv"
+    cargo msrv verify
+    @echo "▶ toml format"
+    taplo fmt --check --diff
+    @echo "▶ file format"
+    editorconfig-checker
     @echo "▶ commits"
     committed -vv HEAD
     @echo "▶ lychee"
