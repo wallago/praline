@@ -135,6 +135,20 @@ jobs:
         with:
           args: "-vv"
           commits: "HEAD"
+      - name: Stage the PR title as a commit
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty --message "$PR_TITLE"
+      - name: Run committed on the PR title
+        if: github.event_name == 'pull_request'
+        uses: crate-ci/committed@master
+        with:
+          args: "-vv"
+          commits: "HEAD"
   code-format:
     name: Code format
     runs-on: ubuntu-latest
