@@ -74,6 +74,6 @@ commit_parsers = [
   { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
 ]
 tag_pattern = "v[0-9].*"
-skip_tags = "beta|alpha"
-ignore_tags = "rc"
+skip_tags = ""
+ignore_tags = "beta|alpha|rc"
 sort_commits = "newest"
