@@ -54,7 +54,7 @@
               { release }:
               let
                 name = "praline";
-                desc = " Helper TUI app to scaffold an idiomatic repo.";
+                desc = "Helper TUI app to scaffold an idiomatic repo.";
               in
               pkgs.callPackage ./nix/package.nix {
                 inherit
