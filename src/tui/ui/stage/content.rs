@@ -10,7 +10,7 @@ use crate::tui::{state::State, ui::highlight::highlight};
 /// Render file content.
 pub(super) fn render_content(state: &mut State, frame: &mut Frame, rect: Rect, focused: bool) {
     let mut entries = state.repo.inspect_stage();
-    let Some(Some((name, (content, path)))) = entries
+    let Some(Some((_, (content, path)))) = entries
         .as_mut()
         .map(|entries| entries.get_index(state.staged_list.selected().unwrap_or_default()))
     else {
@@ -25,7 +25,9 @@ pub(super) fn render_content(state: &mut State, frame: &mut Frame, rect: Rect, f
     }
 
     let (highlight, ext) = highlight(path, content);
-    let title = format!(" {name} -> {ext} ").fg(Color::Gray).bold();
+    let title = format!(" {} -> {ext} ", env!("CARGO_PKG_NAME"))
+        .fg(Color::Gray)
+        .bold();
     let content = Paragraph::new(highlight);
     let mut block = Block::bordered().title(title).padding(Padding::uniform(1));
     if focused {
