@@ -102,6 +102,7 @@ jobs:
           overwrite: true
           tag: ${{ github.ref }}
           release_name: Release ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
           body: ${{ steps.git-cliff.outputs.content }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
   publish-crates-io:
