@@ -96,6 +96,8 @@
               act
               gh
               lychee
+              editorconfig-checker
+              taplo
 
               # nix tooling
               nixfmt
