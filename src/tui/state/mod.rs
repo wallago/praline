@@ -62,7 +62,7 @@ pub struct State {
     pub staged_content_viewport: usize,
     /// File explorer.
     pub explorer: FileExplorer,
-    /// Cursor into [`Preset::ALL`] for the preset row.
+    /// Cursor into `Preset::ALL` for the preset row.
     pub preset_cursor: usize,
 }
 

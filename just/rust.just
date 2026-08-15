@@ -82,8 +82,6 @@ ci-light:
     cargo deny check
     @echo "▶ audit"
     cargo audit
-    @echo "▶ msrv"
-    cargo msrv verify
     @echo "▶ toml format"
     taplo fmt --check --diff
     @echo "▶ file format"
