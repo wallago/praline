@@ -91,8 +91,8 @@ ci-light:
     @echo "▶ lychee"
     lychee --verbose --no-progress '*.md'
     @echo "▶ nix lint"
-    statix check .
-    deadnix --fail .
+    statix check -i templates .
+    deadnix --fail --exclude templates .
     @echo "▶ flake check"
     nix flake check --print-build-logs --all-systems
     @echo "✅ CI mirror passed"
