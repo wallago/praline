@@ -95,6 +95,12 @@
               # {if:cliff}
               git-cliff
               # {endif:cliff}
+              # {if:taplo}
+              taplo
+              # {endif:taplo}
+              # {if:editorconfig}
+              editorconfig-checker
+              # {endif:editorconfig}
 
               # nix tooling
               nixfmt
