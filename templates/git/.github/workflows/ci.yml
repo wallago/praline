@@ -32,7 +32,7 @@ jobs:
           - riscv64gc-unknown-linux-gnu
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -46,7 +46,7 @@ jobs:
       - name: Build the project
         run: cross build --locked --verbose --target ${{ matrix.target }}
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.BIN_NAME }}-${{ matrix.target }}
           path: target/${{ matrix.target }}/debug/${{ env.BIN_NAME }}
@@ -61,11 +61,11 @@ jobs:
       actions: write
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Nix
-        uses: nixbuild/nix-quick-install-action@v28
+        uses: nixbuild/nix-quick-install-action@v35
       - name: Restore and cache Nix store
-        uses: nix-community/cache-nix-action@v5
+        uses: nix-community/cache-nix-action@v7
         with:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.nix', 'flake.lock', 'Cargo.lock', 'Cargo.toml') }}
           restore-prefixes-first-match: nix-${{ runner.os }}-
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Cache Cargo dependencies
@@ -102,7 +102,7 @@ jobs:
       - name: Upload coverage to Codecov
         # codecov cannot do a tokenless upload under act
         if: ${{ github.actor != 'nektos/act' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           name: code-coverage-report
           files: lcov.info
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Cache Cargo dependencies
@@ -135,10 +135,10 @@ jobs:
     steps:
       - name: Checkout the repository
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Checkout the repository
         if: github.event_name == 'pull_request'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -162,7 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -176,7 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install editorconfig-checker
         uses: editorconfig-checker/action-editorconfig-checker@main
       - name: Check file formatting
@@ -188,7 +188,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-binstall
@@ -204,7 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -220,7 +220,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Run cargo-deny
         uses: EmbarkStudios/cargo-deny-action@v2
         with:
@@ -232,7 +232,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-binstall
@@ -248,7 +248,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Run lychee
         uses: lycheeverse/lychee-action@v2
         with:
@@ -262,7 +262,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check typos
         uses: crate-ci/typos@master
   # {endif:typos}
@@ -272,7 +272,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-binstall
