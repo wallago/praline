@@ -53,8 +53,8 @@
             buildApp =
               { release }:
               let
-                name = "repo-builder";
-                desc = " TUI app to build dynamically deps for personal repo.";
+                name = "praline";
+                desc = " Helper TUI app to scaffold an idiomatic repo.";
               in
               pkgs.callPackage ./nix/package.nix {
                 inherit
@@ -109,13 +109,13 @@
           {
             # ── Packages ──────────────────────────────────────────────
             packages = rec {
-              repo-builder = buildApp { release = true; };
-              repo-builder-debug = buildApp { release = false; };
-              default = repo-builder;
+              praline = buildApp { release = true; };
+              praline-debug = buildApp { release = false; };
+              default = praline;
             };
 
             # ── Checks (nix flake check) ─────────────────────────────
-            checks.check = self.packages.${system}.repo-builder-debug;
+            checks.check = self.packages.${system}.praline-debug;
 
             # ── Dev Shell (nix develop) ──────────────────────────────
             devShells.default = pkgs.mkShell {

@@ -107,13 +107,13 @@
           {
             # ── Packages ──────────────────────────────────────────────
             packages = rec {
-              repo-builder = buildApp { release = true; };
-              repo-builder-debug = buildApp { release = false; };
-              default = repo-builder;
+              {name} = buildApp { release = true; };
+              {name}-debug = buildApp { release = false; };
+              default = {name};
             };
 
             # ── Checks (nix flake check) ─────────────────────────────
-            checks.check = self.packages.${system}.repo-builder-debug;
+            checks.check = self.packages.${system}.{name}-debug;
 
             # ── Dev Shell (nix develop) ──────────────────────────────
             devShells.default = pkgs.mkShell {
