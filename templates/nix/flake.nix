@@ -2,8 +2,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    # {if:rust}
     naersk.url = "github:nix-community/naersk";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    # {endif:rust}
     # {if:claude}
     claude-code = {
       url = "github:sadjow/claude-code-nix";
@@ -17,13 +19,16 @@
       self,
       nixpkgs,
       flake-utils,
+      # {if:rust}
       rust-overlay,
       naersk,
+      # {endif:rust}
       # {if:claude}
       claude-code,
       # {endif:claude}
       ...
     }:
+    # {if:rust}
     # ── System-agnostic outputs (modules) live out here ──
     {
       nixosModules.default = import ./nix/module.nix self;
@@ -31,6 +36,7 @@
     }
     # ── Then merge the per-system outputs onto it ──
     //
+    # {endif:rust}
       flake-utils.lib.eachSystem
         [
           "x86_64-linux"
@@ -39,12 +45,20 @@
         (
           system:
           let
+            # {if:rust}
             overlays = [ (import rust-overlay) ];
+            # {endif:rust}
             pkgs = import nixpkgs {
-              inherit system overlays;
+              inherit 
+                system 
+                # {if:rust}
+                overlays
+                # {endif:rust}
+              ;
               config.allowUnfree = true;
             };
 
+            # {if:rust}
             # ── Toolchain ─────────────────────────────────────────────
             rust = pkgs.rust-bin.nightly.latest.default;
 
@@ -69,6 +83,7 @@
                   ;
                 src = ./.;
               };
+            # {endif:rust}
 
             # {if:claude}
             # ── Claude Settings ─────────────────────────────────────
@@ -77,15 +92,17 @@
 
             # ── Tooling shared by the dev shell and CI ───────────────
             ciTools = with pkgs; [
+              # {if:rust}
               rust
               # rust tooling
               cargo-nextest
-              # {if:deny}
-              cargo-deny
-              # {endif:deny}
               cargo-audit
               cargo-machete
               cargo-edit
+              # {endif:rust}
+              # {if:deny}
+              cargo-deny
+              # {endif:deny}
               # {if:typos}
               typos
               # {endif:typos}
@@ -111,6 +128,7 @@
             ];
           in
           {
+            # {if:rust}
             # ── Packages ──────────────────────────────────────────────
             packages = rec {
               {name} = buildApp { release = true; };
@@ -120,6 +138,7 @@
 
             # ── Checks (nix flake check) ─────────────────────────────
             checks.check = self.packages.${system}.{name}-debug;
+            # {if:endrust}
 
             # ── Dev Shell (nix develop) ──────────────────────────────
             devShells.default = pkgs.mkShell {
