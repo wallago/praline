@@ -6,7 +6,7 @@ self:
   ...
 }:
 let
-  cfg = config.services.praline;
+  cfg = config.programs.praline;
   settingsFormat = pkgs.formats.toml { };
   configFile = settingsFormat.generate "config.toml" cfg.settings;
 in
