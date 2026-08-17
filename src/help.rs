@@ -103,8 +103,10 @@ pub fn write_entry(root: &Path, name: &str, content: &[u8]) -> Result<()> {
 const IF_MARKER: &str = "{if:";
 /// Marker closing a tool-conditional template block.
 const ENDIF_MARKER: &str = "{endif:";
+/// Marker filtering a tool-conditional template block.
+const IFNOT_MARKER: &str = "{ifnot:";
 
-/// Rewrites a template on its way out: `{if:<tool>}` blocks first, then the
+/// Rewrites a template on its way out: `{if:<tool>}`/`{ifnot:<tool>}` blocks first, then the
 /// `{name}`, `{desc}`, and `{owner}` placeholders.
 ///
 /// Order matters — conditionals are resolved before placeholders, so a
@@ -120,7 +122,7 @@ pub fn substitute(content: &str, repo: &RepoBuilder) -> Vec<u8> {
         .into_bytes()
 }
 
-/// Extracts the tool name out of a `{<marker><tool>}` line, if it has one.
+/// Extracts the tool name out of a `{<marker><tool>}` line, if/ifnot it has one.
 ///
 /// The marker is matched anywhere in the line, so it can sit behind whatever
 /// comment syntax the template's file format uses.
@@ -130,11 +132,11 @@ fn marker_tool<'a>(line: &'a str, marker: &str) -> Option<&'a str> {
     Some(line[start..end].trim())
 }
 
-/// Drops `{if:<tool>}` / `{endif:<tool>}` blocks whose tool is not selected,
+/// Drops `{if:<tool>}`/`{ifnot:<tool>}`/`{endif:<tool>}` blocks whose tool is not selected,
 /// keeping the body of the ones whose tool is. The marker lines themselves are
 /// removed either way.
 fn strip_conditionals(content: &str, repo: &RepoBuilder) -> String {
-    if !content.contains(IF_MARKER) {
+    if !content.contains(IF_MARKER) || !content.contains(IFNOT_MARKER) {
         return content.to_string();
     }
     let mut out = String::with_capacity(content.len());
@@ -148,6 +150,12 @@ fn strip_conditionals(content: &str, repo: &RepoBuilder) -> String {
         }
         if let Some(tool) = marker_tool(line, IF_MARKER) {
             if skipping.is_none() && !repo.is_selected(tool) {
+                skipping = Some(tool);
+            }
+            continue;
+        }
+        if let Some(tool) = marker_tool(line, IFNOT_MARKER) {
+            if skipping.is_none() && repo.is_selected(tool) {
                 skipping = Some(tool);
             }
             continue;
