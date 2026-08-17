@@ -23,8 +23,6 @@ pub(super) mod deny;
 pub(super) mod editorconfig;
 /// Tool emitting `.envrc`.
 pub(super) mod envrc;
-/// Tool emitting `templates/nix/` — `flake.nix` and lockfile.
-pub(super) mod flake;
 /// Tool emitting `templates/git/` — gitignore, workflows, issue and PR templates.
 pub(super) mod git;
 /// Tool emitting `justfile`.
@@ -33,6 +31,8 @@ pub(super) mod just;
 pub(super) mod lychee;
 /// Tool emitting no files; gates `{if:machete}` blocks elsewhere.
 pub(super) mod machete;
+/// Tool emitting `templates/nix/` — `flake.nix` and lockfile.
+pub(super) mod nix;
 /// Tool emitting `templates/rust/` — `Cargo.toml` and starter crate layout.
 pub(super) mod rust;
 /// Tool emitting `rustfmt.toml`.

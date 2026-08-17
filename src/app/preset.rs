@@ -17,7 +17,7 @@ const MINIMAL: &[&str] = &["git", "editorconfig", "typos"];
 /// Tools `Repo` adds on top of [`MINIMAL`].
 const REPO: &[&str] = &[
     "envrc",
-    "flake",
+    "nix",
     "justfile",
     "claude",
     "cliff",

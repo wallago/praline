@@ -6,8 +6,8 @@ use tempfile::{TempDir, tempdir};
 use crate::app::preset::Preset;
 use crate::app::tool::{
     Tool, audit::Audit, claude::Claude, cliff::Cliff, clippy::Clippy, codecov::Codecov,
-    committed::Committed, deny::Deny, editorconfig::EditorConfig, envrc::Envrc, flake::Flake,
-    git::Git, just::Just, lychee::Lychee, machete::Machete, rust::Rust, rustfmt::RustFmt,
+    committed::Committed, deny::Deny, editorconfig::EditorConfig, envrc::Envrc, git::Git,
+    just::Just, lychee::Lychee, machete::Machete, nix::Nix, rust::Rust, rustfmt::RustFmt,
     taplo::Taplo, typos::Typos,
 };
 use crate::prelude::*;
@@ -58,7 +58,7 @@ impl Default for RepoBuilder {
             Box::new(Just),
             Box::new(Envrc),
             Box::new(Git),
-            Box::new(Flake),
+            Box::new(Nix),
             Box::new(Rust),
             Box::new(Audit),
             Box::new(Machete),
