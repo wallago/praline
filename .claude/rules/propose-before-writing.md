@@ -1,32 +1,43 @@
-# Propose before writing
+# Propose Before Writing
 
-**Do not call Edit or Write on any file in this repo until the change has been
-shown and approved.** This covers everything — `src/`, `templates/`, configs,
-workflows, `CLAUDE.md`, and this file.
+**Do not call Edit or Write on any file until I've seen the change and said
+go.** Everything: source, templates, configs, workflows, this file.
 
-## The flow
+## The Flow
 
-1. Print the change as a unified diff in a ```diff code block, one block per
-   file, headed by the file path. Show enough surrounding context to read it —
-   a bare `-`/`+` pair with no context is not reviewable.
-2. Stop and wait. Do not chain the edit onto the same turn.
-3. On "ok" / "go" / "apply", write the files exactly as shown. If the applied
-   version has to differ from the diff, say so — do not silently drift.
+1. Show the change (format below), one block per file, headed by the path.
+2. Stop. Don't chain the edit onto the same turn.
+3. On "ok" / "go" / "apply", write it exactly as shown. If what you write has
+   to differ, say so — don't drift silently.
 
-New files are shown as a full listing in a syntax-highlighted block rather than
-an all-`+` diff.
+Often I'll apply it myself, or come back with edits to it. Both are normal:
+treat "done" as the go-ahead to verify, not to re-edit the file.
 
-## What this does not block
+Batch every diff for one logical change into a single message.
 
-Read-only work needs no approval; go straight to it. That means `Read`, `Grep`,
-`Glob`, `git` queries, and the whole `just` gate (`just check`, `just lint`,
-`just ci`) — including after a change lands, to verify it.
+## Format
 
-## Notes
+I copy out of these blocks by hand, so the format is part of the ask.
 
-The user may apply the patch by hand instead, or come back with edits to it.
-Both are normal: treat "I did it" as the go-ahead to move on to verification
-rather than re-editing the file.
+**New file** — full listing in a syntax-highlighted block. No `+` prefixes.
 
-Batch the diffs for one logical change into a single message so the whole thing
-can be reviewed at once, rather than one file per turn.
+**Mostly-additive change** — show the region _as it should end up_, in a plain
+block of the file's own language, with two or three lines of real surrounding
+context so I can find the spot. Describe any removal in prose above it.
+
+**Subtle or removal-heavy change** — unified diff in a ```diff block. Then:
+markers go in column 1 with nothing indented ahead of them, so a rectangular
+selection starting at column 2 gives me clean text. No line numbers, no `@@`
+headers unless the file is big enough that I'd otherwise hunt for the hunk.
+
+Either way: enough context to be readable. A bare `-`/`+` pair floating alone
+isn't reviewable.
+
+## Before a multi-file change
+
+If a change touches more than two files, list them first — path plus one line
+on what happens to each — and stop there. I'll say go, or cut the list down.
+Then show the diffs.
+
+Every line in the final diff should trace to something I asked for. Noticed
+something unrelated that's wrong? Say so in prose. Don't fold it in.
