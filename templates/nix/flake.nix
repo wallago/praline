@@ -96,10 +96,15 @@
               rust
               # rust tooling
               cargo-nextest
-              cargo-audit
-              cargo-machete
               cargo-edit
               # {endif:rust}
+
+              # {if:audit}
+              cargo-audit
+              # {endif:audit}
+              # {if:machete}
+              cargo-machete
+              # {endif:machete}
               # {if:deny}
               cargo-deny
               # {endif:deny}
@@ -145,8 +150,12 @@
               buildInputs =
                 ciTools
                 ++ (with pkgs; [
+                  # {if:rust}
                   rust-analyzer
+                  # {endif:rust}
+                  # {if:justfile}
                   just
+                  # {endif:justfile}
                   # {if:claude}
                   claude
                   # {endif:claude}
