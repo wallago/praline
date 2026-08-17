@@ -1,70 +1,96 @@
-# CLAUDE.md
+# {name}
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+{desc}
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+<!-- TODO — three or four lines on shape: the entry point, the two or three
+     modules that matter, and where a typical change lands. Claude reads this
+     before every task, so a wrong description costs more than an empty one.
+     Delete this comment when written. -->
 
-## 1. Think Before Coding
+## Rules
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+Standalone rules live in `.claude/rules/` and are imported here — only files
+reachable from `CLAUDE.md` get loaded, so a new rule needs a line below.
 
-Before implementing:
+@.claude/rules/propose-before-writing.md
+@.claude/rules/no-repo-mutation.md
+@.claude/rules/no-hanging-commands.md
+@.claude/rules/prevent-looping-fail.md
 
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+<!-- {if:rust} -->
 
-## 2. Simplicity First
+@.claude/rules/rust.md
 
-**Minimum code that solves the problem. Nothing speculative.**
+<!-- {endif:rust} -->
+<!-- {if:flake} -->
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+@.claude/rules/nix.md
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+<!-- {endif:flake} -->
+<!-- {if:cliff} -->
 
-## 3. Surgical Changes
+@.claude/rules/release.md
 
-**Touch only what you must. Clean up only your own mess.**
+<!-- {endif:cliff} -->
 
-When editing existing code:
+## Commands
 
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
+<!-- {if:justfile} -->
 
-When your changes create orphans:
+`just` is the entry point, not the raw toolchain. `just --list` for the rest.
 
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+- `just check` — fast type-check, no binary
+- `just test` — test suite
+- `just fmt` — format sources in place
+- `just lint` — lint with warnings denied
+- `just ci` — the full local gate; run this before pushing
+<!-- {endif:justfile} -->
 
-The test: Every changed line should trace directly to the user's request.
+<!-- {ifnot:justfile} -->
+<!-- {if:rust} -->
 
-## 4. Goal-Driven Execution
+- `cargo check --all-targets`
+- `cargo nextest run`
+- `cargo fmt`
+- `cargo clippy --all-targets -- -D warnings`
 
-**Define success criteria. Loop until verified.**
+<!-- {endif:rust} -->
+<!-- {endif:justfile} -->
 
-Transform tasks into verifiable goals:
+<!-- TODO — anything above that is wrong here, and any command that exists only
+     in this repo: seeding, fixtures, a dev server, a hardware target. -->
 
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
+## Constraints
 
-For multi-step tasks, state a brief plan:
+<!-- {if:typos} -->
 
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
+- `typos` runs over the source. Add a real term to `typos.toml` rather than
+  rewording around it.
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+<!-- {endif:typos} -->
 
----
+<!-- {if:committed} -->
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+- Commit messages must be Conventional Commits; `committed` checks them in CI.
+
+<!-- {endif:committed} -->
+
+<!-- {if:lychee} -->
+
+- Links in Markdown are checked in CI. A placeholder URL fails the build.
+
+<!-- {endif:lychee} -->
+
+## Verifying a change
+
+<!-- {if:justfile} -->
+
+`just ci-light` is the gate. Green means green.
+
+<!-- {endif:justfile} -->
+
+<!-- TODO — what the gate *cannot* catch here, and how it gets checked instead.
+     Be specific. "The binary is a full-screen TUI so it can't be driven
+     headlessly — UI changes get verified by reading, by `cargo check`, and by
+     asking me to run it" is the useful kind. Never claim a change works
+     without saying how it was checked. -->
