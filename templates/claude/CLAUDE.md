@@ -22,11 +22,11 @@ reachable from `CLAUDE.md` get loaded, so a new rule needs a line below.
 @.claude/rules/rust.md
 
 <!-- {endif:rust} -->
-<!-- {if:flake} -->
+<!-- {if:nix} -->
 
 @.claude/rules/nix.md
 
-<!-- {endif:flake} -->
+<!-- {endif:nix} -->
 <!-- {if:cliff} -->
 
 @.claude/rules/release.md
