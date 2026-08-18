@@ -1,3 +1,5 @@
+<!-- {if:rust} -->
+
 # Rust
 
 Edition and MSRV are pinned in `Cargo.toml` and enforced in CI. Don't reach for
@@ -58,3 +60,5 @@ letting the compiler find out.
 `Cargo.lock` is not a file you edit. It changes as a side effect of a
 dependency change, and that makes it a separate commit from the code — never
 bundled into a feature diff.
+
+<!-- {endif:rust} -->

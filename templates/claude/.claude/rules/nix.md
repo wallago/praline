@@ -1,3 +1,5 @@
+<!-- {if:nix} -->
+
 # Nix
 
 The dev shell is the environment. Tooling comes from the flake — don't assume
@@ -22,3 +24,5 @@ isn't checked.
 `flake.lock` is not a file you edit. It changes as a side effect of a
 dependency change, and that makes it a separate commit from the code — never
 bundled into a feature diff.
+
+<!-- {endif:nix} -->
