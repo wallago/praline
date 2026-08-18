@@ -4,6 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  # {if:rust}
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
@@ -11,6 +12,8 @@ updates:
     groups:
       cargo-dependencies:
         patterns: ["*"]
+  # {endif:rust}
+  # {if:nix}
   - package-ecosystem: "nix"
     directory: "/"
     schedule:
@@ -18,3 +21,4 @@ updates:
     groups:
       flake-inputs:
         patterns: ["*"]
+# {endif:nix}

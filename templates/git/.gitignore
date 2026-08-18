@@ -1,3 +1,4 @@
+# {if:rust}
 # ── Rust / Cargo ─────────────────────────────────────────────
 # Compiled files, executables, and build artifacts
 debug/
@@ -13,11 +14,16 @@ target/
 **/mutants.out*/
 
 # NOTE: Cargo.lock is committed on purpose
+# {endif:rust}
 
+# {if:nix}
 # ── Nix ──────────────────────────────────────────────────────
 # Build result symlinks (result, result-bin, result-1, …)
 /result
 /result-*
+# {endif:nix}
 
+# {if:envrc}
 # ── Local development environment ────────────────────────────
 .direnv/
+# {endif:envrc}
