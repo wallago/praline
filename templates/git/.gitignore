@@ -23,7 +23,8 @@ target/
 /result-*
 # {endif:nix}
 
-# {if:envrc}
 # ── Local development environment ────────────────────────────
+# {if:envrc}
 .direnv/
 # {endif:envrc}
+*.dev.*
