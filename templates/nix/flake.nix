@@ -107,6 +107,9 @@
               # {if:audit}
               cargo-audit
               # {endif:audit}
+              # {if:lychee}
+              lychee
+              # {endif:lychee}
               # {if:machete}
               cargo-machete
               # {endif:machete}
