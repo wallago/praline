@@ -6,7 +6,7 @@ self:
   ...
 }:
 let
-  cfg = config.programs.repo-builder;
+  cfg = config.programs."{name}";
 in
 {
   options.programs."{name}" = {
