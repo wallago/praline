@@ -23,7 +23,7 @@ test *ARGS:
 # Run the test suite. Usage: just test [pattern]
 [group('dev')]
 coverage-report:
-    cargo llvm-cov nextest --html --open
+    cargo llvm-cov nextest 
 
 # Format Rust + Nix sources in place
 [group('dev')]

@@ -60,7 +60,12 @@
 
             # {if:rust}
             # ── Toolchain ─────────────────────────────────────────────
-            rust = pkgs.rust-bin.nightly.latest.default;
+            rust = pkgs.rust-bin.nightly.latest.default.override {
+              extensions = [
+                "llvm-tools-preview"
+                "rust-src"
+              ];
+            };
 
             naersk' = pkgs.callPackage naersk {
               cargo = rust;
@@ -108,6 +113,9 @@
               # {if:deny}
               cargo-deny
               # {endif:deny}
+              # {if:codecov}
+              cargo-llvm-cov
+              # {endif:codecov}
               # {if:typos}
               typos
               # {endif:typos}

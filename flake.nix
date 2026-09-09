@@ -41,7 +41,12 @@
             };
 
             # ── Toolchain ─────────────────────────────────────────────
-            rust = pkgs.rust-bin.nightly.latest.default;
+            rust = pkgs.rust-bin.nightly.latest.default.override {
+              extensions = [
+                "llvm-tools-preview"
+                "rust-src"
+              ];
+            };
 
             naersk' = pkgs.callPackage naersk {
               cargo = rust;
@@ -87,6 +92,7 @@
               cargo-machete
               cargo-edit
               cargo-msrv
+              cargo-llvm-cov
 
               # repo tooling
               typos
