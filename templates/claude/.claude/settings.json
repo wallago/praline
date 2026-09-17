@@ -32,7 +32,7 @@
       {endif:rust}
       {if:clippy}
       "Bash(cargo clippy*)",
-      {clippyif:clippy}
+      {endif:clippy}
       {if:machete}
       "Bash(cargo machete*)",
       {endif:machete}
