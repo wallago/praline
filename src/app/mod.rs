@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use strum::IntoEnumIterator;
+
 use crate::app::engine::{Tree, write_tree};
 use crate::app::opt::OptId;
 use crate::error::EngineError::{NotGenerated, TargetExists};
@@ -12,6 +14,11 @@ mod opt;
 mod category;
 
 mod engine;
+
+pub(crate) mod prelude {
+    pub(crate) use super::category::Category;
+    pub(crate) use super::opt::OptId;
+}
 
 /// Repo builder.
 #[derive(Debug)]
@@ -27,8 +34,6 @@ pub struct App {
     /// Last render, shown in the preview and written on export.
     pub(crate) staged: Option<Tree>,
 }
-
-use strum::IntoEnumIterator;
 
 /// Selectable repo option.
 #[derive(Debug)]

@@ -9,6 +9,9 @@ pub mod args;
 // /// Terminal user interface.
 // pub mod tui;
 
+/// User interface.
+mod ui;
+
 /// Config file.
 pub mod config;
 
@@ -45,7 +48,7 @@ use crate::{
 pub fn run(args: &Args) -> Result<()> {
     let config = Config::load(args.config.as_deref())?;
     // start_tui(args, config)
-    Ok(())
+    ui::run(config)
 }
 
 // /// Starts the terminal user interface.

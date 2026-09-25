@@ -20,31 +20,3 @@ pub(crate) enum Category {
     /// Environment and tooling setup.
     Env,
 }
-
-impl Category {
-    /// Every category, in the order they appear in the summary.
-    pub(crate) const ALL: [Self; 8] = [
-        Self::Git,
-        Self::Env,
-        Self::Build,
-        Self::Format,
-        Self::Lint,
-        Self::Test,
-        Self::Security,
-        Self::Release,
-    ];
-
-    /// Get color for a Category.
-    pub(crate) fn color(self) -> Color {
-        match self {
-            Self::Format => Color::Blue,
-            Self::Lint => Color::Red,
-            Self::Test => Color::Magenta,
-            Self::Security => Color::Green,
-            Self::Build => Color::LightBlue,
-            Self::Release => Color::Cyan,
-            Self::Git => Color::Yellow,
-            Self::Env => Color::LightRed,
-        }
-    }
-}
