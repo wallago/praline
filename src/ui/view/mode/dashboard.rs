@@ -89,7 +89,19 @@ fn render_options(state: &mut State, frame: &mut Frame, chunk: Rect) {
         .title(title)
         .padding(Padding::new(1, 1, 1, 0))
         .border_style(border(state, DashboardPane::Options));
-    let options = OptId::iter().map(<&'static str>::from).collect::<Vec<_>>();
+    let options = state
+        .app
+        .options
+        .iter()
+        .map(|opt| {
+            let mark = if opt.checked {
+                Span::styled("▬ ", ASCENT)
+            } else {
+                Span::raw("  ")
+            };
+            Line::from(vec![mark, Span::raw(<&'static str>::from(opt.id))])
+        })
+        .collect::<Vec<_>>();
     let list = List::new(options)
         .block(block)
         .style(SECONDARY)

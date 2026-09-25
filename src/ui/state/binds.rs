@@ -5,6 +5,7 @@ use ratatui::{
 use strum::IntoEnumIterator;
 
 use crate::{
+    app::App,
     prelude::OptId,
     ui::{
         prelude::*,
@@ -31,6 +32,7 @@ enum Action {
     PrevPane,
     Enter,
     Leave,
+    Generate,
 }
 
 impl State {
@@ -45,6 +47,12 @@ impl State {
                 Mode::Dashboard => {
                     binds.push((self.keybindings.leave.to_string(), "Leave"));
                     binds.push((self.keybindings.confirm.to_string(), "Confirm"));
+                    binds.push((self.keybindings.scroll_up.to_string(), "Scroll UP"));
+                    binds.push((self.keybindings.scroll_down.to_string(), "Scroll DOWN"));
+                    binds.push((self.keybindings.generate.to_string(), "Generate"));
+                    if self.dashboard.focus == DashboardPane::Options {
+                        binds.push((self.keybindings.enter.to_string(), "Toogle opt"));
+                    }
                 }
                 Mode::Details => {
                     binds.push((self.keybindings.leave.to_string(), "Leave"));
@@ -69,6 +77,7 @@ impl State {
             (&keys.scroll_down, Action::Down),
             (&keys.leave, Action::Leave),
             (&keys.confirm, Action::Enter),
+            (&keys.generate, Action::Generate),
         ];
         if let Some(&(_, action)) = bound.iter().find(|(pattern, _)| pattern.matches(key)) {
             return action;
@@ -104,6 +113,7 @@ impl State {
             }
             (Focus::Sidebar, Action::Enter) => self.focus = Focus::Page,
             (Focus::Page, Action::Leave) => self.focus = Focus::Sidebar,
+            (Focus::Page, Action::Generate) => if self.mode == Mode::Dashboard {},
             (Focus::Page, Action::NextPane | Action::PrevPane) => {
                 let forward = action == Action::NextPane;
                 let stayed = match self.mode {
@@ -115,7 +125,7 @@ impl State {
                 }
             }
             (Focus::Page, _) => match self.mode {
-                Mode::Dashboard => self.dashboard.on_action(action),
+                Mode::Dashboard => self.dashboard.on_action(action, &mut self.app),
                 Mode::Details | Mode::Settings => {}
             },
             _ => {}
@@ -129,21 +139,27 @@ impl State {
             return;
         }
         self.on_action(self.action(&key));
-        // match self.modal.take() {
-        //     Some(modal) => self.modal = self.on_modal_key(modal, key),
-        // None => self.on_action(self.action(&key)),
-        // }
     }
 }
 
 impl Dashboard {
-    fn on_action(&mut self, action: Action) {
+    fn on_action(&mut self, action: Action, app: &mut App) {
         match (self.focus, action) {
             (DashboardPane::Options, Action::Up) => {
                 step_in(&mut self.options, OptId::iter().len(), false)
             }
             (DashboardPane::Options, Action::Down) => {
                 step_in(&mut self.options, OptId::iter().len(), true)
+            }
+            (DashboardPane::Options, Action::Enter) => {
+                let Some(opt) = self
+                    .options
+                    .selected()
+                    .and_then(|at| app.options.get_mut(at))
+                else {
+                    return;
+                };
+                opt.checked = !opt.checked;
             }
             _ => {}
         }

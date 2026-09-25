@@ -1,5 +1,8 @@
+use std::collections::HashSet;
+
 use ratatui::widgets::ListState;
 
+use crate::app::App;
 use crate::config::{Config, binds::Keybindings};
 use crate::prelude::*;
 use crate::ui::state::mode::{Dashboard, DashboardPane, Mode};
@@ -28,11 +31,12 @@ pub struct State {
     pub(crate) dashboard: Dashboard,
     // pub(super) details: Details,
     // pub(super) settings: Settings,
+    pub(crate) app: App,
 }
 
 impl State {
     /// Constructs a new instance of [`State`].
-    pub(crate) fn new(config: Config) -> Result<Self> {
+    pub(crate) fn new(config: Config, app: App) -> Result<Self> {
         Ok(Self {
             running: true,
             mode: Mode::default(),
@@ -42,6 +46,7 @@ impl State {
                 options: ListState::default().with_selected(Some(0)),
                 ..Dashboard::default()
             },
+            app,
         })
     }
 }

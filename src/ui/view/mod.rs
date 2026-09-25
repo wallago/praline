@@ -11,6 +11,7 @@ use ratatui::{
 };
 
 use super::prelude::*;
+use crate::ui::state::mode::Mode;
 
 mod mode;
 mod sidebar;
@@ -40,7 +41,11 @@ pub(super) fn render(state: &mut State, frame: &mut Frame) {
         .spacing(2)
         .split(frame.area());
         sidebar::render(state, frame, chunks[0]);
-        mode::dashboard::render(state, frame, chunks[1]);
+        match state.mode {
+            Mode::Dashboard => mode::dashboard::render(state, frame, chunks[1]),
+            Mode::Details => mode::details::render(state, frame, chunks[1]),
+            Mode::Settings => mode::dashboard::render(state, frame, chunks[1]),
+        }
     }
     render_key_bindings(state, frame, frame.area());
 }

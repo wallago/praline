@@ -24,11 +24,8 @@ pub mod help;
 /// Common types that can be glob-imported for convenience.
 pub mod prelude;
 
-use std::io;
-
 use args::Args;
 use prelude::*;
-use ratatui::{Terminal, backend::CrosstermBackend};
 
 use crate::{
     config::Config,

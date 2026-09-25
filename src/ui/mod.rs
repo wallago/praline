@@ -3,7 +3,7 @@ use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
 };
 
-use crate::{config::Config, error::Result};
+use crate::{app::App, config::Config, error::Result};
 
 // /// Terminal backend.
 // mod backend;
@@ -25,7 +25,7 @@ mod prelude {
 /// Runs the UI until the user quits, restoring the terminal either way.
 pub(crate) fn run(config: Config) -> Result<()> {
     let mut terminal = ratatui::try_init()?;
-    let result = event_loop(&mut terminal, state::State::new(config)?);
+    let result = event_loop(&mut terminal, state::State::new(config, App::default())?);
     ratatui::restore();
     result
 }

@@ -1,4 +1,8 @@
+use std::collections::HashSet;
+
 use ratatui::widgets::ListState;
+
+use crate::prelude::OptId;
 
 /// Which mode is currently showing.
 #[derive(
@@ -13,7 +17,7 @@ use ratatui::widgets::ListState;
     strum::FromRepr,
 )]
 #[strum(serialize_all = "lowercase")]
-pub enum Mode {
+pub(crate) enum Mode {
     #[default]
     Dashboard,
     Details,
@@ -21,11 +25,11 @@ pub enum Mode {
 }
 
 impl Mode {
-    pub fn next(self) -> Self {
+    pub(crate) fn next(self) -> Self {
         Self::from_repr(self as usize + 1).unwrap_or(self)
     }
 
-    pub fn previous(self) -> Self {
+    pub(crate) fn previous(self) -> Self {
         (self as usize)
             .checked_sub(1)
             .and_then(Self::from_repr)
@@ -35,7 +39,7 @@ impl Mode {
 
 /// Focusable panes on the dashboard, in Tab order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, strum::EnumIter)]
-pub enum DashboardPane {
+pub(crate) enum DashboardPane {
     #[default]
     Options,
     Tdf,
@@ -45,7 +49,7 @@ pub enum DashboardPane {
 
 /// Everything the dashboard remembers between visits.
 #[derive(Debug, Default)]
-pub struct Dashboard {
-    pub focus: DashboardPane,
-    pub options: ListState,
+pub(crate) struct Dashboard {
+    pub(crate) focus: DashboardPane,
+    pub(crate) options: ListState,
 }
