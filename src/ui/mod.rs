@@ -3,10 +3,7 @@ use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
 };
 
-use crate::{
-    config::{Config, binds::Keybindings},
-    error::Result,
-};
+use crate::{config::Config, error::Result};
 
 // /// Terminal backend.
 // mod backend;

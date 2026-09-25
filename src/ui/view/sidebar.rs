@@ -5,13 +5,15 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, BorderType, Gauge, HighlightSpacing, List, ListState, Padding},
 };
+use strum::IntoEnumIterator;
 
-use crate::ui::prelude::*;
+use crate::ui::state::mode::DashboardPane;
+use crate::ui::{prelude::*, state::mode::Mode};
 
-pub(super) fn render(frame: &mut Frame, chunk: Rect) {
+pub(super) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(Direction::Vertical, [Constraint::Ratio(1, 3); 3]).split(chunk);
     {
-        render_navigate(frame, chunks[1]);
+        render_navigate(state, frame, chunks[1]);
         let title = Line::from(vec![
             Span::raw(" "),
             Span::styled("cook", ASCENT).bold(),
@@ -26,25 +28,27 @@ pub(super) fn render(frame: &mut Frame, chunk: Rect) {
     }
 }
 
-fn render_navigate(frame: &mut Frame, chunk: Rect) {
+fn render_navigate(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let title = Line::from(vec![
         Span::raw(" "),
         Span::styled("navigate", ASCENT).bold(),
         Span::raw(" "),
     ]);
+    let focused = state.focus == Focus::Sidebar;
     let block = Block::bordered()
         .border_type(BorderType::Rounded)
         .title(title)
-        .border_style(ASCENT_BIS)
-        .padding(Padding::new(1, 1, 1, 0));
-    let list = List::new(["dashboard", "details", "settings"])
+        .padding(Padding::new(1, 1, 1, 0))
+        .border_style(if focused { ASCENT } else { ASCENT_BIS });
+    let items = Mode::iter().map(<&'static str>::from);
+    let list = List::new(items)
         .block(block)
         .style(SECONDARY)
         .highlight_style(Style::new().fg(ASCENT).bg(ASCENT_BIS).bold())
         .highlight_symbol(Span::styled("▌ ", ASCENT))
         .highlight_spacing(HighlightSpacing::Always);
-    let mut state = ListState::default().with_selected(Some(0));
-    frame.render_stateful_widget(list, chunk, &mut state);
+    let mut list_state = ListState::default().with_selected(Some(state.mode as usize));
+    frame.render_stateful_widget(list, chunk, &mut list_state);
 }
 
 fn render_summary(frame: &mut Frame, chunk: Rect) {

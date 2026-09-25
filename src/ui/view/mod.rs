@@ -1,7 +1,7 @@
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Stylize},
+    style::Stylize,
     text::{Line, Span},
     widgets::{
         Block,
@@ -39,8 +39,8 @@ pub(super) fn render(state: &mut State, frame: &mut Frame) {
         .margin(2)
         .spacing(2)
         .split(frame.area());
-        sidebar::render(frame, chunks[0]);
-        mode::dashboard::render(frame, chunks[1]);
+        sidebar::render(state, frame, chunks[0]);
+        mode::dashboard::render(state, frame, chunks[1]);
     }
     render_key_bindings(state, frame, frame.area());
 }

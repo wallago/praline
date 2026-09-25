@@ -1,27 +1,18 @@
-use std::time::{Duration, Instant};
+use ratatui::widgets::ListState;
 
-use ratatui::{
-    crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
-    style::{Color, Style},
-    widgets::ListState,
-};
-use ratatui_explorer::{FileExplorer, FileExplorerBuilder, Theme};
-use tui_input::Input;
-
+use crate::config::{Config, binds::Keybindings};
 use crate::prelude::*;
-use crate::{
-    config::{Config, binds::Keybindings},
-    ui::prelude::*,
-};
+use crate::ui::state::mode::{Dashboard, DashboardPane, Mode};
 
 mod binds;
+pub(super) mod mode;
 
-/// Which mode is currently showing.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Mode {
-    Dashboard,
-    Details,
-    Settings,
+/// Which side owns the keyboard.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Focus {
+    #[default]
+    Sidebar,
+    Page,
 }
 
 /// Application state.
@@ -31,7 +22,12 @@ pub struct State {
     pub(super) running: bool,
     /// Key bindings from `config.toml`.
     keybindings: Keybindings,
-    mode: Mode,
+    pub(super) mode: Mode,
+    /// Cursor in the dashboard's options list; survives mode switches.
+    pub(crate) focus: Focus,
+    pub(crate) dashboard: Dashboard,
+    // pub(super) details: Details,
+    // pub(super) settings: Settings,
 }
 
 impl State {
@@ -39,22 +35,13 @@ impl State {
     pub(crate) fn new(config: Config) -> Result<Self> {
         Ok(Self {
             running: true,
-            mode: Mode::Dashboard,
+            mode: Mode::default(),
             keybindings: config.keybindings,
+            focus: Focus::Sidebar,
+            dashboard: Dashboard {
+                options: ListState::default().with_selected(Some(0)),
+                ..Dashboard::default()
+            },
         })
-    }
-}
-
-impl State {
-    /// Handles a key press.
-    pub(crate) fn on_key(&mut self, key: KeyEvent) {
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
-            self.running = false;
-            return;
-        }
-        // match self.modal.take() {
-        //     Some(modal) => self.modal = self.on_modal_key(modal, key),
-        //     None => self.on_action(self.action(&key)),
-        // }
     }
 }
