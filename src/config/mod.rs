@@ -2,10 +2,7 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-use crate::{
-    config::binds::Keybindings,
-    error::{Error, Result},
-};
+use crate::{config::binds::Keybindings, prelude::*};
 
 /// App keybindings.
 pub(crate) mod binds;
@@ -45,9 +42,10 @@ impl Config {
     /// valid TOML for this config.
     pub fn from_file(path: &Path) -> Result<Self> {
         // Get raw content
-        let raw = std::fs::read_to_string(path)
-            .map_err(|error| Error::Config(format!("{}: {error}", path.display())))?;
+        let raw = std::fs::read_to_string(path)?;
         // Deserialize content in TOML format
-        toml::from_str(&raw).map_err(|error| Error::Config(format!("{}: {error}", path.display())))
+        toml::from_str(&raw).map_err(|error| {
+            ConfigError::TomlDeserialize(format!("{}: {error}", path.display())).into()
+        })
     }
 }

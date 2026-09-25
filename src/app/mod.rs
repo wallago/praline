@@ -1,26 +1,21 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use indexmap::IndexMap;
-use tempfile::{TempDir, tempdir};
-
-use crate::app::preset::Preset;
-use crate::app::tool::{
-    Tool, audit::Audit, claude::Claude, cliff::Cliff, clippy::Clippy, codecov::Codecov,
-    committed::Committed, deny::Deny, editorconfig::EditorConfig, envrc::Envrc, git::Git,
-    just::Just, lychee::Lychee, machete::Machete, nix::Nix, rust::Rust, rustfmt::RustFmt,
-    taplo::Taplo, typos::Typos,
-};
+use crate::app::engine::{Tree, write_tree};
+use crate::app::opt::OptId;
+use crate::error::EngineError::{NotGenerated, TargetExists};
 use crate::prelude::*;
 
 /// Optional tools.
-pub(crate) mod tool;
+mod opt;
 
-/// Named bundles of tools selectable in one keystroke.
-pub(crate) mod preset;
+/// Optional category.
+mod category;
+
+mod engine;
 
 /// Repo builder.
 #[derive(Debug)]
-pub struct RepoBuilder {
+pub struct App {
     /// Repo name.
     pub name: String,
     /// Repo description.
@@ -29,132 +24,123 @@ pub struct RepoBuilder {
     pub owner: String,
     /// Options available.
     pub(crate) options: Vec<Opt>,
-    /// Directory to test my stuff
-    pub dir: Option<TempDir>,
+    /// Last render, shown in the preview and written on export.
+    pub(crate) staged: Option<Tree>,
 }
+
+use strum::IntoEnumIterator;
 
 /// Selectable repo option.
 #[derive(Debug)]
 pub(crate) struct Opt {
-    /// Tool.
-    pub tool: Box<dyn Tool>,
-    /// Status to know if it will be added.
-    pub checked: bool,
+    /// Which option: the key into the table.
+    pub(crate) id: OptId,
+    /// Ticked by the user (it can still be inactive, see `Ctx::active`).
+    pub(crate) checked: bool,
 }
 
-impl Default for RepoBuilder {
+impl Default for App {
     fn default() -> Self {
-        let tools: Vec<Box<dyn Tool>> = vec![
-            Box::new(Taplo),
-            Box::new(Claude),
-            Box::new(Typos),
-            Box::new(RustFmt),
-            Box::new(EditorConfig),
-            Box::new(Clippy),
-            Box::new(Cliff),
-            Box::new(Codecov),
-            Box::new(Deny),
-            Box::new(Committed),
-            Box::new(Just),
-            Box::new(Envrc),
-            Box::new(Git),
-            Box::new(Nix),
-            Box::new(Rust),
-            Box::new(Audit),
-            Box::new(Machete),
-            Box::new(Lychee),
-        ];
         Self {
             name: String::new(),
             desc: String::new(),
             owner: String::new(),
-            options: tools
-                .into_iter()
-                .map(|tool| Opt {
-                    checked: tool.default_setup(),
-                    tool,
+            options: OptId::iter()
+                .map(|id| Opt {
+                    id,
+                    checked: id.def().default,
                 })
                 .collect(),
-            dir: None,
+            staged: None,
         }
     }
 }
 
-impl RepoBuilder {
-    /// Generate repo.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the temporary directory cannot be created, or if
-    /// writing any selected tool's template file to disk fails.
+impl App {
+    /// Renders the repo into memory.
     pub fn generate(&mut self) -> Result<()> {
-        let dir = tempdir()?;
-
-        // Optional tools — only the checked ones.
-        for opt in self.options.iter().filter(|opt| opt.checked) {
-            opt.tool.gen_template(dir.path(), self)?;
-        }
-
-        self.dir = Some(dir);
-
+        self.staged = Some(engine::generate(self)?);
         Ok(())
     }
 
-    /// Copies the staged repo out of the temporary directory into `dest`.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if nothing has been generated yet, if the target already
-    /// exists, or if any file copy fails.
+    /// Writes the last render to `dest/<name>`.
     pub fn create(&self, dest: &Path) -> Result<()> {
-        let Some(dir) = self.dir.as_ref() else {
-            return Err(Error::Config("nothing generated yet".to_string()));
+        let Some(tree) = &self.staged else {
+            return Err(NotGenerated.into());
         };
         let target = dest.join(&self.name);
         if target.exists() {
-            return Err(Error::Config(format!(
-                "{} already exists",
-                target.display()
-            )));
+            return Err(TargetExists(target).into());
         }
-        copy_dir_all(dir.path(), &target)
+        write_tree(tree, &target)
     }
 
-    /// Whether the tool with the given name is selected.
-    pub(crate) fn is_selected(&self, tool: &str) -> bool {
-        self.options
-            .iter()
-            .any(|opt| opt.checked && opt.tool.name() == tool)
-    }
+    // /// Generate repo.
+    // ///
+    // /// # Errors
+    // ///
+    // /// Returns an error if the temporary directory cannot be created, or if
+    // /// writing any selected tool's template file to disk fails.
+    // pub fn generate(&mut self) -> Result<()> {
+    //     self.dir = Some(engine::generate(self)?);
+    //     Ok(())
+    // }
 
-    /// Whether all conditions are met to generate the repo.
-    pub(crate) fn check(&self) -> bool {
-        !self.name.is_empty() && !self.desc.is_empty() && self.options.iter().any(|opt| opt.checked)
-    }
+    // /// Copies the staged repo out of the temporary directory into `dest`.
+    // ///
+    // /// # Errors
+    // ///
+    // /// Returns an error if nothing has been generated yet, if the target already
+    // /// exists, or if any file copy fails.
+    // pub fn create(&self, dest: &Path) -> Result<()> {
+    //     let Some(dir) = self.dir.as_ref() else {
+    //         return Err(Error::Config("nothing generated yet".to_string()));
+    //     };
+    //     let target = dest.join(&self.name);
+    //     if target.exists() {
+    //         return Err(Error::Config(format!(
+    //             "{} already exists",
+    //             target.display()
+    //         )));
+    //     }
+    //     copy_dir_all(dir.path(), &target)
+    // }
 
-    /// Get content of stage dir with a `IndexMap` of path and associated content.
-    pub(crate) fn inspect_stage(&mut self) -> Option<IndexMap<String, (String, PathBuf)>> {
-        let root = self.dir.as_ref().map(|dir| dir.path().to_path_buf())?;
-        let mut entries = IndexMap::new();
-        collect_files(&root, &root, &mut entries)?;
-        Some(entries)
-    }
+    // /// Whether the tool with the given name is selected.
+    // pub(crate) fn is_selected(&self, tool: &str) -> bool {
+    //     self.options
+    //         .iter()
+    //         .any(|opt| opt.checked && opt.tool.name() == tool)
+    // }
 
-    /// Checks exactly the tools `preset` selects, unchecking every other one.
-    pub(crate) fn apply_preset(&mut self, preset: Preset) {
-        for opt in &mut self.options {
-            opt.checked = preset.selects(&opt.tool.name());
-        }
-    }
+    // /// Whether all conditions are met to generate the repo.
+    // pub(crate) fn check(&self) -> bool {
+    //     !self.name.is_empty() && !self.desc.is_empty() && self.options.iter().any(|opt| opt.checked)
+    // }
+    //
+    // /// Get content of stage dir with a `IndexMap` of path and associated content.
+    // pub(crate) fn inspect_stage(&mut self) -> Option<IndexMap<String, (String, PathBuf)>> {
+    //     let root = self.dir.as_ref().map(|dir| dir.path().to_path_buf())?;
+    //     let mut entries = IndexMap::new();
+    //     collect_files(&root, &root, &mut entries)?;
+    //     Some(entries)
+    // }
 
-    /// The preset whose tool set matches the current selection exactly, if any.
-    ///
-    /// `None` means the user has hand-picked a set no preset describes.
-    pub(crate) fn active_preset(&self) -> Option<Preset> {
-        Preset::ALL.into_iter().find(|preset| {
-            self.options
-                .iter()
-                .all(|opt| opt.checked == preset.selects(&opt.tool.name()))
-        })
-    }
+    // /// Checks exactly the tools `preset` selects, unchecking every other one.
+    // pub(crate) fn apply_preset(&mut self, preset: Preset) {
+    //     for opt in &mut self.options {
+    //         opt.checked = preset.selects(&opt.tool.name());
+    //     }
+    // }
+
+    // /// The preset whose tool set matches the current selection exactly, if any.
+    // ///
+    // /// `None` means the user has hand-picked a set no preset describes.
+    // pub(crate) fn active_preset(&self) -> Option<Preset> {
+    //     Preset::ALL.into_iter().find(|preset| {
+    //         self.options
+    //             .iter()
+    //             .all(|opt| opt.checked == preset.selects(&opt.tool.name()))
+    //     })
+    // }
 }

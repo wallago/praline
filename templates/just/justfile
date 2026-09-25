@@ -1,42 +1,11 @@
-# List all commands
-default:
-    @just --list
+# {if:just}
+# Build the firmware image
+[group('firmware')]
+fw-build:
+    cd firmware && cargo build --release
 
-# Imports
-# {if:audit}
-import 'just/audit.just'
-# {endif:audit}
-# {if:cliff}
-import 'just/cliff.just'
-# {endif:cliff}
-# {if:clippy}
-import 'just/clippy.just'
-# {endif:clippy}
-# {if:machete}
-import 'just/machete.just'
-# {endif:machete}
-# {if:codecov}
-import 'just/codecov.just'
-# {endif:codecov}
-# {if:committed}
-import 'just/committed.just'
-# {endif:committed}
-# {if:deny}
-import 'just/deny.just'
-# {endif:deny}
-# {if:editorconfig}
-import 'just/editorconfig.just'
-# {endif:editorconfig}
-# {if:nix}
-import 'just/nix.just'
-# {endif:nix}
-# {if:rust}
-import 'just/rust.just'
-# {endif:rust}
-# {if:taplo}
-import 'just/taplo.just'
-# {endif:taplo}
-# {if:typos}
-import 'just/typos.just'
-# {endif:typos}
-import 'just/ci.just'
+# Flash the board (probe attached)
+[group('firmware')]
+flash:
+    cd firmware && cargo run --release
+# {endif:just}
