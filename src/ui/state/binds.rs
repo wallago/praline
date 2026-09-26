@@ -1,6 +1,6 @@
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
-    widgets::{ListState, TableState},
+    widgets::ListState,
 };
 use strum::IntoEnumIterator;
 
@@ -9,7 +9,7 @@ use crate::{
     prelude::OptId,
     ui::{
         prelude::*,
-        state::mode::{Dashboard, DashboardPane, Mode},
+        state::mode::{Dashboard, DashboardPane, Details, DetailsPane, Mode},
     },
 };
 
@@ -49,7 +49,6 @@ impl State {
                     binds.push((self.keybindings.confirm.to_string(), "Confirm"));
                     binds.push((self.keybindings.scroll_up.to_string(), "Scroll UP"));
                     binds.push((self.keybindings.scroll_down.to_string(), "Scroll DOWN"));
-                    binds.push((self.keybindings.generate.to_string(), "Generate"));
                     if self.dashboard.focus == DashboardPane::Options {
                         binds.push((self.keybindings.enter.to_string(), "Toogle opt"));
                     }
@@ -57,6 +56,8 @@ impl State {
                 Mode::Details => {
                     binds.push((self.keybindings.leave.to_string(), "Leave"));
                     binds.push((self.keybindings.confirm.to_string(), "Confirm"));
+                    binds.push((self.keybindings.scroll_up.to_string(), "Scroll UP"));
+                    binds.push((self.keybindings.scroll_down.to_string(), "Scroll DOWN"));
                 }
                 Mode::Settings => {
                     binds.push((self.keybindings.leave.to_string(), "Leave"));
@@ -105,7 +106,11 @@ impl State {
                         self.dashboard.focus = edge(forward);
                         true
                     }
-                    Mode::Details | Mode::Settings => false,
+                    Mode::Details => {
+                        self.details.focus = edge(forward);
+                        true
+                    }
+                    Mode::Settings => false,
                 };
                 if entered {
                     self.focus = Focus::Page;
@@ -113,12 +118,16 @@ impl State {
             }
             (Focus::Sidebar, Action::Enter) => self.focus = Focus::Page,
             (Focus::Page, Action::Leave) => self.focus = Focus::Sidebar,
-            (Focus::Page, Action::Generate) => if self.mode == Mode::Dashboard {},
+            (Focus::Page, Action::Generate) => {
+                if self.mode == Mode::Dashboard { // TODO catch error
+                }
+            }
             (Focus::Page, Action::NextPane | Action::PrevPane) => {
                 let forward = action == Action::NextPane;
                 let stayed = match self.mode {
                     Mode::Dashboard => self.dashboard.step_pane(forward),
-                    Mode::Details | Mode::Settings => false,
+                    Mode::Details => self.details.step_pane(forward),
+                    Mode::Settings => false,
                 };
                 if !stayed {
                     self.focus = Focus::Sidebar;
@@ -126,7 +135,8 @@ impl State {
             }
             (Focus::Page, _) => match self.mode {
                 Mode::Dashboard => self.dashboard.on_action(action, &mut self.app),
-                Mode::Details | Mode::Settings => {}
+                Mode::Details => self.details.on_action(action, &mut self.app),
+                Mode::Settings => {}
             },
             _ => {}
         }
@@ -160,7 +170,32 @@ impl Dashboard {
                     return;
                 };
                 opt.checked = !opt.checked;
+                app.generate(); // TODO handle error.
             }
+            _ => {}
+        }
+    }
+
+    /// Moves focus to the neighbouring pane; `false` when there is none.
+    fn step_pane(&mut self, forward: bool) -> bool {
+        let Some(pane) = neighbour(self.focus, forward) else {
+            return false;
+        };
+        self.focus = pane;
+        true
+    }
+}
+
+impl Details {
+    fn on_action(&mut self, action: Action, app: &mut App) {
+        let len = app.staged.as_ref().map_or(0, |tree| tree.len());
+        match (self.focus, action) {
+            (DetailsPane::List, Action::Up | Action::Down) => {
+                step_in(&mut self.files, len, action == Action::Down);
+                self.scroll = 0;
+            }
+            (DetailsPane::Content, Action::Up) => self.scroll = self.scroll.saturating_sub(1),
+            (DetailsPane::Content, Action::Down) => self.scroll = self.scroll.saturating_add(1),
             _ => {}
         }
     }

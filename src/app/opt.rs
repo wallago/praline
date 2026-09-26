@@ -8,6 +8,8 @@ use crate::app::category::Category;
 static JUST: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/just");
 /// `rust.firmware` templates.
 static RUST_FIRMWARE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.firmware");
+/// `rust.common` templates.
+static RUST_COMMON: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common");
 
 #[derive(
     Clone,
@@ -57,7 +59,7 @@ impl OptId {
                 desc: ".",
                 category: Category::Build,
                 default: false,
-                emit: Emit::Flag, // TODO => Change
+                emit: Emit::Dir(&RUST_COMMON),
             },
             Self::RustFirmware => OptDef {
                 parent: Some(Self::Rust),
