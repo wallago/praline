@@ -1,6 +1,6 @@
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
-    widgets::{ListState, TableState},
+    widgets::ListState,
 };
 use strum::IntoEnumIterator;
 
@@ -113,7 +113,11 @@ impl State {
             }
             (Focus::Sidebar, Action::Enter) => self.focus = Focus::Page,
             (Focus::Page, Action::Leave) => self.focus = Focus::Sidebar,
-            (Focus::Page, Action::Generate) => if self.mode == Mode::Dashboard {},
+            (Focus::Page, Action::Generate) => {
+                if self.mode == Mode::Dashboard {
+                    self.app.generate(); // TODO catch error
+                }
+            }
             (Focus::Page, Action::NextPane | Action::PrevPane) => {
                 let forward = action == Action::NextPane;
                 let stayed = match self.mode {
