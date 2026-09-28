@@ -1,11 +1,11 @@
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::Stylize,
+    style::{Color, Stylize},
     text::{Line, Span},
     widgets::{
         Block,
-        BorderType::{self},
+        BorderType::{self, Rounded},
         Paragraph,
     },
 };
@@ -78,4 +78,27 @@ fn render_key_bindings(state: &mut State, frame: &mut Frame, rect: Rect) {
         return;
     }
     frame.render_widget(Paragraph::new(line.alignment(Alignment::Center)), chunks[1]);
+}
+
+/// A single bordered text field.
+fn render_input(
+    frame: &mut Frame,
+    rect: Rect,
+    title: &str,
+    value: &str,
+    focused: bool,
+    is_editable: bool,
+) {
+    let bordered = Block::bordered().border_type(Rounded);
+    let block = if focused && !is_editable {
+        let title = format!(" {title} ").fg(ASCENT).bold();
+        bordered.title(title).border_style(ASCENT)
+    } else if focused && is_editable {
+        let title = format!(" {title} ").fg(HIGHLIGHT).bold();
+        bordered.title(title).border_style(HIGHLIGHT)
+    } else {
+        let title = format!(" {title} ").fg(SECONDARY).bold();
+        bordered.title(title).border_style(ASCENT_BIS)
+    };
+    frame.render_widget(Paragraph::new(value).block(block), rect);
 }

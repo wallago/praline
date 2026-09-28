@@ -1,12 +1,12 @@
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
     widgets::{Block, BorderType, HighlightSpacing, List, Padding},
 };
 
-use crate::ui::{prelude::*, state::mode::DashboardPane};
+use crate::ui::{prelude::*, state::mode::DashboardPane, view::render_input};
 
 /// Draws the dashboard page.
 pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
@@ -39,17 +39,21 @@ fn row_1(state: &mut State, frame: &mut Frame, chunk: Rect) {
         ]);
         let block = Block::bordered()
             .border_type(BorderType::Rounded)
-            .title(title)
-            .border_style(border(state, DashboardPane::Tdf));
+            .title(title);
+        // .border_style(border(state, DashboardPane::Tdf));
         frame.render_widget(block, chunks[1]);
     }
 }
 
 /// Draws row 2.
-fn row_2(state: &State, frame: &mut Frame, chunk: Rect) {
+fn row_2(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(
         Direction::Vertical,
-        [Constraint::Percentage(85), Constraint::Percentage(15)],
+        [
+            Constraint::Percentage(15),
+            Constraint::Percentage(60),
+            Constraint::Percentage(25),
+        ],
     )
     .split(chunk);
 
@@ -61,9 +65,10 @@ fn row_2(state: &State, frame: &mut Frame, chunk: Rect) {
         ]);
         let block = Block::bordered()
             .border_type(BorderType::Rounded)
-            .title(title)
-            .border_style(border(state, DashboardPane::Preview));
+            .title(title);
+        // .border_style(border(state, DashboardPane::Preview));
         frame.render_widget(block, chunks[0]);
+        render_form(state, frame, chunks[1]);
         let title = Line::from(vec![
             Span::raw(" "),
             Span::styled("tdf", SECONDARY).bold(),
@@ -71,10 +76,84 @@ fn row_2(state: &State, frame: &mut Frame, chunk: Rect) {
         ]);
         let block = Block::bordered()
             .border_type(BorderType::Rounded)
-            .title(title)
-            .border_style(border(state, DashboardPane::Status));
-        frame.render_widget(block, chunks[1]);
+            .title(title);
+        // .border_style(border(state, DashboardPane::Status));
+        frame.render_widget(block, chunks[2]);
     }
+}
+
+/// Draws form fields.
+fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
+    let title = Line::from(vec![
+        Span::raw(" "),
+        Span::styled("form", SECONDARY).bold(),
+        Span::raw(" "),
+    ]);
+    let block = Block::bordered()
+        .border_type(BorderType::Rounded)
+        .title(title)
+        .padding(Padding::new(1, 1, 1, 0))
+        .border_style(border(state, DashboardPane::Form));
+    frame.render_widget(block, chunk);
+    let chunks = Layout::new(
+        Direction::Vertical,
+        [
+            Constraint::Length(3),
+            Constraint::Length(3),
+            Constraint::Length(9),
+        ],
+    )
+    .margin(2)
+    .spacing(1)
+    .split(chunk);
+    {
+        render_input(
+            frame,
+            chunks[0],
+            "owner",
+            &state.app.owner,
+            true,
+            true,
+            // state.form_focus == FormFocus::Owner,
+            // state.screen_mode == Screen::Editing,
+        );
+        render_input(
+            frame,
+            chunks[1],
+            "app",
+            &state.app.name,
+            true,
+            false,
+            // state.form_focus == FormFocus::Owner,
+            // state.screen_mode == Screen::Editing,
+        );
+        render_input(
+            frame,
+            chunks[2],
+            "desc",
+            &state.app.desc,
+            false,
+            false,
+            // state.form_focus == FormFocus::Owner,
+            // state.screen_mode == Screen::Editing,
+        );
+    }
+    // render_input(
+    //     frame,
+    //     name,
+    //     "Name",
+    //     &state.repo.name,
+    //     state.form_focus == FormFocus::Name,
+    //     state.screen_mode == Screen::Editing,
+    // );
+    // render_input(
+    //     frame,
+    //     desc,
+    //     "Desc",
+    //     &state.repo.desc,
+    //     state.form_focus == FormFocus::Desc,
+    //     state.screen_mode == Screen::Editing,
+    // );
 }
 
 /// Draws selectable option list.

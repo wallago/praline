@@ -13,4 +13,4 @@ pub(crate) const SECONDARY: Color = Color::Rgb(103, 128, 112);
 /// Faint decoration: the brackets and arrow in the key reference.
 pub(crate) const UNASCENT: Color = Color::Rgb(36, 53, 42);
 /// Warm highlight.
-pub(crate) const _HIGHLIGHT: Color = Color::Rgb(255, 190, 60);
+pub(crate) const HIGHLIGHT: Color = Color::Rgb(255, 190, 60);
