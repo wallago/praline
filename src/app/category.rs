@@ -1,22 +1,20 @@
-use ratatui::style::Color;
-
 /// Tool categories.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, strum::Display)]
 pub(crate) enum Category {
     /// Format code.
-    Format,
+    _Format,
     /// Lint code.
-    Lint,
+    _Lint,
     /// Run tests.
-    Test,
+    _Test,
     /// Scan for security issues.
-    Security,
+    _Security,
     /// Build the project.
     Build,
     /// Publish or release.
-    Release,
+    _Release,
     /// Version control.
-    Git,
+    _Git,
     /// Environment and tooling setup.
-    Env,
+    _Env,
 }

@@ -1,8 +1,4 @@
-use std::{
-    cell::LazyCell,
-    ffi::OsStr,
-    path::{Path, PathBuf},
-};
+use std::{cell::LazyCell, ffi::OsStr, path::Path};
 
 use ratatui::{
     Frame,
@@ -24,6 +20,7 @@ thread_local! {
     static ASSETS: LazyCell<HighlightingAssets> = LazyCell::new(HighlightingAssets::from_binary);
 }
 
+/// Draws the details page.
 pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(
         Direction::Horizontal,
@@ -37,6 +34,7 @@ pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: R
     }
 }
 
+/// Draws row 1.
 fn row_1(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let title = Line::from(vec![
         Span::raw(" "),
@@ -70,6 +68,7 @@ fn row_1(state: &mut State, frame: &mut Frame, chunk: Rect) {
     frame.render_stateful_widget(list, chunk, &mut state.details.files);
 }
 
+/// Draws row 2.
 fn row_2(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(Direction::Vertical, [Constraint::Min(0)]).split(chunk);
 

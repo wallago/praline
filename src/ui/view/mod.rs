@@ -13,7 +13,9 @@ use ratatui::{
 use super::prelude::*;
 use crate::ui::state::mode::Mode;
 
+/// One page renderer per mode.
 mod mode;
+/// Left column: mode navigation and summary.
 mod sidebar;
 
 /// Renders the user interface widgets.
@@ -42,9 +44,8 @@ pub(super) fn render(state: &mut State, frame: &mut Frame) {
         .split(frame.area());
         sidebar::render(state, frame, chunks[0]);
         match state.mode {
-            Mode::Dashboard => mode::dashboard::render(state, frame, chunks[1]),
+            Mode::Dashboard | Mode::Settings => mode::dashboard::render(state, frame, chunks[1]),
             Mode::Details => mode::details::render(state, frame, chunks[1]),
-            Mode::Settings => mode::dashboard::render(state, frame, chunks[1]),
         }
     }
     render_key_bindings(state, frame, frame.area());

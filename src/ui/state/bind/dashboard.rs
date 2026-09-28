@@ -1,16 +1,21 @@
 use strum::IntoEnumIterator;
 
 use super::prelude::*;
-use crate::{app::App, prelude::OptId, ui::prelude::*};
+use crate::{
+    app::{App, prelude::OptId},
+    ui::prelude::*,
+};
 
 impl Dashboard {
+    /// Runs `action` against the focused pane.
     pub(super) fn on_action(&mut self, action: Action, app: &mut App) {
         match (self.focus, action) {
-            (DashboardPane::Options, Action::Up) => {
-                step_in(&mut self.options, OptId::iter().len(), false)
-            }
-            (DashboardPane::Options, Action::Down) => {
-                step_in(&mut self.options, OptId::iter().len(), true)
+            (DashboardPane::Options, Action::Up | Action::Down) => {
+                step_in(
+                    &mut self.options,
+                    OptId::iter().len(),
+                    action == Action::Down,
+                );
             }
             (DashboardPane::Options, Action::Enter) => {
                 let Some(opt) = self

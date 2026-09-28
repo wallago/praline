@@ -1,0 +1,10 @@
+# {slot:just.imports}
+
+# List all commands
+default:
+    @just --list
+
+# Run every check before pushing
+[group('ci')]
+ci:
+    # {slot:just.ci}

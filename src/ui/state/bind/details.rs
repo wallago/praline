@@ -2,8 +2,12 @@ use super::prelude::*;
 use crate::{app::App, ui::prelude::*};
 
 impl Details {
+    /// Runs `action` against the focused pane.
     pub(super) fn on_action(&mut self, action: Action, app: &mut App) {
-        let len = app.staged.as_ref().map_or(0, |tree| tree.len());
+        let len = app.staged.as_ref().map_or(
+            0,
+            |tree: &std::collections::BTreeMap<std::path::PathBuf, Vec<u8>>| tree.len(),
+        );
         match (self.focus, action) {
             (DetailsPane::List, Action::Up | Action::Down) => {
                 step_in(&mut self.files, len, action == Action::Down);

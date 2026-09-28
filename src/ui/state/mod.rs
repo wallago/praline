@@ -4,40 +4,47 @@ use crate::app::App;
 use crate::config::{Config, binds::Keybindings};
 use crate::prelude::*;
 
+/// Keybindings.
 pub(super) mod bind;
+/// Modes.
 pub(super) mod mode;
 
-pub(super) use bind::*;
 pub(super) use mode::*;
 
 /// Which side owns the keyboard.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum Focus {
+pub(crate) enum Focus {
+    /// Mode navigation on the left.
     #[default]
     Sidebar,
+    /// The current mode's page.
     Page,
 }
 
 /// Application state.
 #[derive(Debug)]
-pub struct State {
+pub(crate) struct State {
     /// Cleared to leave the event loop.
     pub(super) running: bool,
     /// Key bindings from `config.toml`.
     keybindings: Keybindings,
+    /// Mode shown on the page and selected in the sidebar.
     pub(super) mode: Mode,
-    /// Cursor in the dashboard's options list; survives mode switches.
+    /// Which side owns the keyboard.
     pub(crate) focus: Focus,
+    /// Dashboard state; survives mode switches.
     pub(crate) dashboard: Dashboard,
+    /// Details state; survives mode switches.
     pub(crate) details: Details,
-    // pub(super) settings: Settings,
+    /// The repo being built.
     pub(crate) app: App,
 }
 
 impl State {
-    /// Constructs a new instance of [`State`].
+    /// Constructs a new instance of [`State`], rendering `app` once so the
+    /// preview has something to show.
     pub(crate) fn new(config: Config, mut app: App) -> Result<Self> {
-        app.generate(); // TODO handle error
+        app.generate()?;
         Ok(Self {
             running: true,
             mode: Mode::default(),

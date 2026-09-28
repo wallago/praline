@@ -6,10 +6,14 @@ use strum::IntoEnumIterator;
 
 use crate::ui::prelude::*;
 
+/// Dashboard mode's key handling.
 mod dashboard;
+/// Details mode's key handling.
 mod details;
+/// Key reference for the current focus and mode.
 mod helper;
 
+/// Shared pieces the per-mode handlers use.
 mod prelude {
     pub(super) use super::{Action, neighbour, step_in};
 }
@@ -31,9 +35,10 @@ pub(super) enum Action {
     NextPane,
     /// Previous pane in tab order.
     PrevPane,
+    /// Confirm.
     Enter,
+    /// Hand focus back to the sidebar.
     Leave,
-    Generate,
 }
 
 impl State {
@@ -46,7 +51,6 @@ impl State {
             (&keys.scroll_down, Action::Down),
             (&keys.leave, Action::Leave),
             (&keys.confirm, Action::Enter),
-            (&keys.generate, Action::Generate),
         ];
         if let Some(&(_, action)) = bound.iter().find(|(pattern, _)| pattern.matches(key)) {
             return action;
@@ -86,10 +90,6 @@ impl State {
             }
             (Focus::Sidebar, Action::Enter) => self.focus = Focus::Page,
             (Focus::Page, Action::Leave) => self.focus = Focus::Sidebar,
-            (Focus::Page, Action::Generate) => {
-                if self.mode == Mode::Dashboard { // TODO catch error
-                }
-            }
             (Focus::Page, Action::NextPane | Action::PrevPane) => {
                 let forward = action == Action::NextPane;
                 let stayed = match self.mode {

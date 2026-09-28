@@ -7,10 +7,12 @@ use crate::{app::App, config::Config, error::Result};
 
 /// Application state handler.
 mod state;
+/// Colour palette shared by every widget.
 mod theme;
 /// Widget renderer.
 mod view;
 
+/// UI types the rest of the module uses often.
 mod prelude {
     pub(super) use super::state::*;
     pub(super) use super::theme::*;

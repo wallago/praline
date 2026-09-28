@@ -1,0 +1,6 @@
+tracing::info!("starting server");
+tokio::select! {
+    result = server::start(&config, buses, data) => {
+        tracing::info!("Server stopped: {:?}", result);
+    },
+}

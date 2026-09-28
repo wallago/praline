@@ -18,6 +18,8 @@ pub mod help;
 /// Common types that can be glob-imported for convenience.
 pub mod prelude;
 
+// {slot:rust.lib.mods}
+
 use prelude::*;
 
 use crate::config::Config;
@@ -30,6 +32,9 @@ use crate::config::Config;
 pub fn run(args: &Args) -> Result<()> {
     better_panic::install();
     let _config = Config::load(args.config.as_deref())?;
+
+    // {slot:rust.lib.content}
+
     Ok(())
 }
 

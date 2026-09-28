@@ -3,15 +3,12 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, BorderType, HighlightSpacing, List, ListState, Padding},
-};
-use strum::IntoEnumIterator;
-
-use crate::{
-    prelude::OptId,
-    ui::{prelude::*, state::mode::DashboardPane},
+    widgets::{Block, BorderType, HighlightSpacing, List, Padding},
 };
 
+use crate::ui::{prelude::*, state::mode::DashboardPane};
+
+/// Draws the dashboard page.
 pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(
         Direction::Horizontal,
@@ -25,6 +22,7 @@ pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: R
     }
 }
 
+/// Draws row 1.
 fn row_1(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(
         Direction::Vertical,
@@ -47,6 +45,7 @@ fn row_1(state: &mut State, frame: &mut Frame, chunk: Rect) {
     }
 }
 
+/// Draws row 2.
 fn row_2(state: &State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(
         Direction::Vertical,
@@ -78,6 +77,7 @@ fn row_2(state: &State, frame: &mut Frame, chunk: Rect) {
     }
 }
 
+/// Draws selectable option list.
 fn render_options(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let title = Line::from(vec![
         Span::raw(" "),

@@ -19,6 +19,7 @@ pub enum Error {
     Config(#[from] ConfigError),
 }
 
+/// Error from engine operations.
 #[derive(Debug, ThisError)]
 pub enum EngineError {
     /// A template marker names an option that doesn't exist.
@@ -35,6 +36,7 @@ pub enum EngineError {
     TargetExists(PathBuf),
 }
 
+/// Error from config operations.
 #[derive(Debug, ThisError)]
 pub enum ConfigError {
     /// Error that may occur while parsing key from config file.

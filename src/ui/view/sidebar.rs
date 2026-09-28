@@ -7,9 +7,9 @@ use ratatui::{
 };
 use strum::IntoEnumIterator;
 
-use crate::ui::state::mode::DashboardPane;
 use crate::ui::{prelude::*, state::mode::Mode};
 
+/// Draws the sidebar as three equal rows.
 pub(super) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let chunks = Layout::new(Direction::Vertical, [Constraint::Ratio(1, 3); 3]).split(chunk);
     {
@@ -28,6 +28,7 @@ pub(super) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
     }
 }
 
+/// Mode list, with the current mode selected.
 fn render_navigate(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let title = Line::from(vec![
         Span::raw(" "),
@@ -51,6 +52,7 @@ fn render_navigate(state: &mut State, frame: &mut Frame, chunk: Rect) {
     frame.render_stateful_widget(list, chunk, &mut list_state);
 }
 
+/// Summary panel.
 fn render_summary(frame: &mut Frame, chunk: Rect) {
     let title = Line::from(vec![
         Span::raw(" "),

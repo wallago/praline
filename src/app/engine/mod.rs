@@ -11,12 +11,22 @@ use crate::{
     prelude::*,
 };
 
+/// `{if:}`/`{ifnot:}`/`{endif:}` blocks, kept or dropped by selected tool.
 mod condition;
+/// Read-only snapshot of the builder that every template renders against.
 mod context;
+/// Pulls the name out of a `{<marker><name>}` line.
 mod marker;
+/// Renders option folders into a [`Tree`] and writes it to disk.
 mod output;
+/// `{slot:}` hubs that other options' `_slots/` files fill.
 mod slot;
+/// Renders one template: slots, then conditionals, then `{key}` placeholders.
 mod template;
+
+/// Checks that hold for every option combination.
+#[cfg(test)]
+mod tests;
 
 pub(super) use output::write_tree;
 

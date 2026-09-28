@@ -59,6 +59,8 @@ impl Ctx {
     }
 }
 
+/// Turns `name` into a Rust identifier: lowercase ASCII alphanumerics, `_` for
+/// anything else, and a leading `_` if it would start with a digit.
 #[must_use]
 pub(super) fn ident(name: &str) -> String {
     let mut out: String = name
