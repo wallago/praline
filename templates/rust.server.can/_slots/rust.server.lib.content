@@ -1,0 +1,6 @@
+result = can.listening(sink) => {
+    tracing::info!("CAN listening stopped: {:?}", result);
+},
+result = can.writing(source) => {
+    tracing::info!("CAN writing stopped: {:?}", result);
+},

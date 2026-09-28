@@ -1,13 +1,14 @@
 //! Command line entry point for `{ident}`.
 
-use std::process::ExitCode;
+use std::process::exit;
 
 use clap::Parser;
-use {ident}::prelude::*;
+use {ident}::{prelude::*, version};
 use tracing::Level;
 
 /// Runs the crate and maps the outcome to a process exit code.
-fn main() -> ExitCode {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
     let level = match args.verbose {
         0 => Level::WARN, // default: warnings + errors only
@@ -24,11 +25,13 @@ fn main() -> ExitCode {
     } else {
         fmt.init();
     }
-    match {ident}::run(&args) {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(err) => {
-            eprintln!("{}: {err}", version());
-            ExitCode::FAILURE
+
+    tracing::info!("welcome into {}", version!());
+    match {ident}::run(&args).await {
+        Ok(()) => exit(0),
+        Err(e) => {
+            eprintln!("{e}");
+            exit(1)
         }
     }
 }

@@ -66,7 +66,7 @@ impl OptId {
                 _desc: ".",
                 _category: Category::Build,
                 default: false,
-                emit: Emit::Flag, // TODO => Change
+                emit: Emit::Flag,
             },
             Self::RustCommon => OptDef {
                 parent: Some(Self::Rust),

@@ -1,3 +1,8 @@
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
+
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
     widgets::ListState,
@@ -39,6 +44,8 @@ pub(super) enum Action {
     Enter,
     /// Hand focus back to the sidebar.
     Leave,
+    /// Create generated repo.
+    Create,
 }
 
 impl State {
@@ -51,6 +58,7 @@ impl State {
             (&keys.scroll_down, Action::Down),
             (&keys.leave, Action::Leave),
             (&keys.confirm, Action::Enter),
+            (&keys.create, Action::Create),
         ];
         if let Some(&(_, action)) = bound.iter().find(|(pattern, _)| pattern.matches(key)) {
             return action;
@@ -67,7 +75,11 @@ impl State {
 
     /// Runs `action` against the panes.
     fn on_action(&mut self, action: Action) {
+        let dest = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
         match (self.focus, action) {
+            (_, Action::Create) => {
+                self.app.create(&dest);
+            }
             (_, Action::Quit) => self.running = false,
             (Focus::Sidebar, Action::Up) => self.mode = self.mode.previous(),
             (Focus::Sidebar, Action::Down) => self.mode = self.mode.next(),

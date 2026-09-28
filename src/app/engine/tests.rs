@@ -1,6 +1,6 @@
 //! Checks that hold for every option combination.
 
-use std::{collections::HashSet, fs, path::Path};
+use std::{collections::HashSet, fmt::Write as _, fs, path::Path};
 
 use include_dir::Dir;
 use strum::IntoEnumIterator;
@@ -12,6 +12,7 @@ use super::{
 };
 use crate::app::{
     App,
+    engine::Tree,
     opt::{Emit, OptId},
 };
 
@@ -120,13 +121,14 @@ fn every_slot_has_a_hub_and_a_contributor() {
                     .files()
                     .filter_map(|file| file.path().file_name()?.to_str()),
             );
+            hubs.extend(
+                slots
+                    .files()
+                    .filter_map(|file| file.contents_utf8())
+                    .flat_map(str::lines)
+                    .filter_map(|line| marker(line, SLOT_MARKER)),
+            );
         }
-        hubs.extend(
-            texts(dir)
-                .into_iter()
-                .flat_map(str::lines)
-                .filter_map(|line| marker(line, SLOT_MARKER)),
-        );
     }
     let orphans: Vec<_> = contributed.difference(&hubs).collect();
     assert!(
@@ -157,4 +159,29 @@ fn every_template_folder_is_rendered_by_its_option() {
         unrendered.is_empty(),
         "never rendered from templates/: {unrendered:?}"
     );
+}
+
+/// The rendered repo as one text: each path, then its contents.
+fn listing(tree: &Tree) -> String {
+    let mut out = String::new();
+    for (path, bytes) in tree {
+        writeln!(out, "── {} ──", path.display()).unwrap();
+        out.push_str(&String::from_utf8_lossy(bytes));
+    }
+    out
+}
+
+#[test]
+fn rust_common_with_just_renders_as_before() {
+    let on = [OptId::Just, OptId::Rust, OptId::RustCommon];
+    let mut app = App {
+        name: "demo-app".into(),
+        desc: "Demo app.".into(),
+        owner: "demo".into(),
+        ..App::default()
+    };
+    for opt in &mut app.options {
+        opt.checked = on.contains(&opt.id);
+    }
+    insta::assert_snapshot!(listing(&generate(&app).unwrap()));
 }

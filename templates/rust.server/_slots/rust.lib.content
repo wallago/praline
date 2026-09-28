@@ -1,6 +1,9 @@
+// {slot:rust.server.lib.deps}
+
 tracing::info!("starting server");
 tokio::select! {
-    result = server::start(&config, buses, data) => {
+    result = server::start("0.0.0.0", "3000") => {
         tracing::info!("Server stopped: {:?}", result);
     },
+    // {slot:rust.server.lib.content}
 }

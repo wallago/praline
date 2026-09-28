@@ -1,0 +1,6 @@
+/// Error that may occur parsing Int.
+#[error("Parse Int error: `{0}`")]
+ParseInt(#[from] std::num::ParseIntError),
+/// Error that may occur while sending frame CAN to sink.
+#[error("Send frame CAN to sink: `{0}`")]
+SinkCan(#[from] tokio::sync::broadcast::error::SendError<(u32, Vec<u8>)>),

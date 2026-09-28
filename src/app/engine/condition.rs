@@ -44,3 +44,59 @@ pub(super) fn strip_conditionals(content: &str, ctx: &Ctx) -> Result<String> {
     }
     Ok(out)
 }
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+
+    use super::*;
+    use crate::app::engine::slot::Slots;
+    use crate::app::opt::OptId;
+
+    /// `b` kept only while `just` is on.
+    const IF_JUST: &str = "a\n# {if:just}\nb\n# {endif:just}\nc\n";
+    /// `b` kept only while `just` is off.
+    const IFNOT_JUST: &str = "a\n# {ifnot:just}\nb\n# {endif:just}\nc\n";
+    /// A `just` block inside a `rust` block.
+    const NESTED: &str = "# {if:rust}\na\n# {if:just}\nb\n# {endif:just}\nc\n# {endif:rust}\nd\n";
+
+    /// A context where exactly `active` is on.
+    fn ctx(active: &[OptId]) -> Ctx {
+        Ctx {
+            vars: Vec::new(),
+            active: active.iter().copied().collect(),
+            slots: Slots::new(),
+        }
+    }
+    #[rstest]
+    #[case::if_on(IF_JUST, &[OptId::Just], "a\nb\nc\n")]
+    #[case::if_off(IF_JUST, &[], "a\nc\n")]
+    #[case::ifnot_on(IFNOT_JUST, &[OptId::Just], "a\nc\n")]
+    #[case::ifnot_off(IFNOT_JUST, &[], "a\nb\nc\n")]
+    #[case::outer_off_drops_inner(NESTED, &[OptId::Just], "d\n")]
+    #[case::inner_off_keeps_outer(NESTED, &[OptId::Rust], "a\nc\nd\n")]
+    #[case::both_on(NESTED, &[OptId::Rust, OptId::Just], "a\nb\nc\nd\n")]
+    fn keeps_a_block_only_while_its_condition_holds(
+        #[case] template: &str,
+        #[case] active: &[OptId],
+        #[case] expected: &str,
+    ) {
+        assert_eq!(
+            strip_conditionals(template, &ctx(active)).unwrap(),
+            expected
+        );
+    }
+
+    #[rstest]
+    #[case::in_if("# {if:nope}\n# {endif:nope}\n")]
+    #[case::in_ifnot("# {ifnot:nope}\n# {endif:nope}\n")]
+    #[case::inside_a_dropped_block("# {if:just}\n# {if:nope}\n# {endif:nope}\n# {endif:just}\n")]
+    fn an_unknown_option_is_an_error(#[case] template: &str) {
+        let err = strip_conditionals(template, &ctx(&[])).unwrap_err();
+        assert!(
+            matches!(&err, Error::Engine(EngineError::UnknownOption(name)) if name == "nope"),
+            "{err}"
+        );
+    }
+}

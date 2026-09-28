@@ -48,9 +48,9 @@ pub(crate) struct Opt {
 impl Default for App {
     fn default() -> Self {
         Self {
-            name: String::new(),
-            desc: String::new(),
-            owner: String::new(),
+            name: String::from("demo-app"),
+            desc: String::from("demo-desc"),
+            owner: String::from("demo"),
             options: OptId::iter()
                 .map(|id| Opt {
                     id,

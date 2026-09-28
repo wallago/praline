@@ -31,6 +31,7 @@ impl State {
             }
         }
         binds.push((self.keybindings.quit.to_string(), "Quit"));
+        binds.push((self.keybindings.create.to_string(), "Create"));
         binds
     }
 }
