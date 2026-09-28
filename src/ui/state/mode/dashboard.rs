@@ -1,4 +1,7 @@
 use ratatui::widgets::ListState;
+use tui_input::Input;
+
+use crate::prelude::*;
 
 /// Focusable panes on the dashboard, in Tab order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, strum::EnumIter)]
@@ -17,4 +20,8 @@ pub(crate) struct Dashboard {
     pub(crate) focus: DashboardPane,
     /// Cursor in the option list.
     pub(crate) options: ListState,
+    /// Field under the cursor in the form.
+    pub(crate) field: Field,
+    /// Buffer of the field being typed into; `None` while browsing.
+    pub(crate) editing: Option<Input>,
 }

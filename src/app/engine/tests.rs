@@ -50,18 +50,6 @@ fn every_setup() -> Vec<(Vec<OptId>, App)> {
     setups
 }
 
-/// Every UTF-8 file under `dir`, minus `_slots/`.
-fn texts(dir: &'static Dir<'static>) -> Vec<&'static str> {
-    let mut out: Vec<&str> = dir
-        .files()
-        .filter_map(|file| file.contents_utf8())
-        .collect();
-    for sub in dir.dirs().filter(|sub| sub.path() != Path::new(SLOTS_DIR)) {
-        out.extend(texts(sub));
-    }
-    out
-}
-
 #[test]
 fn every_setup_renders() {
     for (active, app) in every_setup() {

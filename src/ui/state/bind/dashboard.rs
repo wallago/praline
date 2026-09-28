@@ -1,9 +1,10 @@
 use strum::IntoEnumIterator;
+use tui_input::Input;
 
 use super::prelude::*;
 use crate::{
     app::{App, prelude::OptId},
-    ui::prelude::*,
+    ui::{prelude::*, state::bind::edge},
 };
 
 impl Dashboard {
@@ -27,6 +28,13 @@ impl Dashboard {
                 };
                 opt.checked = !opt.checked;
                 app.generate(); // TODO handle error.
+            }
+            (DashboardPane::Form, Action::Enter) => {
+                self.editing = Some(Input::new(self.field.get(app).to_owned()));
+            }
+            (DashboardPane::Form, Action::Up | Action::Down) => {
+                self.field = neighbour(self.field, action == Action::Down)
+                    .unwrap_or_else(|| edge(action == Action::Down));
             }
             _ => {}
         }

@@ -1,7 +1,4 @@
-use std::{
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{path::PathBuf, str::FromStr};
 
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
@@ -17,6 +14,8 @@ mod dashboard;
 mod details;
 /// Key reference for the current focus and mode.
 mod helper;
+/// Input key handling.
+mod input;
 
 /// Shared pieces the per-mode handlers use.
 mod prelude {
@@ -78,7 +77,7 @@ impl State {
         let dest = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
         match (self.focus, action) {
             (_, Action::Create) => {
-                self.app.create(&dest);
+                self.app.create(&dest); // TODO handles.
             }
             (_, Action::Quit) => self.running = false,
             (Focus::Sidebar, Action::Up) => self.mode = self.mode.previous(),
@@ -126,6 +125,10 @@ impl State {
     pub(crate) fn on_key(&mut self, key: KeyEvent) {
         if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == self.keybindings.quit.code {
             self.running = false;
+            return;
+        }
+        if self.dashboard.editing.is_some() {
+            self.on_edit_key(key);
             return;
         }
         self.on_action(self.action(&key));

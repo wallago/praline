@@ -1,12 +1,15 @@
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Margin, Rect},
+    layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
     widgets::{Block, BorderType, HighlightSpacing, List, Padding},
 };
 
-use crate::ui::{prelude::*, state::mode::DashboardPane, view::render_input};
+use crate::{
+    prelude::*,
+    ui::{prelude::*, state::mode::DashboardPane, view::render_input},
+};
 
 /// Draws the dashboard page.
 pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
@@ -107,53 +110,20 @@ fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
     .spacing(1)
     .split(chunk);
     {
-        render_input(
-            frame,
-            chunks[0],
-            "owner",
-            &state.app.owner,
-            true,
-            true,
-            // state.form_focus == FormFocus::Owner,
-            // state.screen_mode == Screen::Editing,
-        );
-        render_input(
-            frame,
-            chunks[1],
-            "app",
-            &state.app.name,
-            true,
-            false,
-            // state.form_focus == FormFocus::Owner,
-            // state.screen_mode == Screen::Editing,
-        );
-        render_input(
-            frame,
-            chunks[2],
-            "desc",
-            &state.app.desc,
-            false,
-            false,
-            // state.form_focus == FormFocus::Owner,
-            // state.screen_mode == Screen::Editing,
-        );
+        let form = state.focus == Focus::Page && state.dashboard.focus == DashboardPane::Form;
+        let fields = [
+            (Field::Owner, "owner"),
+            (Field::Name, "app"),
+            (Field::Desc, "desc"),
+        ];
+        for (&rect, (field, title)) in chunks.iter().zip(fields) {
+            let focused = form && state.dashboard.field == field;
+            let editing = state.dashboard.editing.as_ref().filter(|_| focused);
+            let error = editing.and_then(|input| field.validate(input.value()).err());
+            let value = field.get(&state.app);
+            render_input(frame, rect, title, value, focused, editing, error);
+        }
     }
-    // render_input(
-    //     frame,
-    //     name,
-    //     "Name",
-    //     &state.repo.name,
-    //     state.form_focus == FormFocus::Name,
-    //     state.screen_mode == Screen::Editing,
-    // );
-    // render_input(
-    //     frame,
-    //     desc,
-    //     "Desc",
-    //     &state.repo.desc,
-    //     state.form_focus == FormFocus::Desc,
-    //     state.screen_mode == Screen::Editing,
-    // );
 }
 
 /// Draws selectable option list.

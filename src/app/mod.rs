@@ -13,23 +13,27 @@ mod opt;
 /// Optional category.
 mod category;
 
+/// Free-text fields and the rules their values follow.
+mod field;
+
 /// Renders the active options' templates into a file tree.
 mod engine;
 
 /// App types the rest of the crate uses often.
 pub(crate) mod prelude {
+    pub(crate) use super::field::Field;
     pub(crate) use super::opt::OptId;
 }
 
 /// Repo builder.
 #[derive(Debug)]
-pub struct App {
+pub(crate) struct App {
     /// Repo name.
-    pub name: String,
+    pub(crate) name: String,
     /// Repo description.
-    pub desc: String,
+    pub(crate) desc: String,
     /// Repo owner.
-    pub owner: String,
+    pub(crate) owner: String,
     /// Options available.
     pub(crate) options: Vec<Opt>,
     /// Last render, shown in the preview and written on export.
@@ -69,7 +73,7 @@ impl App {
     ///
     /// Returns an error if a template names an option that doesn't exist, or
     /// if two active options render the same file. `staged` is left untouched.
-    pub fn generate(&mut self) -> Result<()> {
+    pub(crate) fn generate(&mut self) -> Result<()> {
         self.staged = Some(engine::generate(self)?);
         Ok(())
     }
@@ -81,7 +85,7 @@ impl App {
     /// Returns an error if nothing has been generated yet, if the target
     /// already exists, or if creating a directory or writing a file fails.
     /// A failure part-way leaves the files already written on disk.
-    pub fn create(&self, dest: &Path) -> Result<()> {
+    pub(crate) fn create(&self, dest: &Path) -> Result<()> {
         let Some(tree) = &self.staged else {
             return Err(NotGenerated.into());
         };
