@@ -10,6 +10,10 @@ static JUST: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/just");
 static RUST_FIRMWARE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.firmware");
 /// `rust.common` templates.
 static RUST_COMMON: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common");
+/// `rust.server` templates.
+static RUST_SERVER: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server");
+/// `rust.server.can` templates.
+static RUST_SERVER_CAN: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server.can");
 
 #[derive(
     Clone,
@@ -31,6 +35,10 @@ pub(crate) enum OptId {
     RustCommon,
     #[strum(serialize = "rust.firmware")]
     RustFirmware,
+    #[strum(serialize = "rust.server")]
+    RustServer,
+    #[strum(serialize = "rust.server.can")]
+    RustServerCan,
 }
 
 impl OptId {
@@ -68,6 +76,22 @@ impl OptId {
                 category: Category::Build,
                 default: false,
                 emit: Emit::Dir(&RUST_FIRMWARE),
+            },
+            Self::RustServer => OptDef {
+                parent: Some(Self::Rust),
+                requires: &[],
+                desc: ".",
+                category: Category::Build,
+                default: false,
+                emit: Emit::Dir(&RUST_SERVER),
+            },
+            Self::RustServerCan => OptDef {
+                parent: Some(Self::RustServer),
+                requires: &[],
+                desc: ".",
+                category: Category::Build,
+                default: false,
+                emit: Emit::Dir(&RUST_SERVER_CAN),
             },
         }
     }

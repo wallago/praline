@@ -5,12 +5,6 @@ use ratatui::{
 
 use crate::{app::App, config::Config, error::Result};
 
-// /// Terminal backend.
-// mod backend;
-// /// Possible commands.
-// mod command;
-/// Terminal events handler.
-// mod event;
 /// Application state handler.
 mod state;
 mod theme;

@@ -1,14 +1,14 @@
-use std::collections::HashSet;
-
 use ratatui::widgets::ListState;
 
 use crate::app::App;
 use crate::config::{Config, binds::Keybindings};
 use crate::prelude::*;
-use crate::ui::state::mode::{Dashboard, DashboardPane, Details, Mode};
 
-mod binds;
+pub(super) mod bind;
 pub(super) mod mode;
+
+pub(super) use bind::*;
+pub(super) use mode::*;
 
 /// Which side owns the keyboard.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
