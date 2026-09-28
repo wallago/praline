@@ -13,18 +13,20 @@ impl State {
         };
         if self.keybindings.leave.matches(&key) {
             dashboard.editing = None;
-        } else if self.keybindings.confirm.matches(&key) {
-            if dashboard.field.validate(input.value()).is_ok() {
-                input
-                    .value()
-                    .clone_into(dashboard.field.get_mut(&mut self.app));
+        } else if self.keybindings.confirm.matches(&key)
+            && let Some(field) = dashboard.row.field()
+        {
+            if field.validate(input.value()).is_ok() {
+                input.value().clone_into(field.get_mut(&mut self.app));
                 dashboard.editing = None;
                 self.app.generate(); // TODO handle error.
             }
-        } else if let Some(request) = to_input_request(&Event::Key(key)) {
+        } else if let Some(request) = to_input_request(&Event::Key(key))
+            && let Some(field) = dashboard.row.field()
+        {
             // A char the field can't hold is dropped before it's ever shown.
             if let InputRequest::InsertChar(c) = request
-                && !dashboard.field.can_insert(input.value(), c)
+                && !field.can_insert(input.value(), c)
             {
                 return;
             }

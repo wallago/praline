@@ -2,7 +2,6 @@
 
 use std::{collections::HashSet, fmt::Write as _, fs, path::Path};
 
-use include_dir::Dir;
 use strum::IntoEnumIterator;
 
 use super::{

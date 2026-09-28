@@ -77,7 +77,7 @@ impl State {
         let dest = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
         match (self.focus, action) {
             (_, Action::Create) => {
-                self.app.create(&dest); // TODO handles.
+                self.app.create(); // TODO handles.
             }
             (_, Action::Quit) => self.running = false,
             (Focus::Sidebar, Action::Up) => self.mode = self.mode.previous(),

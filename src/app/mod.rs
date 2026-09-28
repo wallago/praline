@@ -1,4 +1,5 @@
-use std::path::Path;
+use std::env::current_dir;
+use std::path::{Path, PathBuf};
 
 use strum::IntoEnumIterator;
 
@@ -34,6 +35,8 @@ pub(crate) struct App {
     pub(crate) desc: String,
     /// Repo owner.
     pub(crate) owner: String,
+    /// Repo destination.
+    pub(crate) dest: PathBuf,
     /// Options available.
     pub(crate) options: Vec<Opt>,
     /// Last render, shown in the preview and written on export.
@@ -55,6 +58,7 @@ impl Default for App {
             name: String::from("demo-app"),
             desc: String::from("demo-desc"),
             owner: String::from("demo"),
+            dest: current_dir().unwrap_or_default(),
             options: OptId::iter()
                 .map(|id| Opt {
                     id,
@@ -85,11 +89,11 @@ impl App {
     /// Returns an error if nothing has been generated yet, if the target
     /// already exists, or if creating a directory or writing a file fails.
     /// A failure part-way leaves the files already written on disk.
-    pub(crate) fn create(&self, dest: &Path) -> Result<()> {
+    pub(crate) fn create(&self) -> Result<()> {
         let Some(tree) = &self.staged else {
             return Err(NotGenerated.into());
         };
-        let target = dest.join(&self.name);
+        let target = self.dest.join(&self.name);
         if target.exists() {
             return Err(TargetExists(target).into());
         }

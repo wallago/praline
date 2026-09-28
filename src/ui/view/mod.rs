@@ -77,6 +77,56 @@ fn render_key_bindings(state: &mut State, frame: &mut Frame, rect: Rect) {
     frame.render_widget(Paragraph::new(line.alignment(Alignment::Center)), chunks[1]);
 }
 
+/// Draws button.
+fn render_button(
+    frame: &mut Frame,
+    rect: Rect,
+    title: &str,
+    value: &str,
+    focused: bool,
+    error: Option<&str>,
+) {
+    let bordered = Block::bordered().border_type(Rounded);
+    let block = match error {
+        Some(error) => {
+            let title = format!(" {title} · {error} ").fg(ERROR).bold();
+            bordered.title(title).border_style(ERROR)
+        }
+        None if focused => {
+            let title = format!(" {title} ").fg(ASCENT).bold();
+            bordered.title(title).border_style(ASCENT)
+        }
+        None => {
+            let title = format!(" {title} ").fg(SECONDARY).bold();
+            bordered.title(title).border_style(ASCENT_BIS)
+        }
+    };
+    let area = block.inner(rect);
+    frame.render_widget(block, rect);
+    frame.render_widget(Paragraph::new(value), area);
+
+    // (Paragraph::new(Text::from_iter(rows)), at)
+    // let text = editing.map_or(value, Input::value);
+    // let (paragraph, (col, row)) = if area.height > 1 {
+    //     let cursor = editing.map_or(0, Input::cursor);
+    //     let (rows, at) = wrap(text, cursor, area.width, area.height);
+    //     (Paragraph::new(Text::from_iter(rows)), at)
+    // } else {
+    //     // Last column stays free so the cursor has somewhere to sit at the end.
+    //     let width = usize::from(area.width.saturating_sub(1));
+    //     let scroll = editing.map_or(0, |input| input.visual_scroll(width));
+    //     let col = editing
+    //         .map_or(0, Input::visual_cursor)
+    //         .saturating_sub(scroll);
+    //     let shift = u16::try_from(scroll).unwrap_or_default();
+    //     let paragraph = Paragraph::new(text).scroll((0, shift));
+    //     (paragraph, (u16::try_from(col).unwrap_or_default(), 0))
+    // };
+    // if editing.is_some() {
+    //     frame.set_cursor_position((area.x + col, area.y + row));
+    // }
+}
+
 /// A single bordered text field. `editing` is the live buffer while the field
 /// is typed into, and `error` says why that buffer can't be saved yet. A field
 /// one row tall scrolls sideways; a taller one wraps.

@@ -30,10 +30,12 @@ impl Dashboard {
                 app.generate(); // TODO handle error.
             }
             (DashboardPane::Form, Action::Enter) => {
-                self.editing = Some(Input::new(self.field.get(app).to_owned()));
+                if let Some(field) = self.row.field() {
+                    self.editing = Some(Input::new(field.get(app).to_owned()));
+                }
             }
             (DashboardPane::Form, Action::Up | Action::Down) => {
-                self.field = neighbour(self.field, action == Action::Down)
+                self.row = neighbour(self.row, action == Action::Down)
                     .unwrap_or_else(|| edge(action == Action::Down));
             }
             _ => {}

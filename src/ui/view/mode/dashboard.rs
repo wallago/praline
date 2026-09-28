@@ -8,7 +8,11 @@ use ratatui::{
 
 use crate::{
     prelude::*,
-    ui::{prelude::*, state::mode::DashboardPane, view::render_input},
+    ui::{
+        prelude::*,
+        state::mode::DashboardPane,
+        view::{render_button, render_input},
+    },
 };
 
 /// Draws the dashboard page.
@@ -103,11 +107,12 @@ fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
         [
             Constraint::Length(3),
             Constraint::Length(3),
-            Constraint::Length(9),
+            Constraint::Min(0),
+            Constraint::Length(3),
         ],
     )
-    .margin(2)
-    .spacing(1)
+    .horizontal_margin(2)
+    .vertical_margin(1)
     .split(chunk);
     {
         let form = state.focus == Focus::Page && state.dashboard.focus == DashboardPane::Form;
@@ -117,12 +122,21 @@ fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
             (Field::Desc, "desc"),
         ];
         for (&rect, (field, title)) in chunks.iter().zip(fields) {
-            let focused = form && state.dashboard.field == field;
+            let focused = form && state.dashboard.row.field() == Some(field);
             let editing = state.dashboard.editing.as_ref().filter(|_| focused);
             let error = editing.and_then(|input| field.validate(input.value()).err());
             let value = field.get(&state.app);
             render_input(frame, rect, title, value, focused, editing, error);
         }
+        let focused = form && state.dashboard.row == FormRow::Dest;
+        render_button(
+            frame,
+            chunks[3],
+            "dest",
+            &state.app.dest.to_string_lossy(),
+            focused,
+            None,
+        );
     }
 }
 
