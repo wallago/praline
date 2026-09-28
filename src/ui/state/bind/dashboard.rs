@@ -1,3 +1,7 @@
+use std::{env::current_dir, path::Path};
+
+use ratatui::style::Style;
+use ratatui_explorer::{FileExplorer, FileExplorerBuilder, Theme};
 use strum::IntoEnumIterator;
 use tui_input::Input;
 
@@ -32,6 +36,8 @@ impl Dashboard {
             (DashboardPane::Form, Action::Enter) => {
                 if let Some(field) = self.row.field() {
                     self.editing = Some(Input::new(field.get(app).to_owned()));
+                } else if self.row == FormRow::Dest {
+                    self.picker = dir_picker(&app.dest).ok();
                 }
             }
             (DashboardPane::Form, Action::Up | Action::Down) => {
@@ -42,6 +48,32 @@ impl Dashboard {
         }
     }
 
+    /// Drives the open picker: move, step in and out of directories,
+    /// `confirm` takes the one you're in, `leave` closes it untouched.
+    pub(super) fn on_picker_action(&mut self, action: Action, app: &mut App) {
+        let Some(picker) = &mut self.picker else {
+            return;
+        };
+        let _ = match action {
+            Action::Up => picker.handle(ratatui_explorer::Input::Up),
+            Action::Down => picker.handle(ratatui_explorer::Input::Down),
+            Action::Parent => picker.handle(ratatui_explorer::Input::Left),
+            Action::Start => current_dir().and_then(|dir| picker.set_cwd(dir)),
+            Action::Right => picker.set_cwd(picker.current().path.clone()),
+            Action::Validate => {
+                app.dest.clone_from(picker.cwd());
+                self.picker = None;
+                Ok(())
+            }
+            Action::Enter => picker.handle(ratatui_explorer::Input::Right),
+            Action::Leave => {
+                self.picker = None;
+                Ok(())
+            }
+            _ => Ok(()),
+        };
+    }
+
     /// Moves focus to the neighbouring pane; `false` when there is none.
     pub(super) fn step_pane(&mut self, forward: bool) -> bool {
         let Some(pane) = neighbour(self.focus, forward) else {
@@ -50,4 +82,19 @@ impl Dashboard {
         self.focus = pane;
         true
     }
+}
+
+/// A picker over the directories under `dir`. `Theme::new`, not `default`:
+/// the default brings its own border, and the modal draws one already.
+fn dir_picker(dir: &Path) -> std::io::Result<FileExplorer> {
+    let theme = Theme::new()
+        .with_dir_style(SECONDARY)
+        .with_highlight_symbol("> ")
+        .with_highlight_item_style(Style::default().fg(PRIMARY).bold())
+        .with_highlight_dir_style(Style::default().fg(HIGHLIGHT).bold());
+    FileExplorerBuilder::default()
+        .working_dir(dir)
+        .filter_map(|file| file.is_dir.then_some(file))
+        .theme(theme)
+        .build()
 }

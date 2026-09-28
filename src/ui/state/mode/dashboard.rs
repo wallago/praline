@@ -1,4 +1,5 @@
 use ratatui::widgets::ListState;
+use ratatui_explorer::FileExplorer;
 use tui_input::Input;
 
 use crate::prelude::*;
@@ -24,15 +25,21 @@ pub(crate) struct Dashboard {
     pub(crate) row: FormRow,
     /// Buffer of the field being typed into; `None` while browsing.
     pub(crate) editing: Option<Input>,
+    /// Destination picker modal.
+    pub(crate) picker: Option<FileExplorer>,
 }
 
 /// Rows of the form, in cursor order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, strum::EnumIter)]
 pub(crate) enum FormRow {
+    /// Owner row form.
     #[default]
     Owner,
+    /// Name row form.
     Name,
+    /// Description row form.
     Desc,
+    /// Destination row form.
     Dest,
 }
 

@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, BorderType, HighlightSpacing, List, Padding},
+    widgets::{Block, BorderType, Clear, HighlightSpacing, List, Padding, WidgetRef},
 };
 
 use crate::{
@@ -27,6 +27,32 @@ pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: R
         row_1(state, frame, chunks[0]);
         row_2(state, frame, chunks[1]);
     }
+    render_picker(state, frame);
+}
+
+/// Draws the directory picker over the whole screen while it's open.
+fn render_picker(state: &State, frame: &mut Frame) {
+    let Some(picker) = &state.dashboard.picker else {
+        return;
+    };
+    let area = frame
+        .area()
+        .centered(Constraint::Percentage(75), Constraint::Percentage(85));
+    let title = Line::from(vec![
+        Span::raw(" "),
+        Span::styled(picker.cwd().display().to_string(), SECONDARY).bold(),
+        Span::raw(" "),
+    ]);
+    let block = Block::bordered()
+        .border_type(BorderType::Rounded)
+        .title(title)
+        .padding(Padding::new(1, 1, 1, 0))
+        .border_style(ASCENT)
+        .bg(BACKGROUND);
+    let inner = block.inner(area);
+    frame.render_widget(Clear, area);
+    frame.render_widget(block, area);
+    picker.widget().render_ref(inner, frame.buffer_mut());
 }
 
 /// Draws row 1.
@@ -108,7 +134,7 @@ fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
             Constraint::Length(3),
             Constraint::Length(3),
             Constraint::Min(0),
-            Constraint::Length(3),
+            Constraint::Length(6),
         ],
     )
     .horizontal_margin(2)

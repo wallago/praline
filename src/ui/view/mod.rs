@@ -103,28 +103,11 @@ fn render_button(
     };
     let area = block.inner(rect);
     frame.render_widget(block, rect);
-    frame.render_widget(Paragraph::new(value), area);
-
-    // (Paragraph::new(Text::from_iter(rows)), at)
-    // let text = editing.map_or(value, Input::value);
-    // let (paragraph, (col, row)) = if area.height > 1 {
-    //     let cursor = editing.map_or(0, Input::cursor);
-    //     let (rows, at) = wrap(text, cursor, area.width, area.height);
-    //     (Paragraph::new(Text::from_iter(rows)), at)
-    // } else {
-    //     // Last column stays free so the cursor has somewhere to sit at the end.
-    //     let width = usize::from(area.width.saturating_sub(1));
-    //     let scroll = editing.map_or(0, |input| input.visual_scroll(width));
-    //     let col = editing
-    //         .map_or(0, Input::visual_cursor)
-    //         .saturating_sub(scroll);
-    //     let shift = u16::try_from(scroll).unwrap_or_default();
-    //     let paragraph = Paragraph::new(text).scroll((0, shift));
-    //     (paragraph, (u16::try_from(col).unwrap_or_default(), 0))
-    // };
-    // if editing.is_some() {
-    //     frame.set_cursor_position((area.x + col, area.y + row));
-    // }
+    let (paragraph, _) = {
+        let (rows, at) = wrap(value, 0, area.width, area.height);
+        (Paragraph::new(Text::from_iter(rows)), at)
+    };
+    frame.render_widget(paragraph, area);
 }
 
 /// A single bordered text field. `editing` is the live buffer while the field

@@ -16,6 +16,8 @@ impl State {
                     binds.push((self.keybindings.scroll_down.to_string(), "Scroll DOWN"));
                     if self.dashboard.focus == DashboardPane::Options {
                         binds.push((self.keybindings.enter.to_string(), "Toogle opt"));
+                    } else if self.dashboard.picker.is_some() {
+                        binds.push((self.keybindings.scroll_left.to_string(), "Move to parent"));
                     }
                 }
                 Mode::Details => {

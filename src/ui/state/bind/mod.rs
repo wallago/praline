@@ -1,5 +1,3 @@
-use std::{path::PathBuf, str::FromStr};
-
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
     widgets::ListState,
@@ -35,6 +33,10 @@ pub(super) enum Action {
     Up,
     /// Move down or scroll down.
     Down,
+    /// Move left.
+    Left,
+    /// Move right.
+    Right,
     /// Next pane in tab order.
     NextPane,
     /// Previous pane in tab order.
@@ -45,6 +47,12 @@ pub(super) enum Action {
     Leave,
     /// Create generated repo.
     Create,
+    /// Up to the parent directory (oil's `-`).
+    Parent,
+    /// Back to the directory praline started in (oil's `_`).
+    Start,
+    /// Validate declaration in picker.
+    Validate,
 }
 
 impl State {
@@ -67,6 +75,9 @@ impl State {
             KeyCode::Down => Action::Down,
             KeyCode::Tab => Action::NextPane,
             KeyCode::BackTab => Action::PrevPane,
+            KeyCode::Char('-') => Action::Parent,
+            KeyCode::Char('_') => Action::Start,
+            KeyCode::Char('v') => Action::Validate,
             KeyCode::Char('?') => Action::Help,
             _ => Action::Nothing,
         }
@@ -74,7 +85,6 @@ impl State {
 
     /// Runs `action` against the panes.
     fn on_action(&mut self, action: Action) {
-        let dest = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
         match (self.focus, action) {
             (_, Action::Create) => {
                 self.app.create(); // TODO handles.
@@ -129,6 +139,11 @@ impl State {
         }
         if self.dashboard.editing.is_some() {
             self.on_edit_key(key);
+            return;
+        }
+        if self.dashboard.picker.is_some() {
+            let action = self.action(&key);
+            self.dashboard.on_picker_action(action, &mut self.app);
             return;
         }
         self.on_action(self.action(&key));
