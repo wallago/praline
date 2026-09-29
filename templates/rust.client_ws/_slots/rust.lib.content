@@ -1,0 +1,3 @@
+result = client_ws::conn("0.0.0.0", "3000") => {
+    tracing::info!("Client websocket stopped: {:?}", result);
+},

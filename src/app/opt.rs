@@ -16,8 +16,12 @@ static RUST: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust");
 static RUST_COMMON: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common");
 /// `rust.server` templates.
 static RUST_SERVER: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server");
-/// `rust.server.can` templates.
-static RUST_SERVER_CAN: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server.can");
+/// `rust.server.ws` templates.
+static RUST_SERVER_WS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server.ws");
+/// `rust.can` templates.
+static RUST_CAN: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.can");
+/// `rust.client_ws` templates.
+static RUST_CLIENT_WS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.client_ws");
 
 /// A selectable option, serialized as the name of its `templates/` folder.
 #[derive(
@@ -50,9 +54,15 @@ pub(crate) enum OptId {
     /// Server module and its Cargo dependencies.
     #[strum(serialize = "rust.server")]
     RustServer,
-    /// CAN bus support for the server; no templates yet.
-    #[strum(serialize = "rust.server.can")]
-    RustServerCan,
+    /// Websocket layer for sever module.
+    #[strum(serialize = "rust.server.ws")]
+    RustServerWS,
+    /// CAN bus module and its Cargo dependencies.
+    #[strum(serialize = "rust.can")]
+    RustCan,
+    /// Client Websocket.
+    #[strum(serialize = "rust.client_ws")]
+    RustClientWS,
 }
 
 impl OptId {
@@ -107,13 +117,29 @@ impl OptId {
                 default: false,
                 emit: Emit::Dir(&RUST_SERVER),
             },
-            Self::RustServerCan => OptDef {
+            Self::RustServerWS => OptDef {
                 parent: Some(Self::RustServer),
                 requires: &[],
                 _desc: ".",
                 _category: Category::Build,
                 default: false,
-                emit: Emit::Dir(&RUST_SERVER_CAN),
+                emit: Emit::Dir(&RUST_SERVER_WS),
+            },
+            Self::RustCan => OptDef {
+                parent: Some(Self::Rust),
+                requires: &[],
+                _desc: ".",
+                _category: Category::Build,
+                default: false,
+                emit: Emit::Dir(&RUST_CAN),
+            },
+            Self::RustClientWS => OptDef {
+                parent: Some(Self::Rust),
+                requires: &[],
+                _desc: ".",
+                _category: Category::Build,
+                default: false,
+                emit: Emit::Dir(&RUST_CLIENT_WS),
             },
         }
     }

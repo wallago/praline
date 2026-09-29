@@ -1,0 +1,3 @@
+/// Error that may occur during tungstenite operations.
+#[error("Tungstenite error: `{0}`")]
+Tungstenite(#[from] tokio_tungstenite::tungstenite::Error),

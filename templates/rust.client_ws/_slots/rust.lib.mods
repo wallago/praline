@@ -1,0 +1,2 @@
+/// Websocket client layer.
+pub mod client_ws;
