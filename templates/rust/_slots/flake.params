@@ -10,3 +10,13 @@ naersk' = pkgs.callPackage inputs.naersk {
   cargo = rust;
   rustc = rust;
 };
+
+# {if:flake.package}
+# ── Build helper ──────────────────────────────────────────
+buildApp =
+{ release }:
+pkgs.callPackage ./nix/package.nix {
+  inherit naersk' release pkgs;
+  src = ./.;
+};
+# {endif:flake.package}

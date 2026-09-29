@@ -10,9 +10,13 @@
       self,
       ...
     }@inputs:
-    # ── System-agnostic outputs (modules) live out here ──
     {
+      # {if:flake.module.hm}
       homeModules.default = import ./nix/hm-module.nix self;
+      # {endif:flake.module.hm}
+      # {if:flake.module.nixos}
+      nixModules.default = import ./nix/nixos-module.nix self;
+      # {endif:flake.module.nixos}
     }
     # ── Then merge the per-system outputs onto it ──
     //
@@ -43,6 +47,15 @@
             ];
           in
           {
+            # {if:flake.package}
+            # ── Packages ──────────────────────────────────────────────
+            packages = rec {
+              "{name}" = buildApp { release = true; };
+              "{name}-debug" = buildApp { release = false; };
+              default = {name};
+            };
+
+            # {endif:flake.package}
             # ── Checks (nix flake check) ─────────────────────────────
             checks.check = self.packages.${system}."{name}-debug";
 
