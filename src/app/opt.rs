@@ -6,8 +6,12 @@ use crate::app::category::Category;
 
 /// `just` templates.
 static JUST: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/just");
+/// `flake` templates.
+static FLAKE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/flake");
 /// `rust.firmware` templates.
 static RUST_FIRMWARE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.firmware");
+/// `rust` templates.
+static RUST: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust");
 /// `rust.common` templates.
 static RUST_COMMON: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common");
 /// `rust.server` templates.
@@ -31,7 +35,10 @@ pub(crate) enum OptId {
     /// `justfile` with the check, lint, fmt and ci recipes.
     #[strum(serialize = "just")]
     Just,
-    /// Parent of the Rust options; writes no files yet.
+    /// `flake` and `direnv`, setup dependencies and environments.
+    #[strum(serialize = "flake")]
+    Flake,
+    /// Parent of the Rust options; writes deps for other options.
     #[strum(serialize = "rust")]
     Rust,
     /// Base crate: `Cargo.toml`, entry point, args, config, error and prelude.
@@ -56,9 +63,17 @@ impl OptId {
                 parent: None,
                 requires: &[],
                 _desc: "Task runner recipes: check, lint, fmt, ci.",
-                _category: Category::Build,
+                _category: Category::Env,
                 default: true,
                 emit: Emit::Dir(&JUST),
+            },
+            Self::Flake => OptDef {
+                parent: None,
+                requires: &[],
+                _desc: "Dependencies and environments setup.",
+                _category: Category::Env,
+                default: true,
+                emit: Emit::Dir(&FLAKE),
             },
             Self::Rust => OptDef {
                 parent: None,
@@ -66,7 +81,7 @@ impl OptId {
                 _desc: ".",
                 _category: Category::Build,
                 default: false,
-                emit: Emit::Flag,
+                emit: Emit::Dir(&RUST),
             },
             Self::RustCommon => OptDef {
                 parent: Some(Self::Rust),

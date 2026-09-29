@@ -16,5 +16,5 @@ pub(crate) enum Category {
     /// Version control.
     _Git,
     /// Environment and tooling setup.
-    _Env,
+    Env,
 }

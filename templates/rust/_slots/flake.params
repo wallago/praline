@@ -1,0 +1,12 @@
+# ── Toolchain ─────────────────────────────────────────────
+rust = pkgs.rust-bin.nightly.latest.default.override {
+  extensions = [
+    "llvm-tools-preview"
+    "rust-src"
+  ];
+};
+
+naersk' = pkgs.callPackage inputs.naersk {
+  cargo = rust;
+  rustc = rust;
+};

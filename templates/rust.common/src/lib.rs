@@ -27,8 +27,11 @@ pub async fn run(args: &Args) -> Result<()> {
     better_panic::install();
     let _config = Config::load(args.config.as_deref())?;
 
-    // {slot:rust.lib.content}
+    // {slot:rust.lib.deps}
 
+    tokio::select! {
+        // {slot:rust.lib.content}
+    }
     Ok(())
 }
 

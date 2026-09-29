@@ -47,6 +47,7 @@ impl Can {
     ///
     /// Returns an error if `sink` has no subscribers left.
     pub(crate) async fn listening(&self, sink: Sender<CanMessage>) -> Result<()> {
+        tracing::info!("Can listening");
         while let Ok(frame) = self.socket.read_frame().await {
             let message = (frame.raw_id(), frame.data().to_vec());
             sink.send(message)?;
@@ -62,6 +63,7 @@ impl Can {
     ///
     /// Returns an error if writing a frame to the socket fails.
     pub(crate) async fn writing(&self, mut source: Receiver<CanMessage>) -> Result<()> {
+        tracing::info!("Can writing");
         while let Ok((id, data)) = source.recv().await {
             if let Some(frame) = CanFrame::from_raw_id(id, &data) {
                 self.socket.write_frame(frame).await?;

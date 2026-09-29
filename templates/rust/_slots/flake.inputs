@@ -1,0 +1,2 @@
+naersk.url = "github:nix-community/naersk";
+rust-overlay.url = "github:oxalica/rust-overlay";
