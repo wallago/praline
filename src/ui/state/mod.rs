@@ -21,6 +21,15 @@ pub(crate) enum Focus {
     Page,
 }
 
+/// Outcome of the last app action.
+#[derive(Debug)]
+pub(crate) enum Status {
+    /// It worked; says what was done.
+    Info(String),
+    /// It failed; says why.
+    Error(String),
+}
+
 /// Application state.
 #[derive(Debug)]
 pub(crate) struct State {
@@ -38,6 +47,8 @@ pub(crate) struct State {
     pub(crate) details: Details,
     /// The repo being built.
     pub(crate) app: App,
+    /// Outcome of the last action; cleared by the next key.
+    pub(super) status: Option<Status>,
 }
 
 impl State {
@@ -50,6 +61,7 @@ impl State {
             mode: Mode::default(),
             keybindings: config.keybindings,
             focus: Focus::Sidebar,
+            status: None,
             dashboard: Dashboard {
                 options: ListState::default().with_selected(Some(0)),
                 ..Dashboard::default()

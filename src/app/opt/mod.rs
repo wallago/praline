@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use include_dir::Dir;
+use strum::IntoEnumIterator;
 
 use crate::app::category::Category;
 
@@ -71,6 +72,9 @@ pub(crate) enum OptId {
     /// Client Websocket.
     #[strum(serialize = "rust.client_ws")]
     RustClientWS,
+    /// Notifier.
+    #[strum(serialize = "rust.notif")]
+    RustNotif,
 }
 
 impl OptId {
@@ -89,6 +93,7 @@ impl OptId {
             Self::RustServerWS => self.def_rust_server_ws(),
             Self::RustCan => self.def_rust_can(),
             Self::RustClientWS => self.def_rust_client_ws(),
+            Self::RustNotif => self.def_rust_notif(),
         }
     }
 }
@@ -101,27 +106,44 @@ impl OptId {
             && def.parent.is_none_or(|parent| parent.is_active(checked))
             && def.requires.iter().all(|&req| req.is_active(checked))
     }
+
+    /// Whether `self` and `other` can't take part together, declared on either side.
+    pub(crate) fn conflicts_with(self, other: OptId) -> bool {
+        self.def().conflicts.contains(&other) || other.def().conflicts.contains(&self)
+    }
+
+    /// Sorted list options.
+    pub(crate) fn sorted_list(list: &mut Vec<Self>, parent: Option<Self>) {
+        for opt in Self::iter().filter(|opt| opt.def().parent == parent) {
+            list.push(opt);
+            Self::sorted_list(list, Some(opt));
+        }
+    }
 }
 
 /// What an option writes.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) enum Emit {
     /// Nothing: only switches `{if:}` blocks elsewhere.
+    #[default]
     Flag,
     /// A folder mirroring the repo root; its `_slots/` feeds hub files.
     Dir(&'static Dir<'static>),
 }
 
 /// How an option fits in the tree and what it writes.
+#[derive(Default)]
 pub(crate) struct OptDef {
     /// Option this one sits under; it only takes part if the parent does.
     pub parent: Option<OptId>,
     /// Other options that must also take part for this one to.
     pub requires: &'static [OptId],
+    /// Other options that can't take part with this one to.
+    pub conflicts: &'static [OptId],
     /// One-line summary shown in the UI.
     pub _desc: &'static str,
     /// Group it's listed under.
-    pub _category: Category,
+    pub _category: Option<Category>,
     /// Whether it starts checked.
     pub default: bool,
     /// What it writes when it's active.

@@ -1,2 +1,2 @@
 /// Can layer.
-pub mod can;
+mod can;

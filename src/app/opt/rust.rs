@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use include_dir::{Dir, include_dir};
 
 use crate::app::{
@@ -21,17 +19,17 @@ static RUST_SERVER_WS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rus
 static RUST_CAN: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.can");
 /// `rust.client_ws` templates.
 static RUST_CLIENT_WS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.client_ws");
+/// `rust.notify` templates.
+static RUST_NOTIF: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.notif");
 
 impl OptId {
     /// Rust option definition.
     pub(super) fn def_rust(self) -> OptDef {
         OptDef {
-            parent: None,
-            requires: &[],
             _desc: ".",
-            _category: Category::Build,
-            default: false,
+            _category: Some(Category::Build),
             emit: Emit::Dir(&RUST),
+            ..OptDef::default()
         }
     }
 
@@ -39,11 +37,10 @@ impl OptId {
     pub(super) fn def_rust_common(self) -> OptDef {
         OptDef {
             parent: Some(Self::Rust),
-            requires: &[],
             _desc: ".",
-            _category: Category::Build,
-            default: false,
+            _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_COMMON),
+            ..OptDef::default()
         }
     }
 
@@ -51,23 +48,23 @@ impl OptId {
     pub(super) fn def_rust_firmware(self) -> OptDef {
         OptDef {
             parent: Some(Self::Rust),
-            requires: &[],
+            conflicts: &[Self::RustCommon],
             _desc: ".",
-            _category: Category::Build,
-            default: false,
-            emit: Emit::Dir(&RUST_COMMON),
+            _category: Some(Category::Build),
+            emit: Emit::Dir(&RUST_FIRMWARE),
+            ..OptDef::default()
         }
     }
 
     /// Rust Server option definition.
     pub(super) fn def_rust_server(self) -> OptDef {
         OptDef {
-            parent: Some(Self::Rust),
-            requires: &[],
+            parent: Some(Self::RustCommon),
+            conflicts: &[Self::RustClientWS],
             _desc: ".",
-            _category: Category::Build,
-            default: false,
+            _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_SERVER),
+            ..OptDef::default()
         }
     }
 
@@ -75,35 +72,43 @@ impl OptId {
     pub(super) fn def_rust_server_ws(self) -> OptDef {
         OptDef {
             parent: Some(Self::RustServer),
-            requires: &[],
             _desc: ".",
-            _category: Category::Build,
-            default: false,
+            _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_SERVER_WS),
+            ..OptDef::default()
         }
     }
 
     /// Rust CAN layer option definition.
     pub(super) fn def_rust_can(self) -> OptDef {
         OptDef {
-            parent: Some(Self::Rust),
-            requires: &[],
+            parent: Some(Self::RustCommon),
             _desc: ".",
-            _category: Category::Build,
-            default: false,
+            _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_CAN),
+            ..OptDef::default()
         }
     }
 
     /// Rust client Websocket option definition.
     pub(super) fn def_rust_client_ws(self) -> OptDef {
         OptDef {
-            parent: Some(Self::Rust),
-            requires: &[],
+            parent: Some(Self::RustCommon),
             _desc: ".",
-            _category: Category::Build,
-            default: false,
+            _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_CLIENT_WS),
+            ..OptDef::default()
+        }
+    }
+
+    /// Rust notify option definition.
+    pub(super) fn def_rust_notif(self) -> OptDef {
+        OptDef {
+            parent: Some(Self::RustCommon),
+            _desc: ".",
+            _category: Some(Category::Build),
+            emit: Emit::Dir(&RUST_NOTIF),
+            ..OptDef::default()
         }
     }
 }

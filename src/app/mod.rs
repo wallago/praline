@@ -1,8 +1,6 @@
 use std::env::current_dir;
 use std::path::PathBuf;
 
-use strum::IntoEnumIterator;
-
 use crate::app::engine::{Tree, write_tree};
 use crate::app::opt::OptId;
 use crate::error::EngineError::{NotGenerated, TargetExists};
@@ -44,25 +42,31 @@ pub(crate) struct App {
 }
 
 /// Selectable repo option.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Opt {
     /// Which option: the key into the table.
     pub(crate) id: OptId,
     /// Ticked by the user (it can still be inactive, see `Ctx::active`).
     pub(crate) checked: bool,
+    /// Conflicted by other options.
+    pub(crate) conflicted: bool,
 }
 
 impl Default for App {
     fn default() -> Self {
+        let mut list = Vec::new();
+        OptId::sorted_list(&mut list, None);
         Self {
             name: String::from("demo-app"),
             desc: String::from("demo-desc"),
             owner: String::from("demo"),
             dest: current_dir().unwrap_or_default(),
-            options: OptId::iter()
+            options: list
+                .into_iter()
                 .map(|id| Opt {
                     id,
                     checked: id.def().default,
+                    conflicted: false,
                 })
                 .collect(),
             staged: None,
@@ -98,5 +102,33 @@ impl App {
             return Err(TargetExists(target).into());
         }
         write_tree(tree, &target)
+    }
+
+    /// Flags every unchecked option that clashes with a checked one.
+    pub(crate) fn mark_conflicts(&mut self) {
+        let checked: Vec<OptId> = self
+            .options
+            .iter()
+            .filter(|o| o.checked)
+            .map(|o| o.id)
+            .collect();
+        for opt in &mut self.options {
+            opt.conflicted = !opt.checked && checked.iter().any(|&c| opt.id.conflicts_with(c));
+        }
+    }
+
+    /// Check current option and parent if not already check.
+    pub(crate) fn nested_check(&mut self, id: OptId, check: Option<bool>) {
+        let Some(opt) = self.options.iter_mut().find(|o| o.id == id) else {
+            return;
+        };
+        opt.checked = check.unwrap_or(!opt.checked);
+        let Some(parent) = id.def().parent else {
+            return;
+        };
+
+        if opt.checked {
+            self.nested_check(parent, Some(true));
+        }
     }
 }

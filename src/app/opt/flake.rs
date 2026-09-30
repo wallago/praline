@@ -17,45 +17,41 @@ impl OptId {
     /// Flake option definition.
     pub(super) fn def_flake(self) -> OptDef {
         OptDef {
-            parent: None,
-            requires: &[],
             _desc: "Dependencies and environments setup.",
-            _category: Category::Env,
+            _category: Some(Category::Env),
             default: true,
             emit: Emit::Dir(&FLAKE),
+            ..OptDef::default()
         }
     }
     /// Flake package option definition.
     pub(super) fn def_flake_package(self) -> OptDef {
         OptDef {
             parent: Some(Self::Flake),
-            requires: &[],
             _desc: ".",
-            _category: Category::Build,
-            default: false,
+            _category: Some(Category::Env),
             emit: Emit::Flag,
+            ..OptDef::default()
         }
     }
     /// Flake home module option definition.
     pub(super) fn def_flake_module_home(self) -> OptDef {
         OptDef {
-            parent: None,
-            requires: &[],
+            parent: Some(Self::FlakePackage),
             _desc: "Dependencies and environments setup.",
-            _category: Category::Env,
-            default: false,
+            _category: Some(Category::Env),
             emit: Emit::Dir(&FLAKE_MODULE_HOME),
+            ..OptDef::default()
         }
     }
     /// Flake nixos module option definition.
     pub(super) fn def_flake_module_nixos(self) -> OptDef {
         OptDef {
-            parent: None,
-            requires: &[],
+            parent: Some(Self::FlakePackage),
             _desc: "Dependencies and environments setup.",
-            _category: Category::Env,
-            default: false,
+            _category: Some(Category::Env),
             emit: Emit::Dir(&FLAKE_MODULE_NIXOS),
+            ..OptDef::default()
         }
     }
 }

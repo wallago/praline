@@ -45,7 +45,11 @@ pub(super) fn render(state: &mut State, frame: &mut Frame) {
             Mode::Details => mode::details::render(state, frame, chunks[1]),
         }
     }
-    render_key_bindings(state, frame, frame.area());
+    if let Some(status) = &state.status {
+        render_status(status, frame, frame.area());
+    } else {
+        render_key_bindings(state, frame, frame.area());
+    }
 }
 
 /// Renders the key bindings.
@@ -74,6 +78,18 @@ fn render_key_bindings(state: &mut State, frame: &mut Frame, rect: Rect) {
     if width > chunks[1].width.saturating_sub(25) {
         return;
     }
+    frame.render_widget(Paragraph::new(line.alignment(Alignment::Center)), chunks[1]);
+}
+
+/// Renders the last action's outcome on the key bindings' row.
+fn render_status(status: &Status, frame: &mut Frame, rect: Rect) {
+    let chunks = Layout::vertical([Constraint::Percentage(100), Constraint::Min(1)]).split(rect);
+    let line = match status {
+        Status::Info(message) => Line::from(format!(" {} ", message.as_str())).fg(SECONDARY),
+        Status::Error(message) => Line::from(format!(" {} ", message.as_str()))
+            .fg(ERROR)
+            .bold(),
+    };
     frame.render_widget(Paragraph::new(line.alignment(Alignment::Center)), chunks[1]);
 }
 

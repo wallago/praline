@@ -3,15 +3,6 @@
 version = 4
 
 [[package]]
-name = "addr2line"
-version = "0.25.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b5d307320b3181d6d7954e663bd7c774a838b8220fe0593c86d9fb09f498b4b"
-dependencies = [
- "gimli",
-]
-
-[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -113,35 +104,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
-name = "backtrace"
-version = "0.3.76"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb531853791a215d7c62a30daf0dde835f381ab5de4589cfe7c649d2cbe92bd6"
-dependencies = [
- "addr2line",
- "cfg-if",
- "libc",
- "miniz_oxide",
- "object",
- "rustc-demangle",
- "windows-link",
-]
-
-[[package]]
 name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
-
-[[package]]
-name = "better-panic"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fa9e1d11a268684cbd90ed36370d7577afb6c62d912ddff5c15fc34343e5036"
-dependencies = [
- "backtrace",
- "console 0.15.11",
-]
 
 [[package]]
 name = "bincode"
@@ -306,18 +272,6 @@ dependencies = [
  "rustversion",
  "ryu",
  "static_assertions",
-]
-
-[[package]]
-name = "console"
-version = "0.15.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "054ccb5b10f9f2cbf51eb355ca1d05c2d279ce1804688d0db74b4733a5aeafd8"
-dependencies = [
- "encode_unicode",
- "libc",
- "once_cell",
- "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -779,12 +733,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gimli"
-version = "0.32.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7"
-
-[[package]]
 name = "glob"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -887,7 +835,7 @@ version = "1.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86f0f8fee8c926415c58d6ae43a08523a26faccb2323f5e6b644fe7dd4ef6b82"
 dependencies = [
- "console 0.16.6",
+ "console",
  "once_cell",
  "similar",
  "tempfile",
@@ -1177,15 +1125,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "object"
-version = "0.37.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff76201f031d8863c38aa7f905eca4f53abbfa15f609db4277d44cd8938f33fe"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1412,7 +1351,6 @@ checksum = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391"
 name = "praline"
 version = "0.2.0-alpha.7"
 dependencies = [
- "better-panic",
  "clap",
  "dirs",
  "include_dir",
@@ -1423,10 +1361,8 @@ dependencies = [
  "ratatui-explorer",
  "rstest",
  "serde",
- "serde_json",
  "strum",
  "syntect-assets",
- "tempfile",
  "termbg",
  "thiserror 2.0.20",
  "toml",
@@ -1720,12 +1656,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustc-demangle"
-version = "0.1.28"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b74b56ffa8bb2830709a538c2cbcae9aa062db0d2a42563bfb09bdaae44020eb"
-
-[[package]]
 name = "rustc_version"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1821,19 +1751,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.3",
-]
-
-[[package]]
-name = "serde_json"
-version = "1.0.151"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
-dependencies = [
- "itoa",
- "memchr",
- "serde",
- "serde_core",
- "zmij",
 ]
 
 [[package]]
@@ -2683,9 +2600,3 @@ name = "yansi"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfe53a6657fd280eaa890a3bc59152892ffa3e30101319d168b781ed6529b049"
-
-[[package]]
-name = "zmij"
-version = "1.0.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"

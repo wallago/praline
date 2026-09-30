@@ -4,7 +4,8 @@ use ratatui::{
 };
 use strum::IntoEnumIterator;
 
-use crate::ui::prelude::*;
+use crate::ui::prelude::Status;
+use crate::{prelude::*, ui::prelude::*};
 
 /// Dashboard mode's key handling.
 mod dashboard;
@@ -63,6 +64,8 @@ impl State {
             (&keys.quit, Action::Quit),
             (&keys.scroll_up, Action::Up),
             (&keys.scroll_down, Action::Down),
+            (&keys.scroll_left, Action::Left),
+            (&keys.scroll_right, Action::Right),
             (&keys.leave, Action::Leave),
             (&keys.confirm, Action::Enter),
             (&keys.create, Action::Create),
@@ -84,10 +87,12 @@ impl State {
     }
 
     /// Runs `action` against the panes.
-    fn on_action(&mut self, action: Action) {
+    fn on_action(&mut self, action: Action) -> Result<()> {
         match (self.focus, action) {
             (_, Action::Create) => {
-                self.app.create(); // TODO handles.
+                self.app.create()?;
+                let target = self.app.dest.join(&self.app.name);
+                self.status = Some(Status::Info(format!("created `{}`", target.display())));
             }
             (_, Action::Quit) => self.running = false,
             (Focus::Sidebar, Action::Up) => self.mode = self.mode.previous(),
@@ -123,30 +128,39 @@ impl State {
                 }
             }
             (Focus::Page, _) => match self.mode {
-                Mode::Dashboard => self.dashboard.on_action(action, &mut self.app),
+                Mode::Dashboard => self.dashboard.on_action(action, &mut self.app)?,
                 Mode::Details => self.details.on_action(action, &mut self.app),
                 Mode::Settings => {}
             },
             _ => {}
         }
+        Ok(())
     }
 
-    /// Handles a key press.
+    /// Handles a key press. Any key clears the last status; a failed action
+    /// sets a new one instead of leaving the app.
     pub(crate) fn on_key(&mut self, key: KeyEvent) {
+        self.status = None;
+        if let Err(error) = self.dispatch(key) {
+            self.status = Some(Status::Error(error.to_string()));
+        }
+    }
+
+    /// Routes `key` to whatever owns the keyboard right now.
+    fn dispatch(&mut self, key: KeyEvent) -> Result<()> {
         if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == self.keybindings.quit.code {
             self.running = false;
-            return;
+            return Ok(());
         }
         if self.dashboard.editing.is_some() {
-            self.on_edit_key(key);
-            return;
+            return self.on_edit_key(key);
         }
         if self.dashboard.picker.is_some() {
             let action = self.action(&key);
             self.dashboard.on_picker_action(action, &mut self.app);
-            return;
+            return Ok(());
         }
-        self.on_action(self.action(&key));
+        self.on_action(self.action(&key))
     }
 }
 

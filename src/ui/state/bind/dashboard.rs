@@ -8,12 +8,13 @@ use tui_input::Input;
 use super::prelude::*;
 use crate::{
     app::{App, prelude::OptId},
+    prelude::*,
     ui::{prelude::*, state::bind::edge},
 };
 
 impl Dashboard {
     /// Runs `action` against the focused pane.
-    pub(super) fn on_action(&mut self, action: Action, app: &mut App) {
+    pub(super) fn on_action(&mut self, action: Action, app: &mut App) -> Result<()> {
         match (self.focus, action) {
             (DashboardPane::Options, Action::Up | Action::Down) => {
                 step_in(
@@ -23,15 +24,20 @@ impl Dashboard {
                 );
             }
             (DashboardPane::Options, Action::Enter) => {
-                let Some(opt) = self
+                let Some((id, conflicted)) = self
                     .options
                     .selected()
-                    .and_then(|at| app.options.get_mut(at))
+                    .and_then(|at| app.options.get(at))
+                    .map(|opt| (opt.id, opt.conflicted))
                 else {
-                    return;
+                    return Ok(());
                 };
-                opt.checked = !opt.checked;
-                app.generate(); // TODO handle error.
+                if conflicted {
+                    return Ok(());
+                }
+                app.nested_check(id, None);
+                app.mark_conflicts();
+                app.generate()?;
             }
             (DashboardPane::Form, Action::Enter) => {
                 if let Some(field) = self.row.field() {
@@ -46,6 +52,7 @@ impl Dashboard {
             }
             _ => {}
         }
+        Ok(())
     }
 
     /// Drives the open picker: move, step in and out of directories,
