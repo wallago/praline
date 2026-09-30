@@ -11,9 +11,9 @@
       ...
     }@inputs:
     {
-      # {if:flake.module.hm}
+      # {if:flake.module.home}
       homeModules.default = import ./nix/hm-module.nix self;
-      # {endif:flake.module.hm}
+      # {endif:flake.module.home}
       # {if:flake.module.nixos}
       nixModules.default = import ./nix/nixos-module.nix self;
       # {endif:flake.module.nixos}
