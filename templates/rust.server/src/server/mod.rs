@@ -18,7 +18,7 @@ fn routes() -> Router {
 }
 
 /// Start web services.
-pub(super) async fn start(address: &str, port: &str) -> Result<()> {
+pub(super) async fn start(address: &str, port: u16) -> Result<()> {
     let listener = tokio::net::TcpListener::bind(format!("{address}:{port}")).await?;
     tracing::info!("Server running");
     let routes = routes()

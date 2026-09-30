@@ -1,5 +1,13 @@
-let can = can::Can::new(
-    "vcan0",
-    Some(&std::collections::HashSet::from(["100", "101"])),
-)?;
+let cans = config
+    .can
+    .iter()
+    .map(|can_config| can::Can::new(&can_config.bus, Some(&can_config.target_frames_id)))
+    .collect::<Result<Vec<_>>>()?;
+let can = if let Some(can) = cans.first()
+    && config.can.len() == 1
+{
+    can
+} else {
+    return Err(Error::Config("expecting exactly one CAN setup".to_string()));
+};
 let (sink, source) = tokio::sync::broadcast::channel::<can::CanMessage>(100);

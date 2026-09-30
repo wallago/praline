@@ -6,10 +6,14 @@ use serde::Deserialize;
 
 use crate::prelude::*;
 
+// {slot:rust.config.mods}
+
 /// Configuration loaded from `config.toml`.
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
-pub struct Config {}
+pub(crate) struct Config {
+    // {slot:rust.config.params}
+}
 
 impl Config {
     /// Loads the config: explicit `--config` path, else
@@ -18,7 +22,7 @@ impl Config {
     /// # Errors
     ///
     /// Returns an error if a config file is found but cannot be read or parsed.
-    pub fn load(cli_path: Option<&Path>) -> Result<Self> {
+    pub(crate) fn load(cli_path: Option<&Path>) -> Result<Self> {
         if let Some(path) = cli_path {
             return Self::from_file(path);
         }
@@ -36,7 +40,7 @@ impl Config {
     ///
     /// Returns an error if the file cannot be read, or if its contents are not
     /// valid TOML for this config.
-    pub fn from_file(path: &Path) -> Result<Self> {
+    pub(crate) fn from_file(path: &Path) -> Result<Self> {
         // Get raw content
         let raw = std::fs::read_to_string(path)
             .map_err(|error| Error::Config(format!("{}: {error}", path.display())))?;

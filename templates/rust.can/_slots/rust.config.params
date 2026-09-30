@@ -1,0 +1,2 @@
+/// CAN config, one entry per bus.
+pub(crate) can: Vec<can::CanConfig>,
