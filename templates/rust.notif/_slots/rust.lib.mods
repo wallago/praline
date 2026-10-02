@@ -1,2 +1,2 @@
-/// Notify layer.
-mod notify;
+/// Notif layer.
+mod notif;

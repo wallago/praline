@@ -7,8 +7,27 @@ use crate::prelude::*;
 /// WebSocket connection.
 pub(super) async fn conn(address: &str, port: &str) -> Result<()> {
     let (stdin_tx, stdin_rx) = futures_channel::mpsc::unbounded();
-    tokio::spawn(read_stdin(stdin_tx));
 
+    tokio::select! {
+        result = read_stdin(stdin_tx) => {
+            tracing::info!("Stdin reader stopped: {:?}", result);
+        },
+        result = relay(address, port,stdin_rx) =>  {
+            tracing::info!("Stdin reader stopped: {:?}", result);
+        }
+    }
+    Ok(())
+}
+
+// Connects to the bridge and relays messages until either direction ends.
+///
+/// Stdin lines are forwarded to the websocket; every incoming message is
+/// printed to stdout, and text messages are also published on `sink`.
+///
+/// # Errors
+///
+/// Returns an error if the websocket connection cannot be established.
+async fn relay(address: &str, port: u16, stdin_rx: UnboundedReceiver<Message>) -> Result<()> {
     let (ws_stream, _) = connect_async(&format!("ws://{address}:{port}/ws")).await?;
     let (write, read) = ws_stream.split();
 
@@ -35,9 +54,15 @@ pub(super) async fn conn(address: &str, port: &str) -> Result<()> {
     Ok(())
 }
 
-// Our helper method which will read data from stdin and send it along the
-// sender provided.
-async fn read_stdin(tx: futures_channel::mpsc::UnboundedSender<Message>) {
+/// Forwards stdin to `tx` as binary websocket messages, in chunks of up to 1 KiB.
+///
+/// On EOF or a read error it never returns, so a missing stdin (e.g. `/dev/null`
+/// under systemd) doesn't end the websocket session.
+///
+/// # Errors
+///
+/// Returns an error if `tx`'s receiver has been dropped.
+async fn read_stdin(tx: futures_channel::mpsc::UnboundedSender<Message>) -> Result<()> {
     let mut stdin = tokio::io::stdin();
     loop {
         let mut buf = vec![0; 1024];
@@ -46,6 +71,10 @@ async fn read_stdin(tx: futures_channel::mpsc::UnboundedSender<Message>) {
             Ok(n) => n,
         };
         buf.truncate(n);
-        tx.unbounded_send(Message::binary(buf)).unwrap();
+        tx.unbounded_send(Message::binary(buf))?;
     }
+
+    // Keep `tx` alive: dropping it would end `stdin_to_ws` and close the socket.
+    std::future::pending::<()>().await;
+    Ok(())
 }

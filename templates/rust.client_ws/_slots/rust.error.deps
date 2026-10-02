@@ -1,3 +1,8 @@
 /// Error that may occur during tungstenite operations.
 #[error("Tungstenite error: `{0}`")]
 Tungstenite(#[from] tokio_tungstenite::tungstenite::Error),
+/// Error that may occur during futures channel sending operations.
+#[error("Futures channel sending error: `{0}`")]
+FuturesChannel(
+    #[from] futures_channel::mpsc::TrySendError<tokio_tungstenite::tungstenite::Message>,
+),

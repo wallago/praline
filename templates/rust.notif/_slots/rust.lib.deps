@@ -1,2 +1,2 @@
 let (sink, _) = tokio::sync::broadcast::channel::<String>(100);
-let mut source = sink.subscribe();
+let source = sink.subscribe();
