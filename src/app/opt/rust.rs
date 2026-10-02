@@ -24,7 +24,7 @@ static RUST_NOTIF: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.no
 
 impl OptId {
     /// Rust option definition.
-    pub(super) fn def_rust(self) -> OptDef {
+    pub(super) fn def_rust() -> OptDef {
         OptDef {
             _desc: ".",
             _category: Some(Category::Build),
@@ -34,7 +34,7 @@ impl OptId {
     }
 
     /// Rust common option definition.
-    pub(super) fn def_rust_common(self) -> OptDef {
+    pub(super) fn def_rust_common() -> OptDef {
         OptDef {
             parent: Some(Self::Rust),
             _desc: ".",
@@ -45,7 +45,7 @@ impl OptId {
     }
 
     /// Rust Firmware option definition.
-    pub(super) fn def_rust_firmware(self) -> OptDef {
+    pub(super) fn def_rust_firmware() -> OptDef {
         OptDef {
             parent: Some(Self::Rust),
             conflicts: &[Self::RustCommon],
@@ -57,7 +57,7 @@ impl OptId {
     }
 
     /// Rust Server option definition.
-    pub(super) fn def_rust_server(self) -> OptDef {
+    pub(super) fn def_rust_server() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             conflicts: &[Self::RustClientWS],
@@ -69,7 +69,7 @@ impl OptId {
     }
 
     /// Rust Server Websocket layer option definition.
-    pub(super) fn def_rust_server_ws(self) -> OptDef {
+    pub(super) fn def_rust_server_ws() -> OptDef {
         OptDef {
             parent: Some(Self::RustServer),
             _desc: ".",
@@ -80,7 +80,7 @@ impl OptId {
     }
 
     /// Rust CAN layer option definition.
-    pub(super) fn def_rust_can(self) -> OptDef {
+    pub(super) fn def_rust_can() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             _desc: ".",
@@ -91,7 +91,7 @@ impl OptId {
     }
 
     /// Rust client Websocket option definition.
-    pub(super) fn def_rust_client_ws(self) -> OptDef {
+    pub(super) fn def_rust_client_ws() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             _desc: ".",
@@ -102,7 +102,7 @@ impl OptId {
     }
 
     /// Rust notify option definition.
-    pub(super) fn def_rust_notif(self) -> OptDef {
+    pub(super) fn def_rust_notif() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             _desc: ".",

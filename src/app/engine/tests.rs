@@ -15,7 +15,8 @@ use crate::app::{
     opt::{Emit, OptId},
 };
 
-/// One app per distinct active set, reached by ticking every subset of options.
+/// One app per distinct active set, reached by ticking every subset of options
+/// the UI lets through: no two checked options conflict.
 fn every_setup() -> Vec<(Vec<OptId>, App)> {
     let ids: Vec<OptId> = OptId::iter().collect();
     let mut seen = HashSet::new();
@@ -27,6 +28,12 @@ fn every_setup() -> Vec<(Vec<OptId>, App)> {
             .filter(|(at, _)| (mask >> at) & 1 == 1)
             .map(|(_, &id)| id)
             .collect();
+        if checked
+            .iter()
+            .any(|&a| checked.iter().any(|&b| a.conflicts_with(b)))
+        {
+            continue;
+        }
         let active: Vec<OptId> = ids
             .iter()
             .copied()

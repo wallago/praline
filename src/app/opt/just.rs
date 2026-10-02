@@ -10,7 +10,7 @@ static JUST: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/just");
 
 impl OptId {
     /// Just option definition.
-    pub(super) fn def_just(self) -> OptDef {
+    pub(super) fn def_just() -> OptDef {
         OptDef {
             parent: None,
             _desc: "Task runner recipes: check, lint, fmt, ci.",

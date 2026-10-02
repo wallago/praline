@@ -15,7 +15,7 @@ static FLAKE_MODULE_NIXOS: Dir<'_> =
 
 impl OptId {
     /// Flake option definition.
-    pub(super) fn def_flake(self) -> OptDef {
+    pub(super) fn def_flake() -> OptDef {
         OptDef {
             _desc: "Dependencies and environments setup.",
             _category: Some(Category::Env),
@@ -25,7 +25,7 @@ impl OptId {
         }
     }
     /// Flake package option definition.
-    pub(super) fn def_flake_package(self) -> OptDef {
+    pub(super) fn def_flake_package() -> OptDef {
         OptDef {
             parent: Some(Self::Flake),
             _desc: ".",
@@ -35,7 +35,7 @@ impl OptId {
         }
     }
     /// Flake home module option definition.
-    pub(super) fn def_flake_module_home(self) -> OptDef {
+    pub(super) fn def_flake_module_home() -> OptDef {
         OptDef {
             parent: Some(Self::FlakePackage),
             _desc: "Dependencies and environments setup.",
@@ -45,7 +45,7 @@ impl OptId {
         }
     }
     /// Flake nixos module option definition.
-    pub(super) fn def_flake_module_nixos(self) -> OptDef {
+    pub(super) fn def_flake_module_nixos() -> OptDef {
         OptDef {
             parent: Some(Self::FlakePackage),
             _desc: "Dependencies and environments setup.",

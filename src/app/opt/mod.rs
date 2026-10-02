@@ -81,19 +81,19 @@ impl OptId {
     /// This option's row in the table.
     pub(crate) fn def(self) -> OptDef {
         match self {
-            Self::Just => self.def_just(),
-            Self::Flake => self.def_flake(),
-            Self::FlakePackage => self.def_flake_package(),
-            Self::FlakeModuleHome => self.def_flake_module_home(),
-            Self::FlakeModuleNixos => self.def_flake_module_nixos(),
-            Self::Rust => self.def_rust(),
-            Self::RustCommon => self.def_rust_common(),
-            Self::RustFirmware => self.def_rust_firmware(),
-            Self::RustServer => self.def_rust_server(),
-            Self::RustServerWS => self.def_rust_server_ws(),
-            Self::RustCan => self.def_rust_can(),
-            Self::RustClientWS => self.def_rust_client_ws(),
-            Self::RustNotif => self.def_rust_notif(),
+            Self::Just => Self::def_just(),
+            Self::Flake => Self::def_flake(),
+            Self::FlakePackage => Self::def_flake_package(),
+            Self::FlakeModuleHome => Self::def_flake_module_home(),
+            Self::FlakeModuleNixos => Self::def_flake_module_nixos(),
+            Self::Rust => Self::def_rust(),
+            Self::RustCommon => Self::def_rust_common(),
+            Self::RustFirmware => Self::def_rust_firmware(),
+            Self::RustServer => Self::def_rust_server(),
+            Self::RustServerWS => Self::def_rust_server_ws(),
+            Self::RustCan => Self::def_rust_can(),
+            Self::RustClientWS => Self::def_rust_client_ws(),
+            Self::RustNotif => Self::def_rust_notif(),
         }
     }
 }
