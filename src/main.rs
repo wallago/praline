@@ -8,8 +8,8 @@ use praline::error::Result;
 
 /// Main function to run the app
 fn main() -> Result<()> {
-    let mut args = Args::parse();
-    match praline::run(&args) {
+    let args = Args::parse();
+    match praline::run(args) {
         Ok(()) => process::exit(0),
         Err(e) => {
             eprintln!("{e}");

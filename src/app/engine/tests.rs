@@ -10,9 +10,12 @@ use super::{
     marker::marker,
     slot::{SLOT_MARKER, SLOTS_DIR},
 };
-use crate::app::{
-    App,
-    opt::{Emit, OptId},
+use crate::{
+    app::{
+        App,
+        opt::{Emit, OptId},
+    },
+    prelude::*,
 };
 
 /// One app per distinct active set, reached by ticking every subset of options
@@ -46,7 +49,7 @@ fn every_setup() -> Vec<(Vec<OptId>, App)> {
             name: "demo-app".into(),
             desc: "Demo app.".into(),
             owner: "demo".into(),
-            ..App::default()
+            ..App::new(Args::default())
         };
         for opt in &mut app.options {
             opt.checked = checked.contains(&opt.id);
