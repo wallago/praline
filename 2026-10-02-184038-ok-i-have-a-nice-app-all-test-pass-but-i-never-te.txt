@@ -1,0 +1,1113 @@
+ ▐▛███▛█   Claude Code v2.1.280
+▝▜██████▀  Opus 5.5 · Claude Pro
+  ▝▝ ▝▝    ~/Personal-Projects/praline
+
+▎ Using Opus 5.5 (from .claude/settings.json) · /model
+
+❯ ok i have a nice app all test pass but i never test build and i previous      
+  conversation we talk about insta and other test and ci cd / retrieve them and 
+  go futher on thi part (we talk for now not write)                             
+
+  Read 1 file, ran 4 shell commands (ctrl+o to expand)
+
+● Found the earlier conversation (Sep 28). Now checking the most recent session
+  and the repo's current state to see what's already landed.
+
+  Read 4 files, ran 5 shell commands (ctrl+o to expand)
+
+● I found the Sep 28 conversation and compared it with the repo as it is now. I
+  haven't changed anything.
+
+  What we said on Sep 28
+
+  1. Tier 2 engine tests (marker, fill_slots, strip_conditionals). These are in.
+  2. Build the generated repos. Proposed, never approved. This is the "never
+     tested build" part.
+  3. insta snapshots. The conclusion was to add them only after tier 2 is green,
+     because a snapshot of broken templates records the bugs as the expected
+     output.
+  4. A CI job for the build test, run when templates change and once a week.
+
+  What has changed since then
+
+  - insta is in [dev-dependencies], but the only test that uses it is commented 
+    out (tests.rs:169-192). I expect cargo machete to report it as unused, which
+    would make ci-light fail. I haven't run it to check.
+  - You added conflicts (firmware ✗ common, server ✗ client_ws). This breaks the
+    "everything on" setup from the old plan. The good news is there's a simple
+    fix: use every largest valid set instead. Any two options that can be on
+    together fit in at least one largest set, so pair coverage still holds.
+    Today there are three: firmware + flake + just, common + server + ws + can +
+    notif + ..., and common + client_ws + can + notif + ....
+  - Template bugs the build tier would catch today:
+    - The lib.rs test calls run(Args::default()) from a sync #[test]. But run is
+      now async and takes &Args, so the test doesn't compile. It also uses
+      assert_eq!(x, true), which the generated repo's own clippy will reject.
+    - help.rs still checks that the version starts with "canary-core ".
+    - templates/rust.notif/notif/mod.rs sits at the repo root, not under src/,
+      so cargo never sees it.
+    - Fixed since: version! is now a macro call, and the duplicate build recipe
+      is gone (firmware and common can't be on together any more).
+
+  Going further
+
+  1. A headless mode, and the build test on top of it
+
+  I'd add praline new --opt rust.common --opt just --name x --out DIR before the
+  build test.
+  - Why: the engine is pub(crate), so only in-crate tests can reach it. With a
+    headless mode, the build test becomes a just e2e recipe or a tests/e2e.rs
+    that calls the binary. You or I can also reproduce any broken setup with one
+    command. I can't drive the TUI.
+  - Per setup: generate into $TMPDIR/praline-e2e/<label>/, then run:
+    - just --summary
+    - cargo test (not check: the bugs above are in test code)
+    - cargo clippy -D warnings
+    - taplo and editorconfig-checker on the output (this would have caught the
+      10-space indent from rust.can)
+  - Shared target dir: all setups use one CARGO_TARGET_DIR, so dependencies
+    compile once.
+  - Firmware needs the ESP toolchain, so report it as skipped after just 
+    --summary, not as passed.
+  - Later, let each generated repo define "working": every option adds its check
+    to the just.ci slot, and the test runs just ci in the generated repo.
+
+  2. Snapshots, once step 1 is green
+
+  - What to snapshot: each largest valid set, plus what each option adds (its
+    setup compared with the same setup without it). Each snapshot then reads as
+    "what this option does", and one template edit doesn't show up in eight
+    snapshots.
+  - Where to store them: outside src/. Your include = ["src/**/*", …] would
+    otherwise publish them on crates.io.
+  - cargo-insta goes into ciTools. In CI, insta only fails and writes nothing,
+    because GitHub Actions sets CI. Adding --unreferenced=reject also catches
+    stale .snap files; I'm going from memory on that flag and haven't checked it
+    in the insta source.
+
+  3. CI
+
+  - CI and local run different things. CI runs cargo test, ci-light runs
+    nextest, and tool versions come from taiki-e/binstall instead of your flake.
+    devShells.ci exists, but no workflow uses it. Running jobs as nix develop 
+    .#ci -c just <recipe> would make your local and CI results match. The cost
+    is Nix setup time, which your existing store cache already reduces.
+  - A new e2e job:
+    - Triggers: changes to templates/**, src/app/{engine,opt}/**, plus the
+      weekly cron you already have. The cron matters because generated repos
+      have no Cargo.lock, so a new crate release can break them while you change
+      nothing.
+    - One matrix entry per setup, so a failure shows up as one red cell.
+    - It needs just, which is in the dev shell but not in ciTools.
+  - The build test can't be a nix flake check check: the Nix sandbox has no
+    network, so cargo can't download the generated repos' crates. It has to be a
+    normal CI job.
+
+  4. CD: "never tested the build" applies here too
+
+  - The release build (cross build --release on 3 targets, GPG signing,
+    git-cliff, cargo publish) only runs when you push a tag. Its first real run
+    would be your first release.
+  - Test the crate: run cargo package (or cargo publish --dry-run) in CI. It
+    builds the crate from the packaged files only, so a template missing from
+    include breaks it there instead of on crates.io.
+  - Test the whole pipeline: push a v0.0.0-rc.1 tag once. Prerelease tags
+    already skip crates.io, so the whole pipeline runs without publishing.
+    Adding a workflow_dispatch trigger to cd.yml would let you rerun it without
+    a tag.
+  - Minor: cd.yml mixes upload-artifact@v7 with download-artifact@v4.
+
+  Suggested order
+
+  1. Fix the insta / machete state: put the test back or remove the dependency.
+  2. Add headless praline new.
+  3. Add the build test and fix the template bugs it finds.
+  4. Add the e2e CI job.
+  5. Add snapshots.
+  6. Add the cargo package CI check and do one -rc tag rehearsal.
+
+  Two things for you to decide:
+  - Headless CLI: add it first, or keep the build test inside the crate as an
+    #[ignore] test like the original plan?
+  - CI: move CI onto nix develop .#ci, or keep the per-tool actions?
+
+  Also, nothing from Sep 28 was saved to my memory, so I had to dig it out of
+  the old session logs. I can save a short note on the testing plan and where it
+  stands, so next time I start from it. That writes one file outside the repo,
+  so only if you say so.
+
+✻ Baked for 1m 38s · done 12:15 PM
+
+❯ save this as milestone cause we will go further step by step next             
+
+● Skill(pm-tasks)
+  ⎿  Successfully loaded skill
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Your repo has no pm/ folder or todo.md yet, so this would be a new file:
+  pm/testing.todo.md. It uses the format from your pm-tasks skill:
+  - The four sections: Active, Backlog, Notes, Archive.
+  - No @ids, because the skill says those are generated and never invented.
+  - Backlog items are listed in the order we'd do them.
+
+  pm/testing.todo.md
+  # Milestone: Test the build
+
+  Goal: prove generated repos actually build and work for every option, without
+  generating combinations by hand. Then lock the output with snapshots and wire
+  it into CI/CD.
+
+  ## Active
+
+  - [ ] Resolve the `insta` state: restore the snapshot test or drop the
+  dev-dependency (machete flags it while the test is commented out)
+
+  ## Backlog
+
+  - [ ] Headless `praline new --opt … --name … --out DIR`
+  - [ ] Setup selection: N+2 pairwise, with "everything on" replaced by every
+  maximal conflict-free set
+  - [ ] Build tier: per setup, in `$TMPDIR/praline-e2e/<label>/` with a shared
+  `CARGO_TARGET_DIR`, run `just --summary`, `cargo test`, `cargo clippy -D
+  warnings`, `taplo`, `editorconfig-checker`
+  - [ ] Report options that need hardware or a special toolchain (firmware, CAN)
+  as skipped, not passed
+  - [ ] Fix the template bugs the build tier finds (see Notes)
+  - [ ] CI `e2e` job: one matrix entry per setup, on `templates/**`,
+  `src/app/{engine,opt}/**` and the weekly cron; add `just` to `ciTools`
+  - [ ] Snapshots: maximal sets plus per-option delta, stored outside `src/`;
+  `cargo-insta` in `ciTools`
+  - [ ] Generated repos define "working": each option feeds the `just.ci` slot,
+  the build tier runs `just ci`
+  - [ ] `cargo package` check in CI
+  - [ ] CD rehearsal: push a `v0.0.0-rc.1` tag; add `workflow_dispatch` to
+  `cd.yml`
+
+  ## Notes
+
+  > [!NOTE]
+  > Build tier before snapshots, or the snapshots record today's bugs as the
+  > expected output.
+
+  Open decisions:
+
+  - Headless CLI first, or keep the build tier as an in-crate `#[ignore]` test?
+  - Run CI jobs through `nix develop .#ci -c just …`, or keep per-tool actions?
+
+  Template bugs found on 2026-10-02:
+
+  - `rust.common/src/lib.rs` test: a sync test calls async `run`, passes `Args`
+  by value, and `assert_eq!(x, true)` fails clippy
+  - `rust.common/src/help.rs` test expects the version to start with
+  `canary-core `
+  - `rust.notif/notif/mod.rs` sits outside `src/`, so cargo never sees it
+
+  Constraints:
+
+  - The build tier can't be a `nix flake check` check: the sandbox has no
+  network for crates.io.
+  - Generated repos have no `Cargo.lock`, so a new crate release can break them
+  while nothing here changes; hence the weekly cron.
+  - CI and `ci-light` diverge: `cargo test` vs `cargo nextest`, action-installed
+  tools vs the flake.
+  - `cd.yml` mixes `upload-artifact@v7` with `download-artifact@v4`.
+
+  ## Archive
+
+  - [x] Tier 2 engine tests: `marker`, `fill_slots`, `strip_conditionals`
+
+  Say go and I'll write it exactly as shown, or edit it first.
+
+  After it lands, I'd like to save a one-line memory note that points to this
+  file, so next session I start from it instead of digging through old logs.
+
+✻ Churned for 37s · done 4:04 PM
+
+※ recap: We're planning how to test that the repos praline generates actually build, and I've drafted the milestone file pm/testing.todo.md but haven't written it. Say go to save it as shown, or edit it first. (disable recaps in /config)
+
+❯ for now Fix the insta / machete state: put the test back or remove the        
+  dependency.                                                                   
+
+  Read 2 files, ran 2 shell commands (ctrl+o to expand)
+
+● First, a correction. I said machete would flag insta. I ran it, and it
+  doesn't:
+
+  praline -- ./Cargo.toml:
+        indexmap
+  exit=1
+
+  - insta passes only by accident. machete doesn't skip comments, and it finds
+    the insta::assert_snapshot! inside the commented-out test (tests.rs:191).
+    Delete that comment and machete flags insta.
+  - indexmap is what actually fails. Its only use is // use indexmap::IndexMap;
+    in src/help.rs, and machete doesn't treat a commented-out use line as a use.
+
+  Recommendation: remove both
+
+  Remove insta rather than restoring the test. The commented-out test snapshots
+  {just, rust, rust.common}. That would record the broken lib.rs and help.rs
+  template tests as the expected output. The snapshot step comes back after the
+  build tier, with a better shape anyway: largest sets plus per-option deltas,
+  stored outside src/. So the commented-out block goes too.
+
+  Remove indexmap, because that's the dependency that actually fails machete.
+
+  Cargo.toml
+
+   dirs = "6.0.0"
+   include_dir = "0.7.4"
+  -indexmap = "2.14.0"
+   ratatui = { version = "0.30.2", features = ["unstable-widget-ref"] }
+   ratatui-explorer = "0.3.0"
+   [dev-dependencies]
+  -insta             = "1.48.0"
+   pretty_assertions = "1.4.1"
+   rstest            = "0.26"
+
+  src/app/engine/tests.rs
+
+  Remove the whole commented-out block at the end of the file, along with the
+  blank line before it, so the file ends right after
+  every_template_folder_is_rendered_by_its_option:
+       assert!(
+           unrendered.is_empty(),
+           "never rendered from templates/: {unrendered:?}"
+       );
+   }
+  -
+  -// /// The rendered repo as one text: each path, then its contents.
+  -// fn listing(tree: &Tree) -> String {
+  -//     let mut out = String::new();
+  -//     for (path, bytes) in tree {
+  -//         writeln!(out, "── {} ──", path.display()).unwrap();
+  -//         out.push_str(&String::from_utf8_lossy(bytes));
+  -//     }
+  -//     out
+  -// }
+  -
+  -// #[test]
+  -// fn rust_common_with_just_renders_as_before() {
+  -//     let on = [OptId::Just, OptId::Rust, OptId::RustCommon];
+  -//     let mut app = App {
+  -//         name: "demo-app".into(),
+  -//         desc: "Demo app.".into(),
+  -//         owner: "demo".into(),
+  -//         ..App::default()
+  -//     };
+  -//     for opt in &mut app.options {
+  -//         opt.checked = on.contains(&opt.id);
+  -//     }
+  -//     insta::assert_snapshot!(listing(&generate(&app).unwrap()));
+  -// }
+
+  After applying
+
+  - Cargo.lock changes as a side effect. Your rule makes that its own commit,
+    separate from the two files above. cargo machete then passes, and I'll run
+    just ci-light to confirm the rest of the gate.
+  - Unrelated, but it's why indexmap was there: src/help.rs is an old engine
+    (substitute, strip_conditionals, write_dir), all 188 lines commented out.
+    The new engine in src/app/engine/ replaced it. I'm leaving it alone here;
+    it's a separate cleanup if you want it.
+  - The milestone file from my last message is still waiting for your go. Once
+    it exists, this item moves to Archive.
+
+  Say go and I'll apply the two diffs exactly as shown.
+
+✻ Sautéed for 29s · done 4:11 PM
+
+❯ no do not write i will to understand whats happen because i am not            
+  confortables with those manipulations                                         
+                                                                                
+  so ok i will do this and after where you will apply insta ?                   
+
+● That works: you apply it yourself, and I won't write anything.
+
+  What happens when you apply it
+
+  1. Removing the two lines from Cargo.toml only changes what your crate asks
+     for.
+  2. The next cargo command (just check is enough) sees that Cargo.lock no
+     longer matches. It rewrites the lockfile and drops indexmap and insta.
+     Crates that only they pulled in are dropped too: for insta that's similar,
+     console and a few more. You'll see them as Removing … lines in cargo's
+     output.
+  3. Deleting the commented-out block in tests.rs changes nothing at compile
+     time. It only stops machete from finding the word insta in a comment.
+  4. cargo machete should then exit 0.
+
+  That leaves two separate changes in your working copy: Cargo.toml + tests.rs,
+  and Cargo.lock on its own.
+
+  Where insta comes back
+
+  insta comes back at step 5 of the milestone, after the build tier is green.
+
+  Why not before
+
+  A snapshot means "this output is correct, warn me if it changes." Today the
+  output has known bugs (the lib.rs and help.rs tests in the templates), so a
+  snapshot taken now would lock them in as correct. The build tier finds and
+  fixes those bugs first. Then the snapshot locks in a version that's known to
+  work.
+
+  How the two connect
+
+  The build tier and the snapshots use the same list of setups:
+
+                setups()            ← one function: largest sets + each option 
+  alone
+               /        \
+      build tier          snapshots
+    (does it work?)    (did it change?)
+    cargo test, just,   insta compares the
+    clippy… on disk     text to a .snap file
+
+  The build tier checks that the output works. The snapshot then notices if it
+  changes, even in ways that don't break anything. Example from the earlier
+  experiment: a lint line deleted from the Cargo.toml template. It still parses
+  and builds, so only a snapshot sees it.
+
+  Concretely, in the repo
+
+  - Cargo.toml: insta goes back in [dev-dependencies], the same line you're
+    removing now.
+  - flake.nix: cargo-insta goes into ciTools. That gives you the cargo insta 
+    review command.
+  - Test code: in src/app/engine/, next to the build tier, because the engine is
+    pub(crate) and can't be reached from tests/. It takes each setup from
+    setups(), renders it, and calls insta::assert_snapshot!(name, text).
+  - .snap files: under tests/snapshots/ at the repo root, not insta's default
+    src/app/engine/snapshots/. Your include = ["src/**/*", …] would otherwise
+    ship them on crates.io. insta has a setting to change the snapshot folder;
+    I'll check the exact call in insta's source before using it.
+
+  What gets snapshotted
+
+  - Each largest set: the whole generated repo as one text, every file path
+    followed by its contents.
+  - Each option's delta: only what the option adds, i.e. the difference between
+    a setup with it and without it. rust.server.snap would then read as "what
+    rust.server does": its new files, plus the lines it adds to Cargo.toml,
+    lib.rs and config. That answers your question "did the option I added work"
+    as one file you can read.
+
+  Your loop afterwards
+
+  1. You edit a template, and just test fails, showing only the lines that
+     changed.
+  2. You run cargo insta review (interactive, so you run it, not me) and accept
+     or reject each change.
+  3. The accepted .snap files go in the same commit as the template change.
+     That's different from Cargo.lock: the snapshot is part of the change, not a
+     side effect of it.
+  4. In CI, CI=true makes insta fail without writing files. A snapshot you
+     forgot to accept turns CI red.
+
+  Once the build tier is in place, that's two files plus flake.nix, which I'll
+  list for your go before showing any diff. Paste back the cargo machete output
+  after your change if you want me to check it.
+
+✻ Cogitated for 28s · done 4:13 PM
+
+❯ okkkkkk i get it so i remove it so now go step 2                              
+
+● Let me check your step 1 landed, then read the parts step 2 touches.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Step 1 is in: machete is clean, and Cargo.lock dropped 56 lines as expected.
+  Reading the remaining pieces step 2 depends on.
+
+  Ran 6 shell commands (ctrl+o to expand)
+
+● Step 1: done
+
+  cargo machete is clean, and Cargo.lock shrank by 56 lines.
+
+  Your rule makes the lockfile its own commit, so this is three steps. It
+  assumes the working copy holds only these three files, which it does. Run it
+  yourself:
+
+  jj split -m "chore(deps): drop unused indexmap and insta" Cargo.toml 
+  src/app/engine/tests.rs
+  jj describe -m "chore(deps): refresh Cargo.lock"
+  jj new
+
+  jj split moves the named files into a first commit with that message.
+  Cargo.lock stays in @, which describe then names.
+
+  Step 2: headless praline new
+
+  What it looks like
+
+  praline new --name demo-app --owner demo --desc "Demo app." \
+              --opt rust.server --opt just --dest /tmp/e2e
+  → /tmp/e2e/demo-app
+
+  - praline with no subcommand opens the TUI, exactly as today.
+  - --opt is repeatable, and clap checks each value against the real option
+    names. praline new --help lists them, and a typo gets a "did you mean"
+    suggestion. I checked PossibleValuesParser in your locked clap 4.6.6.
+  - It prints the created path and exits. Nothing is interactive, so I can run
+    it too.
+
+  How it behaves (these are my choices; push back on any)
+
+  1. Parents are pulled in like in the TUI. --opt rust.server also turns on
+     rust.common and rust, using the same nested_check the TUI calls.
+  2. Defaults are off. In the TUI, just and flake start ticked. Here, only what
+     you pass is on. Otherwise a setup like "rust.common alone" would quietly
+     include just and flake, and the build tier wouldn't be testing what it
+     claims.
+  3. It fails loudly instead of dropping things. It errors on two conflicting
+     options, and on an option that's ticked but stays inactive. The TUI greys
+     these out; a script has nobody to see that.
+  4. The fields go through Field::validate, the same rules as the TUI form.
+     --name, --owner and --desc are all required.
+  5. --dest works like the TUI's destination: the repo goes to dest/<name>,
+     --dest defaults to the current directory, and it fails if the target
+     already exists.
+
+  Files (4)
+
+  - src/error.rs: a new InputError for a bad field, a conflict, or an inactive
+    option.
+  - src/args.rs: a Command::New(NewArgs) subcommand, plus command: 
+    Option<Command> on Args.
+  - src/app/mod.rs: a function that builds an App from NewArgs, with the rules
+    above. Its tests are written first: parent pulled in, defaults off, conflict
+    rejected, bad name rejected.
+  - src/lib.rs: run uses the subcommand when there is one, and the TUI
+    otherwise.
+
+  Not touched:
+  - main.rs: it still probes the terminal background colour before run. That's
+    harmless for new and returns at once without a terminal.
+  - README: documenting the subcommand can wait until the build tier uses it.
+
+  Say go (or change any of the five behaviours) and I'll show the four diffs,
+  with the tests first. Nothing gets written until you've applied them.
+
+✻ Worked for 1m 17s · done 4:19 PM
+
+※ recap: You're making sure generated repos actually build, step by step: step 1 (dropping the unused deps) is done, and step 2 adds a headless `praline new` command. Next, you say go on the plan so I can show the four diffs. (disable recaps in /config)
+
+❯ ❯ cargo run -- --name demo-app --owner demo --desc "Demo app." \              
+                    --opt rust.server --opt just --dest /tmp/e2e --config       
+  config.toml --headless                                                        
+     Compiling praline v0.2.0-alpha.7 (/home/wallago/Personal-Projects/praline) 
+      Finished dev profile [unoptimized + debuginfo] target(s) in 0.68s         
+       Running target/debug/praline --name demo-app --owner demo --desc 'Demo   
+  app.' --opt rust.server --opt just --dest /tmp/e2e --config config.toml       
+  --headless                                                                    
+                                                                                
+  praline (9471f5a) on 󱗆 twlvzxtl (alpha~5, refactor/ui~10, refactor/tests~10) 
+  is 📦 v0.2.0-alpha.7 via 🦀 v1.100.0-nightly via ❄️  impure (nix-shell-env)   
+  ❯ ls /tmp/e2e/demo-app/                                                       
+  justfile                                                                      
+  did you imagine that ?                                                        
+
+● Not quite what I proposed, and the output shows a bug: rust.server should have
+  brought rust and rust.common with it, but only justfile came out. Let me read
+  your implementation.
+
+  Ran 4 shell commands (ctrl+o to expand)
+
+● Partly. You took a different design from mine, and part of it is better. But
+  the ls shows a real bug: only justfile came out.
+
+  Why only justfile
+
+  App::new ticks exactly the names you passed, so rust.server and just are
+  checked, but rust.common and rust aren't. An option only counts if its parents
+  are also checked (OptId::is_active). So rust.server was silently dropped, and
+  only just rendered.
+
+  The TUI avoids this because ticking an option calls nested_check, which ticks
+  its parents too. The headless path never calls it. That's why my proposal had
+  "parents are pulled in" and "fail loudly instead of dropping things": without
+  them, a typo-free command can still produce a repo that's missing things, with
+  no error.
+
+  The fix: in App::new, after building options, call app.nested_check(id, 
+  Some(true)) for each --opt instead of matching names inline. Then, in headless
+  mode, return an error if any checked option is still inactive or conflicts
+  with another. With that, your command produces rust + rust.common +
+  rust.server + just.
+
+  What's better than my version
+
+  - The same flags prefill the TUI. praline --name x --opt rust.server opens the
+    dashboard already filled in. I didn't think of that, and it's useful.
+  - One App::new(args) instead of a separate builder function.
+  - PossibleValuesParser is wired the way I'd checked it, so --opt nope gets
+    clap's error and suggestion.
+
+  Clippy, the 56 tests and machete all pass on your commit.
+
+  Things to fix, in order of importance
+
+  1. No field validation in headless mode.
+     - --name ../escape writes outside --dest, because create() does
+       dest.join(name).
+     - --desc 'say "hi"' breaks the generated Cargo.toml.
+
+     The TUI blocks both through Field::validate. Headless should run the same
+     check before generate().
+  2. --headless with no --name builds demo-name. Defaults make sense for the TUI
+     prefill. For a headless run, I'd make clap require --name, --owner and
+     --desc (required_if_eq("headless", "true")). I'd check that attribute
+     against your clap 4.6.6 before using it.
+  3. Defaults switch off as soon as one --opt is passed. That's fine, but it's
+     implicit. praline --headless --opt rust gives no just, while praline 
+     --headless alone gives just + flake. One line in the --opt doc comment
+     would make that clear.
+  4. Small things:
+     - The headless doc comment says "Project description." (copy-paste), and
+       that text shows up in --help.
+     - An empty impl App {} is left over.
+     - On success nothing is printed. Printing the created path helps scripts.
+
+  Outside step 2, but already in the commit
+
+  - Cargo.lock is bundled into feat(args). Removing termbg changed it, and your
+    rule says the lockfile is its own commit.
+  - termbg and --accent-color are gone. That's a user-visible removal unrelated
+    to headless mode. Under feat(args), the changelog won't mention that the
+    flag disappeared. It deserves its own commit, e.g. refactor!: drop 
+    --accent-color, or at least a line in the commit body.
+
+  Splitting those apart means rewriting history, so you'd do that, not me. Just
+  say if you want the command sequence.
+
+  Say go and I'll show the diffs for 1–4 in src/app/mod.rs, src/args.rs and
+  src/lib.rs, with a failing test first for the parent bug. That's the exact
+  case your ls just showed.
+
+✻ Worked for 43s · done 5:37 PM
+
+※ recap: We're making Praline's generated repos testable step by step, currently on the headless mode you wrote, which drops parent options and skips field validation. Next: say go and I'll show the fix diffs with a failing test first. (disable recaps in /config)
+
+❯ is 📦 v0.2.0-alpha.7 via 🦀 v1.100.0-nightly via ❄️  impure (nix-shell-env)   
+  ❯ cargo run -- --name demo-app --owner demo --desc "Demo app." \              
+                    --opt rust.server --opt just --dest /tmp/e2e --config       
+  config.toml --headless                                                        
+      Finished dev profile [unoptimized + debuginfo] target(s) in 0.07s         
+       Running target/debug/praline --name demo-app --owner demo --desc 'Demo   
+  app.' --opt rust.server --opt just --dest /tmp/e2e --config config.toml       
+  --headless                                                                    
+                                                                                
+  praline (b5fa714) on 󱗆 kkvvxwpl (alpha~5, refactor/tests~10, refactor/ui~10) 
+  is 📦 v0.2.0-alpha.7 via 🦀 v1.100.0-nightly via ❄️  impure (nix-shell-env)   
+  ❯ ls /tmp/e2e/demo-app/                                                       
+  Cargo.toml  config.example.toml  flake.nix  just  justfile  src               
+  does it good ? missing check for fields                                       
+
+● Let me look at what you changed and at the generated tree. flake.nix showing
+  up without --opt flake is the first thing I want to explain.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Yes for the parent bug: rust + rust.common + rust.server + just all rendered.
+  Two things in the tree look surprising but are expected:
+  - flake.nix and .envrc are there because your new version keeps the defaults
+    (just, flake) on and adds --opt on top.
+  - nix/package.nix is missing because the whole file sits inside
+    {if:flake.package}, so it renders empty and is skipped.
+
+  Field checks
+
+  I'd put the check in create(), not in lib.rs:
+  - create() is the one place that writes to disk, which is exactly where --name
+    ../escape does its damage.
+  - The TUI goes through it too.
+  - It keeps the change to two files.
+
+  Trade-off: an invalid field then reaches the TUI as an error from create().
+  That error ends the event loop, the same way TargetExists does today. The TUI
+  form already blocks bad keystrokes, so in practice only headless mode hits it.
+
+  The tests come first, as your rust rule asks. Each case breaks one rule: a
+  name that escapes --dest, a bad owner, and a quote that would break
+  Cargo.toml.
+
+  src/error.rs
+
+  A new variant in Error, after Config:
+      /// Loading `config.toml` failed.
+      #[error("config: {0}")]
+      Config(#[from] ConfigError),
+      /// A value given on the command line breaks its field's rule.
+      #[error("input: {0}")]
+      Input(#[from] InputError),
+  }
+  A new enum, between ConfigError and the tests:
+      /// Error that may occur while deserialize toml file.
+      #[error("Failed to deserialize toml file: `{0}`")]
+      TomlDeserialize(String),
+  }
+
+  /// Error from values given on the command line.
+  #[derive(Debug, ThisError)]
+  pub enum InputError {
+      /// A field breaks its rule: the flag, then why.
+      #[error("`{0}` {1}")]
+      Field(String, &'static str),
+  }
+
+  #[cfg(test)]
+  mod tests {
+
+  src/app/mod.rs
+
+  create() checks the fields before anything else. A new private validate() goes
+  right after it:
+       /// Writes the last render to `dest/<name>`.
+       ///
+       /// # Errors
+       ///
+  -    /// Returns an error if nothing has been generated yet, if the target
+  -    /// already exists, or if creating a directory or writing a file fails.
+  -    /// A failure part-way leaves the files already written on disk.
+  +    /// Returns an error if a field breaks its rule, if nothing has been
+  +    /// generated yet, if the target already exists, or if creating a 
+  directory
+  +    /// or writing a file fails. A failure part-way leaves the files already
+  +    /// written on disk.
+       pub(crate) fn create(&self) -> Result<()> {
+  +        self.validate()?;
+           let Some(tree) = &self.staged else {
+               return Err(NotGenerated.into());
+           };
+          write_tree(tree, &target)
+      }
+
+      /// Checks every field against the rule the form enforces while typing.
+      ///
+      /// # Errors
+      ///
+      /// Returns an error naming the first field that breaks its rule.
+      fn validate(&self) -> Result<()> {
+          for field in Field::iter() {
+              field.validate(field.get(self)).map_err(|reason| {
+                  InputError::Field(format!("--{field:?}").to_lowercase(),
+  reason)
+              })?;
+          }
+          Ok(())
+      }
+
+      /// Flags every unchecked option that clashes with a checked one.
+  A tests module at the end of the file:
+          if opt.checked {
+              self.nested_check(parent, Some(true));
+          }
+      }
+  }
+
+  #[cfg(test)]
+  mod tests {
+      use rstest::rstest;
+
+      use super::*;
+
+      /// An app built from the command line with these fields.
+      fn app(name: &str, owner: &str, desc: &str) -> App {
+          App::new(Args {
+              name: Some(name.into()),
+              owner: Some(owner.into()),
+              desc: Some(desc.into()),
+              ..Args::default()
+          })
+      }
+
+      #[test]
+      fn valid_fields_pass() {
+          assert!(app("demo-app", "demo", "Demo app.").validate().is_ok());
+      }
+
+      #[rstest]
+      #[case::name_escapes_dest("../escape", "demo", "Demo app.")]
+      #[case::owner_double_dash("demo-app", "my--org", "Demo app.")]
+      #[case::quote_breaks_toml("demo-app", "demo", "say \"hi\"")]
+      fn a_bad_field_is_an_error(#[case] name: &str, #[case] owner: &str,
+  #[case] desc: &str) {
+          let err = app(name, owner, desc).validate().unwrap_err();
+          assert!(matches!(err, Error::Input(InputError::Field(..))), "{err}");
+      }
+  }
+
+  A bad name then fails with input: --name must start with a letter, and nothing
+  is written.
+
+  To follow the test-first order:
+  1. Add the tests and an empty fn validate(&self) -> Result<()> { Ok(()) }.
+  2. Run just test. The three a_bad_field_is_an_error cases should fail.
+  3. Fill in the real validate() and wire it into create(). They should pass.
+
+  Field, Args, InputError and IntoEnumIterator are already in scope in
+  app/mod.rs through the prelude and your new use strum::IntoEnumIterator. Run
+  just fmt afterwards in case rustfmt wraps the map_err differently from how I
+  did.
+
+  Still open, not part of this change
+
+  - Conflicts aren't checked in headless mode. --opt rust.firmware --opt 
+    rust.common renders both. mark_conflicts only greys out unchecked options,
+    so nothing stops two checked ones. This needs a second InputError variant.
+  - No way to turn a default off. With defaults always on, you can't ask for
+    "rust.common without just/flake". The build tier needs exactly that to test
+    an option alone. Options: drop defaults when --opt is given (your first
+    version), or add a --no-defaults flag.
+  - Leftovers in app/mod.rs:
+    - The commented-out let checked = … block and the empty impl App {}.
+    - OptId::iter().find(…) could be opt.parse::<OptId>(), since OptId derives
+      EnumString and clap has already checked the name.
+
+  Tell me which of those you want next. Paste back the just test output once
+  you've applied the field check if you want me to read it.
+✻ Cooked for 1m 2s · done 5:53 PM
+
+※ recap: We're building a way to prove that generated repos actually build, and right now we're finishing headless `praline` mode by adding field checks. Next, apply the field-check diffs in `error.rs` and `app/mod.rs`, then run `just test`.
+
+❯ ok what do you think of this ?                                                
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Applied exactly as proposed, plus the empty impl App {} removed. townyyuz also
+  has a new commit id, so you amended it. Checking that and running the gate
+  pieces.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Good. All three checks pass:
+  - cargo fmt --check: clean.
+  - clippy -D warnings: clean.
+  - Tests: 60 run, 60 pass, including the 4 new app::tests cases.
+
+  You also amended townyyuz so that --opt turns the defaults off, as in your
+  first version, and nested_check still pulls in the parents. That settles my
+  "no way to turn a default off" point: --opt rust.common alone now gives
+  exactly that, which is what the build tier needs.
+
+  To see the field check end to end, run this yourself (my rules keep me from
+  cargo run). It should fail with input: `--name` must start with a letter and
+  leave nothing in /tmp/e2e:
+  cargo run -- --headless --name ../escape --owner demo --desc "Demo app." --opt
+  just --dest /tmp/e2e
+
+  Left for headless mode
+
+  1. Conflicts. --opt rust.firmware --opt rust.common still renders both. This
+     is the last way to get a broken setup without an error, and the build tier
+     will produce such combinations on purpose to test them, so it should come
+     next. It means one more InputError variant and a check next to validate().
+  2. Small cleanup in App::new. Options are now ticked in two places: the
+     .any(…) in the map, and nested_check in the loop. The loop alone is enough
+     if the map becomes:
+  checked: args.opt.is_empty() && id.def().default,
+     Also, OptId::iter().find(…) could be opt.parse::<OptId>().
+
+  Before you commit
+
+  - @ is a clean commit on its own. For example: feat(app): validate fields 
+    before writing the repo.
+  - townyyuz still bundles three things: the headless feature, the termbg /
+    --accent-color removal, and its Cargo.lock change. Your rules want the
+    lockfile split out, and the flag removal is user-visible. If you want to
+    split it, I'll print the jj split sequence for you to run.
+
+  Should I show the conflict check next?
+
+✻ Baked for 22s · done 5:58 PM
+
+※ recap: We're making sure praline's generated repos actually build, and headless `praline --headless` now works with field validation, with all 60 tests passing. Next, I'll show the conflict check for `--opt` combinations like `rust.firmware` with `rust.common` once you say go.
+
+❯ ok check now and tell me about the rest of fix                                
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● You wrote the conflict check yourself. Let me check what else changed in
+  townyyuz and run the gate pieces.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● fmt, clippy and the 60 tests all pass. But the conflict check has a bug, and
+  no test catches it: it rejects valid setups.
+
+  The bug
+
+  mark_conflicts looks at every option, ticked or not, and records a pair
+  whenever that option conflicts with a ticked one. Take the command from
+  before:
+
+  --opt rust.server --opt just      → ticked: rust, rust.common, rust.server, 
+  just
+
+  rust.firmware isn't ticked, but it conflicts with the ticked rust.common. So
+  the loop records (rust.firmware, rust.common), and lib.rs returns:
+
+  conflict options detected between: rust.firmware / rust.common
+
+  The same goes for any setup that includes rust.common, and for rust.server
+  (because of rust.client_ws). Running your earlier command again should show
+  it.
+
+  The TUI is fine because it ignores the returned list. The root problem is that
+  mark_conflicts now does two jobs: greying out options for the TUI, and
+  finding real conflicts. The two need different filters.
+
+  The fix I'd suggest
+
+  1. Put mark_conflicts back as it was, a TUI-only method.
+  2. Add a separate read-only method that only compares ticked options with each
+     other:
+  /// The first two checked options that can't take part together, if any.
+  pub(crate) fn conflict(&self) -> Option<(OptId, OptId)> {
+      let checked: Vec<OptId> = self.options.iter().filter(|o|
+  o.checked).map(|o| o.id).collect();
+      checked.iter().enumerate().find_map(|(at, &a)| {
+          checked[at + 1..].iter().find(|&&b| a.conflicts_with(b)).map(|&b| (a,
+  b))
+      })
+  }
+  3. Report it as an InputError::Conflict from validate(), next to the field
+     checks, instead of a top-level Error variant. The message then reads input:
+     `rust.firmware` and `rust.common` can't be used together, and it's
+     testable inside app/mod.rs.
+  4. In lib.rs, call app.validate()? before generate(). A conflicting setup can
+     fail in generate() first with PathCollision, which would hide the real
+     cause. create() keeps its own call for the TUI.
+  5. Tests first:
+     - rust.firmware + rust.common is an error.
+     - rust.server alone passes. This is the test your current version would
+       fail.
+
+  That's three files (app/mod.rs, error.rs, lib.rs), so per your rule I'm
+  listing them first. Say go for the full diffs.
+
+  The other fixes still open
+
+  1. App::new still ticks options twice. It does it in the .any(…) inside the
+     map, then again with nested_check in the loop. You amended townyyuz, but
+     this part is unchanged. The loop is enough if the map becomes checked: 
+     args.opt.is_empty() && id.def().default,. The iter().find(…) can become
+     opt.parse::<OptId>().
+  2. Splitting townyyuz. It still holds three things together:
+     - the headless feature
+     - the termbg / --accent-color removal, which is user-visible
+     - the Cargo.lock change, which your rules make its own commit
+
+     I can print the jj split sequence for you to run.
+  3. Commit the current work once the conflict fix is in. Field validation and
+     the conflict check fit in one feat(app): validate fields and option 
+     conflicts before writing.
+
+  After that, headless mode is done and step 3 (the build tier) can use it.
+
+✻ Crunched for 41s · done 6:28 PM
+
+※ recap: We're building a test for generated repos, and headless `praline` is nearly done, but your conflict check wrongly rejects valid setups like `--opt rust.server`. Next, say "go" and I'll show the three-file fix with its tests.
+
+❯ check and tell me                                                             
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● It's green: fmt and clippy are clean, the 60 tests pass, and cargo doc is
+  clean.
+
+  The false positive from last time is fixed. You restored mark_conflicts, and
+  conflict() now only compares checked options with each other, so --opt 
+  rust.server works again. Wiring it into validate() also fixed the ordering
+  issue: create() checks for conflicts before writing anything.
+
+  What's still missing
+
+  1. No test for the conflict check. Your rust rule asks for the test first, and
+  the bug from last time got through precisely because there wasn't one. Two
+  tests cover it. Append them to mod tests in src/app/mod.rs, after
+  a_bad_field_is_an_error:
+          let err = app(name, owner, desc).validate().unwrap_err();
+          assert!(matches!(err, Error::Input(InputError::Field(..))), "{err}");
+      }
+
+      /// A valid app with exactly these options given on the command line.
+      fn with_opts(opts: &[&str]) -> App {
+          App::new(Args {
+              opt: opts.iter().map(|&o| String::from(o)).collect(),
+              ..Args::default()
+          })
+      }
+
+      #[test]
+      fn checked_options_that_conflict_are_an_error() {
+          let err = with_opts(&["rust.firmware",
+  "rust.common"]).validate().unwrap_err();
+          assert!(matches!(err, Error::Input(InputError::Conflict(..))),
+  "{err}");
+      }
+
+      #[test]
+      fn an_unchecked_option_never_conflicts() {
+          assert!(with_opts(&["rust.server"]).validate().is_ok());
+      }
+  }
+  The second test is the one your previous version would have failed:
+  rust.server checks rust.common, which conflicts with the unchecked
+  rust.firmware.
+
+  2. The validate() doc comment still describes only the fields:
+       /// Checks every field against the rule the form enforces while typing.
+  +    /// and that no two checked options conflict.
+       ///
+       /// # Errors
+       ///
+  -    /// Returns an error naming the first field that breaks its rule.
+  +    /// Returns an error naming the first two checked options that conflict, 
+  or
+  +    /// the first field that breaks its rule.
+       fn validate(&self) -> Result<()> {
+  (Change the first line's ending to typing, so the two lines read as one
+  sentence.)
+
+  3. App::new still ticks options twice. Your parse::<OptId>() change is good.
+  The .any(…) inside the map is now redundant with the loop below it:
+                   .map(|id| {
+  -                    let checked = if args.opt.is_empty() {
+  -                        id.def().default
+  -                    } else {
+  -                        args.opt
+  -                            .iter()
+  -                            .any(|name| name.as_str() == <&'static 
+  str>::from(id))
+  -                    };
+                       Opt {
+                           id,
+  -                        checked,
+  +                        checked: args.opt.is_empty() && id.def().default,
+                           conflicted: false,
+                       }
+                   })
+  The behaviour stays the same: defaults only apply with no --opt, and the loop
+  ticks each --opt plus its parents. You can then collapse .map(|id| { Opt { … }
+  }) to .map(|id| Opt { … }), and just fmt will tidy it.
+
+  Small, optional: Err(Error::Input(InputError::Conflict(…))) can be
+  Err(InputError::Conflict(…).into()). It does the same thing and matches how
+  NotGenerated.into() is written in the same file.
+
+  Then commit (you run these)
+
+  1. @: field validation, the conflict check, and the tests above. For example:
+     feat(app): validate fields and option conflicts before writing.
+  2. townyyuz: still bundles the headless feature, the termbg / --accent-color
+     removal, and its Cargo.lock change. Say if you want the jj split sequence.
+
+  With those done, headless mode is finished and step 3 (the build tier) can
+  start using it.
+
+✻ Worked for 33s · done 6:36 PM
+
+❯ and now ?                                                                     
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The three fixes are in and fmt already looks applied. Running the full gate,
+  just ci-light, since this is the point where it should go green.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Your change is done. fmt, clippy, docs and 62/62 tests pass, including both
+  new conflict tests.
+
+  just ci-light is still red, but not because of anything in this change.
+
+  Gate results
+
+  ci-light stops at its first failure, so I ran the remaining steps one by one:
+
+  Step: format, clippy, test, doc
+  Result: ✅
+  Cause:
+  ────────────────────────────────────────
+  Step: typos
+  Result: ❌
+  Cause: highligh_style in src/ui/view/mode/dashboard/options.rs:29,43 and
+  "Toogle opt" in src/ui/state/bind/helper.rs:18
+  ────────────────────────────────────────
+  Step: machete, deny, audit
+  Result: ✅
+  Cause:
+  ────────────────────────────────────────
+  Step: taplo
+  Result: ❌
+  Cause: templates/rust.common/config.example.toml:1 uses // 
+  {slot:rust.config.file}, which isn't valid TOML. # works the same for the
+  engine, since marker() reads the name behind any prefix.
+  ────────────────────────────────────────
+  Step: editorconfig, committed, lychee
+  Result: ✅
+  Cause:
+  ────────────────────────────────────────
+  Step: statix
+  Result: ❌
+  Cause: nix/hm-module.nix:24: type = settingsFormat.type; should be inherit 
+  (settingsFormat) type;
+  ────────────────────────────────────────
+  Step: deadnix, nix flake check
+  Result: ✅
+  Cause:
+
+  None of the three failures is in a file this branch touched, so they were
+  already there before. They're one-line fixes. I'd do them as a separate small
+  fix: commit before step 3, so the gate is green when the build tier lands. I
+  can show the three changes whenever you want.
+
+  One cosmetic thing in your change: the validate() doc comment reads …while 
+  typing. / and that no two…. Change the period to a comma.
+
+  Commit sequence (you run it)
+
+  This does two things:
+  - It names the current work.
+  - It splits Cargo.lock out of townyyuz into its own commit. The ! in the new
+    subject marks the --accent-color removal as a breaking change, so the
+    changelog shows it.
+
+  jj describe -m "feat(app): validate fields and option conflicts before 
+  writing"
+  jj split -r townyyuz -m "feat(args)!: add headless mode, drop --accent-color" 
+  '~Cargo.lock'
+  jj describe -r 'rzxyvmso-' -m "chore(deps): refresh Cargo.lock"
+  jj new
+
+  - split keeps everything except Cargo.lock in the first commit, with the new
+    message. The lockfile goes into a second commit right after it.
+  - rzxyvmso- is then that lockfile commit, because your current change is
+    rebased on top of it.
+
+  Check jj log afterwards. You should see, oldest to newest: feat(args)! →
+  chore(deps): refresh Cargo.lock → feat(app) → the empty @.
+
+  Next: step 3, the build tier
+
+  Now that headless mode works, the build tier is a script around it:
+  1. Pick the setups: each option alone (plus its parents), and every largest
+     conflict-free set.
+  2. For each one, run praline --headless … --dest $TMPDIR/praline-e2e/<label>.
+  3. In each generated repo, run just --summary, cargo test and cargo clippy -D 
+     warnings, using a shared CARGO_TARGET_DIR.
+  4. Report every failure at the end, and mark firmware as skipped.
+
+  The main design choice is where the setup list comes from:
+  - (a) a hidden --list-setups flag in praline, so the list follows OptId
+    automatically, or
+  - (b) a hand-written list in a just e2e recipe.
+
+  I'd go with (a), so a new option is tested without anyone remembering to add
+  it. Should I lay out step 3 in detail, or fix the three gate failures first?
+
+✻ Worked for 1m 30s · done 6:39 PM
