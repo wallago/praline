@@ -1,5 +1,4 @@
 use clap::Parser;
-use ratatui::style::Color;
 
 /// Argument parser powered by [`clap`].
 #[derive(Clone, Debug, Default, Parser)]
@@ -18,10 +17,6 @@ use ratatui::style::Color;
 ",
 )]
 pub struct Args {
-    /// Accent color of the application.
-    #[arg(env, long, value_name = "COLOR")]
-    pub accent_color: Option<Color>,
-
     /// Increase logging verbosity (-v, -vv, -vvv)
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
