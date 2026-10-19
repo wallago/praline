@@ -20,7 +20,7 @@ clap = { version = "4.5.56", features = [
   "wrap_help",
   "cargo",
 ] }
-dirs = "6.0.0"
+dirs = "7.0.0"
 include_dir = "0.7.4"
 indexmap = "2.14.0"
 ratatui = "0.30.2"
@@ -38,7 +38,7 @@ tui-syntax-highlight = "0.2.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
-rstest            = "0.26"
+rstest            = "0.27"
 
 [profile.dev]
 opt-level = 0
