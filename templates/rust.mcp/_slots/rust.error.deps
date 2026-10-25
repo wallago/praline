@@ -1,0 +1,8 @@
+// {ifnot:rust.mcp.http}
+/// Error that may occur during the MCP handshake with a client.
+#[error("MCP init error: `{0}`")]
+McpInit(#[from] Box<rmcp::service::ServerInitializeError>),
+/// Error that may occur when the MCP server task stops abnormally.
+#[error("MCP server task error: `{0}`")]
+McpTask(#[from] tokio::task::JoinError),
+// {endif:rust.mcp.http}

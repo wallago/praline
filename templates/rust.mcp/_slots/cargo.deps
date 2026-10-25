@@ -1,0 +1,11 @@
+# {ifnot:rust.mcp.http}
+rmcp = { version = "3.7.0", features = ["server", "macros", "transport-io"] }
+# {endif:rust.mcp.http}
+# {if:rust.mcp.http}
+rmcp = { version = "3.7.0", features = [
+  "server",
+  "macros",
+  "transport-streamable-http-server",
+] }
+# {endif:rust.mcp.http}
+

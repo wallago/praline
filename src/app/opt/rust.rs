@@ -21,6 +21,10 @@ static RUST_CAN: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.can"
 static RUST_CLIENT_WS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.client_ws");
 /// `rust.notify` templates.
 static RUST_NOTIF: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.notif");
+/// `rust.mcp` templates.
+static RUST_MCP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp");
+/// `rust.mcp.http` templates.
+static RUST_MCP_HTTP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp.http");
 
 impl OptId {
     /// Rust option definition.
@@ -108,6 +112,31 @@ impl OptId {
             _desc: ".",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_NOTIF),
+            ..OptDef::default()
+        }
+    }
+
+    /// Rust MCP server option definition.
+    pub(super) fn def_rust_mcp() -> OptDef {
+        OptDef {
+            parent: Some(Self::RustCommon),
+            // Both own stdin: the MCP client speaks over it.
+            conflicts: &[Self::RustClientWS],
+            _desc: "MCP server over stdio, built on rmcp.",
+            _category: Some(Category::Build),
+            emit: Emit::Dir(&RUST_MCP),
+            ..OptDef::default()
+        }
+    }
+
+    /// Rust MCP over Streamable HTTP option definition.
+    pub(super) fn def_rust_mcp_http() -> OptDef {
+        OptDef {
+            parent: Some(Self::RustMcp),
+            requires: &[Self::RustServer],
+            _desc: "Serve MCP over HTTP at /mcp, for remote clients.",
+            _category: Some(Category::Build),
+            emit: Emit::Dir(&RUST_MCP_HTTP),
             ..OptDef::default()
         }
     }

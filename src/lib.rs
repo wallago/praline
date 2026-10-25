@@ -30,7 +30,14 @@ use crate::config::Config;
 /// # Errors
 ///
 /// Returns an error if the config fails to load or if the TUI fails to start.
-pub fn run(args: &Args) -> Result<()> {
+pub fn run(args: Args) -> Result<()> {
     let config = Config::load(args.config.as_deref())?;
-    ui::run(config)
+    let headless = args.headless;
+    let mut app = app::App::new(args);
+    if headless {
+        app.generate()?;
+        app.create()
+    } else {
+        ui::run(config, app)
+    }
 }

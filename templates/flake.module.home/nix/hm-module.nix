@@ -6,7 +6,7 @@ self:
   ...
 }:
 let
-  cfg = config.services.griffon-server;
+  cfg = config.services."{name}";
   settingsFormat = pkgs.formats.toml { };
 in
 {

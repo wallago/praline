@@ -22,7 +22,7 @@
     }:
     # ── System-agnostic outputs (modules) live out here ──
     {
-      homeModules.default = import ./nix/hm-module.nix self;
+      nixosModules.default = import ./nix/module.nix self;
     }
     # ── Then merge the per-system outputs onto it ──
     //

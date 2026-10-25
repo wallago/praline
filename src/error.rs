@@ -17,6 +17,9 @@ pub enum Error {
     /// Loading `config.toml` failed.
     #[error("config: {0}")]
     Config(#[from] ConfigError),
+    /// A value given on the command line breaks its field's rule.
+    #[error("input: {0}")]
+    Input(#[from] InputError),
 }
 
 /// Error from engine operations.
@@ -45,6 +48,17 @@ pub enum ConfigError {
     /// Error that may occur while deserialize toml file.
     #[error("Failed to deserialize toml file: `{0}`")]
     TomlDeserialize(String),
+}
+
+/// Error from values given on the command line.
+#[derive(Debug, ThisError)]
+pub enum InputError {
+    /// A field breaks its rule: the flag, then why.
+    #[error("`{0}` {1}")]
+    Field(String, &'static str),
+    /// Conflict between options detected.
+    #[error("conflict options detected between: {0} / {1}")]
+    Conflict(&'static str, &'static str),
 }
 
 #[cfg(test)]

@@ -75,6 +75,12 @@ pub(crate) enum OptId {
     /// Notifier.
     #[strum(serialize = "rust.notif")]
     RustNotif,
+    /// MCP server over stdio, built on `rmcp`.
+    #[strum(serialize = "rust.mcp")]
+    RustMcp,
+    /// Serve the MCP server over Streamable HTTP on the server, not stdio.
+    #[strum(serialize = "rust.mcp.http")]
+    RustMcpHttp,
 }
 
 impl OptId {
@@ -94,6 +100,8 @@ impl OptId {
             Self::RustCan => Self::def_rust_can(),
             Self::RustClientWS => Self::def_rust_client_ws(),
             Self::RustNotif => Self::def_rust_notif(),
+            Self::RustMcp => Self::def_rust_mcp(),
+            Self::RustMcpHttp => Self::def_rust_mcp_http(),
         }
     }
 }

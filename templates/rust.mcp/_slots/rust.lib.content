@@ -1,0 +1,5 @@
+// {ifnot:rust.mcp.http}
+result = mcp::serve() => {
+    tracing::info!("MCP server stopped: {:?}", result);
+},
+// {endif:rust.mcp.http}
