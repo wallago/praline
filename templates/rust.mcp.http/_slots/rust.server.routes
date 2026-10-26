@@ -1,1 +1,1 @@
-.nest_service("/mcp", crate::mcp::http::service())
+.nest_service("/mcp", crate::mcp::http::service(&config.mcp))

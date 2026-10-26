@@ -1,0 +1,2 @@
+/// MCP settings.
+pub(crate) mod mcp;

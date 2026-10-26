@@ -7,19 +7,14 @@ use rmcp::transport::streamable_http_server::{
 };
 
 use super::Server;
-
-/// Env var listing the `Host` values accepted, comma-separated.
-const ALLOWED_HOSTS_VAR: &str = "MCP_ALLOWED_HOSTS";
+use crate::config::mcp::McpConfig;
 
 /// MCP over Streamable HTTP, ready for `Router::nest_service`.
 ///
-/// Only loopback `Host` headers are accepted by default, against DNS
-/// rebinding. Behind a public URL (e.g. a claude.ai custom connector), set
-/// `MCP_ALLOWED_HOSTS` to that hostname.
-pub(crate) fn service() -> StreamableHttpService<Server, LocalSessionManager> {
-    let mut config = StreamableHttpServerConfig::default();
-    if let Ok(hosts) = std::env::var(ALLOWED_HOSTS_VAR) {
-        config = config.with_allowed_hosts(hosts.split(',').map(str::trim));
-    }
-    StreamableHttpService::new(|| Ok(Server), Arc::default(), config)
+/// Requests whose `Host` header is not in `[mcp] allowed_hosts` are refused,
+/// against DNS rebinding. Behind a public URL (e.g. a claude.ai custom
+/// connector), add that hostname to the list.
+pub(crate) fn service(config: &McpConfig) -> StreamableHttpService<Server, LocalSessionManager> {
+    let http = StreamableHttpServerConfig::default().with_allowed_hosts(&config.allowed_hosts);
+    StreamableHttpService::new(|| Ok(Server), Arc::default(), http)
 }

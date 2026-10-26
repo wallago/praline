@@ -2,7 +2,7 @@
 
 use axum::{Router, http::StatusCode, routing::get, serve};
 
-use crate::prelude::*;
+use crate::{config::Config, prelude::*};
 
 // {slot:rust.server.mods}
 
@@ -18,10 +18,12 @@ fn routes() -> Router {
 }
 
 /// Start web services.
-pub(super) async fn start(address: &str, port: u16) -> Result<()> {
+pub(super) async fn start(config: &Config) -> Result<()> {
+    let (address, port) = (&config.server.address, config.server.port);
     let listener = tokio::net::TcpListener::bind(format!("{address}:{port}")).await?;
     tracing::info!("Server running");
     let routes = routes()
+        // {slot:rust.server.routes.config}
         // {slot:rust.server.serve}
     ;
     Ok(serve(listener, routes).await?)
