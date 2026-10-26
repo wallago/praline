@@ -26,10 +26,15 @@ use crate::config::Config;
 pub async fn run(args: &Args) -> Result<()> {
     better_panic::install();
     let config = Config::load(args.config.as_deref())?;
+    tracing::debug!("Loaded {config:?}");
 
     // {slot:rust.lib.deps}
 
+    // Runs until Ctrl-C or until any component stops.
     tokio::select! {
+        result = tokio::signal::ctrl_c() => {
+            tracing::info!("Interrupted: {:?}", result);
+        },
         // {slot:rust.lib.content}
     }
     Ok(())
@@ -37,12 +42,17 @@ pub async fn run(args: &Args) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
+    use std::path::Path;
 
     use super::*;
 
     #[test]
-    fn run_succeeds() {
-        assert_eq!(run(Args::default()).is_ok(), true);
+    fn example_config_loads() -> Result<()> {
+        // Only written when an option adds settings.
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("config.example.toml");
+        if path.exists() {
+            Config::from_file(&path)?;
+        }
+        Ok(())
     }
 }
