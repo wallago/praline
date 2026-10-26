@@ -164,18 +164,20 @@ impl App {
         })
     }
 
-    /// Check current option and parent if not already check.
+    /// Checks or toggles `id`; once checked, also checks its parent and every
+    /// option it requires, so it can take part.
     pub(crate) fn nested_check(&mut self, id: OptId, check: Option<bool>) {
         let Some(opt) = self.options.iter_mut().find(|o| o.id == id) else {
             return;
         };
         opt.checked = check.unwrap_or(!opt.checked);
-        let Some(parent) = id.def().parent else {
-            return;
-        };
 
-        if opt.checked {
-            self.nested_check(parent, Some(true));
+        if !opt.checked {
+            return;
+        }
+        let def = id.def();
+        for dep in def.parent.into_iter().chain(def.requires.iter().copied()) {
+            self.nested_check(dep, Some(true));
         }
     }
 }
@@ -232,5 +234,18 @@ mod tests {
     #[test]
     fn an_unchecked_option_never_conflicts() {
         assert!(with_opts(&["rust.server"]).validate().is_ok());
+    }
+
+    #[test]
+    fn checking_an_option_checks_what_it_requires() {
+        let mut app = with_opts(&[]);
+        app.nested_check(OptId::RustMcpHttp, Some(true));
+        let checked: std::collections::HashSet<OptId> = app
+            .options
+            .iter()
+            .filter(|o| o.checked)
+            .map(|o| o.id)
+            .collect();
+        assert!(OptId::RustMcpHttp.is_active(&checked));
     }
 }
