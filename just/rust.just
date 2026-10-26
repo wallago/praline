@@ -20,6 +20,11 @@ check:
 test *ARGS:
     cargo nextest run {{ ARGS }}
 
+# Generate each setup, then build, lint and test it (slow, needs crates.io)
+[group('dev')]
+e2e *ARGS:
+    cargo nextest run --test e2e --run-ignored only {{ ARGS }}
+
 # Run the test suite. Usage: just test [pattern]
 [group('dev')]
 coverage-report:
