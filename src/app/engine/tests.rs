@@ -104,6 +104,73 @@ fn every_toml_parses() {
     }
 }
 
+/// Category slugs the templates may use. crates.io refuses any slot not in
+/// <https://crates.io/category_slugs>, so copy new ones from there.
+const CRATES_IO_CATEGORIES: &[&str] = &[
+    "command-line-utilities",
+    "hardware-support",
+    "web-programming::http-server",
+    "web-programming::websocket",
+];
+
+/// `[package].<key>` of `manifest`, as strings.
+fn package_list<'a>(manifest: &'a toml::Table, key: &str) -> Vec<&'a str> {
+    manifest
+        .get("package")
+        .and_then(|package| package.get(key))
+        .and_then(toml::Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(toml::Value::as_str)
+        .collect()
+}
+
+/// Whether crates.io takes `keyword`: ASCII, at most 20 characters, starts
+/// with a letter, then letters, digits, `_`, `-` or `+`.
+fn is_crates_io_keyword(keyword: &str) -> bool {
+    keyword.len() <= 20
+        && keyword
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic())
+        && keyword
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '+'))
+}
+
+#[test]
+fn every_cargo_manifest_passes_crates_io_metadata_rules() {
+    for (active, app) in every_setup() {
+        let tree = generate(&app).unwrap();
+        let Some(bytes) = tree.get(Path::new("Cargo.toml")) else {
+            continue;
+        };
+        let manifest: toml::Table = toml::from_str(std::str::from_utf8(bytes).unwrap()).unwrap();
+        for key in ["keywords", "categories"] {
+            let list = package_list(&manifest, key);
+            assert!(list.len() <= 5, "{active:?}: more than 5 {key}: {list:?}");
+            let unique: HashSet<_> = list.iter().collect();
+            assert_eq!(
+                unique.len(),
+                list.len(),
+                "{active:?}: repeated {key}: {list:?}"
+            );
+        }
+        for keyword in package_list(&manifest, "keywords") {
+            assert!(
+                is_crates_io_keyword(keyword),
+                "{active:?}: bad keyword `{keyword}`"
+            );
+        }
+        for category in package_list(&manifest, "categories") {
+            assert!(
+                CRATES_IO_CATEGORIES.contains(&category),
+                "{active:?}: unknown category `{category}`"
+            );
+        }
+    }
+}
+
 /// Every UTF-8 file under `dir`, recursively.
 fn texts(dir: &'static Dir<'static>) -> Vec<&'static str> {
     let mut out: Vec<&str> = dir
