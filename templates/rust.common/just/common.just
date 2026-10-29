@@ -1,5 +1,5 @@
 # {if:just}
-# Run the app. Usage: just run -- statement.csv bagels.db
+# Run the app with `config.toml`. Usage: just run -- [ARGS]
 [group('dev')]
 run *ARGS:
     cargo run -- --config config.toml {{ ARGS }}
