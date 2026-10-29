@@ -26,13 +26,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_error() {
+    fn io_error_converts_and_displays() {
         let message = "your computer is on fire!";
         let error = Error::from(IoError::other(message));
-        assert_eq!(format!("IO error: `{message}`"), error.to_string());
-        assert_eq!(
-            format!("\"IO error: `{message}`\""),
-            format!("{:?}", error.to_string())
-        );
+        assert!(matches!(error, Error::Io(_)));
+        assert_eq!(error.to_string(), format!("IO error: `{message}`"));
+    }
+
+    #[test]
+    fn config_error_displays() {
+        let error = Error::Config("config.toml: bad".to_string());
+        assert_eq!(error.to_string(), "Config file error: `config.toml: bad`");
     }
 }
