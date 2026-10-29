@@ -49,13 +49,10 @@ fn row_1(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let files: Vec<Line> = state
         .app
         .staged
-        .as_ref()
-        .map(|tree| {
-            tree.keys()
-                .map(|path| Line::from(path.to_string_lossy()))
-                .collect()
-        })
-        .unwrap_or_default();
+        .iter()
+        .flat_map(|tree| tree.keys())
+        .map(|path| Line::from(path.to_string_lossy()))
+        .collect();
     if state.details.files.selected().is_none() && !files.is_empty() {
         state.details.files.select_first();
     }

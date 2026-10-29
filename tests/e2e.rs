@@ -1,4 +1,4 @@
-//! End-to-end: generate a repo headlessly, then build, lint and test it.
+//! End-to-end: generate a repo headlessly, then build, lint, test and package\n//! it.
 //!
 //! Slow and needs crates.io, so every case is `#[ignore]`d; run them with
 //! `just e2e`.
@@ -92,7 +92,10 @@ fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
     &["rust.tui", "rust.server", "rust.server.ws", "rust.can", "rust.notif"],
 )]
 #[ignore = "slow, needs crates.io: run with `just e2e`"]
-fn generated_repo_builds_lints_and_passes(#[case] name: &str, #[case] opts: &[&str]) -> Outcome {
+fn generated_repo_builds_lints_passes_and_packages(
+    #[case] name: &str,
+    #[case] opts: &[&str],
+) -> Outcome {
     let repo = generate(name, opts)?;
     run(&repo, "cargo", &["build", "--all-targets"])?;
     run(
@@ -100,5 +103,6 @@ fn generated_repo_builds_lints_and_passes(#[case] name: &str, #[case] opts: &[&s
         "cargo",
         &["clippy", "--all-targets", "--", "-D", "warnings"],
     )?;
-    run(&repo, "cargo", &["test"])
+    run(&repo, "cargo", &["test"])?;
+    run(&repo, "cargo", &["package", "--no-verify", "--allow-dirty"])
 }

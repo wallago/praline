@@ -22,7 +22,8 @@ use crate::config::Config;
 ///
 /// # Errors
 ///
-/// Returns an [`Error`] if the run fa
+/// Returns an [`Error`] if the config can't be loaded or a component fails
+/// to start.
 pub async fn run(args: &Args) -> Result<()> {
     better_panic::install();
     let config = Config::load(args.config.as_deref())?;
