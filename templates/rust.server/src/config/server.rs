@@ -8,6 +8,7 @@ pub(crate) struct ServerConfig {
     pub(crate) address: String,
     /// Port to listen.
     pub(crate) port: u16,
+    // {slot:rust.server.config.params}
 }
 
 #[cfg(test)]

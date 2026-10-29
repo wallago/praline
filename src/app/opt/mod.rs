@@ -66,6 +66,9 @@ pub(crate) enum OptId {
     /// Websocket layer for sever module.
     #[strum(serialize = "rust.server.ws")]
     RustServerWS,
+    /// Bearer-token auth in front of the server's routes, `/health` aside.
+    #[strum(serialize = "rust.server.bearer")]
+    RustServerBearer,
     /// CAN bus module and its Cargo dependencies.
     #[strum(serialize = "rust.can")]
     RustCan,
@@ -97,6 +100,7 @@ impl OptId {
             Self::RustFirmware => Self::def_rust_firmware(),
             Self::RustServer => Self::def_rust_server(),
             Self::RustServerWS => Self::def_rust_server_ws(),
+            Self::RustServerBearer => Self::def_rust_server_bearer(),
             Self::RustCan => Self::def_rust_can(),
             Self::RustClientWS => Self::def_rust_client_ws(),
             Self::RustNotif => Self::def_rust_notif(),

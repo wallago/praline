@@ -1,0 +1,2 @@
+/// Token clients must send as `Authorization: Bearer <token>`; unset, no auth.
+pub(crate) bearer_token: Option<String>,

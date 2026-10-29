@@ -15,6 +15,9 @@ static RUST_COMMON: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.c
 static RUST_SERVER: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server");
 /// `rust.server.ws` templates.
 static RUST_SERVER_WS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server.ws");
+/// `rust.server.bearer` templates.
+static RUST_SERVER_BEARER: Dir<'_> =
+    include_dir!("$CARGO_MANIFEST_DIR/templates/rust.server.bearer");
 /// `rust.can` templates.
 static RUST_CAN: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.can");
 /// `rust.client_ws` templates.
@@ -79,6 +82,17 @@ impl OptId {
             _desc: ".",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_SERVER_WS),
+            ..OptDef::default()
+        }
+    }
+
+    /// Rust Server bearer-token auth option definition.
+    pub(super) fn def_rust_server_bearer() -> OptDef {
+        OptDef {
+            parent: Some(Self::RustServer),
+            _desc: "Require a bearer token on every route but /health.",
+            _category: Some(Category::Build),
+            emit: Emit::Dir(&RUST_SERVER_BEARER),
             ..OptDef::default()
         }
     }

@@ -1,0 +1,2 @@
+# Require `Authorization: Bearer <token>` on every route but /health.
+# bearer_token = "change-me"

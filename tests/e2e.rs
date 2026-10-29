@@ -71,6 +71,7 @@ fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
 #[case::common("e2e-common", &[])]
 #[case::server("e2e-server", &["rust.server"])]
 #[case::server_ws("e2e-server-ws", &["rust.server", "rust.server.ws"])]
+#[case::server_bearer("e2e-server-bearer", &["rust.server", "rust.server.bearer"])]
 #[case::can("e2e-can", &["rust.can"])]
 #[case::client_ws("e2e-client-ws", &["rust.client_ws"])]
 #[case::notif("e2e-notif", &["rust.notif"])]
@@ -83,7 +84,15 @@ fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
 )]
 #[case::kitchen_sink(
     "e2e-kitchen-sink",
-    &["rust.server", "rust.server.ws", "rust.can", "rust.notif", "rust.mcp", "rust.mcp.http"],
+    &[
+        "rust.server",
+        "rust.server.ws",
+        "rust.server.bearer",
+        "rust.can",
+        "rust.notif",
+        "rust.mcp",
+        "rust.mcp.http",
+    ],
 )]
 #[case::client_side("e2e-client-side", &["rust.client_ws", "rust.can", "rust.notif"])]
 #[ignore = "slow, needs crates.io: run with `just e2e`"]
