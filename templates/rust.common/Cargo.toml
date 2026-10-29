@@ -1,16 +1,20 @@
 [package]
-name         = "{name}"
-version      = "0.1.0"
-description  = "{desc}"
-authors      = ["{owner} <tbd@gmail.com>"]
-license      = "MIT OR Apache-2.0"
-readme       = "README.md"
-repository   = "https://github.com/{owner}/{name}"
-keywords     = []
-categories   = []
-edition      = "2024"
-rust-version = "1.88"
-include      = ["src/**/*", "Cargo.*", "LICENSE*", "README.md", "CHANGELOG.md"]
+name = "{name}"
+version = "0.1.0"
+description = "{desc}"
+authors = ["{owner} <tbd@gmail.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/{owner}/{name}"
+keywords = [
+  # {slot:rust.cargo.keywords}
+]
+categories = [
+  # {slot:rust.cargo.categories}
+]
+edition = "2024"
+rust-version = "1.99"
+include = ["src/**/*", "Cargo.*", "LICENSE*", "README.md", "CHANGELOG.md"]
 
 [dependencies]
 better-panic = "0.3.0"
