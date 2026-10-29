@@ -25,6 +25,8 @@ static RUST_NOTIF: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.no
 static RUST_MCP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp");
 /// `rust.mcp.http` templates.
 static RUST_MCP_HTTP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp.http");
+/// `rust.tui` templates.
+static RUST_TUI: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.tui");
 
 impl OptId {
     /// Rust option definition.
@@ -137,6 +139,19 @@ impl OptId {
             _desc: "Serve MCP over HTTP at /mcp, for remote clients.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_MCP_HTTP),
+            ..OptDef::default()
+        }
+    }
+
+    /// Rust terminal UI option definition.
+    pub(super) fn def_rust_tui() -> OptDef {
+        OptDef {
+            parent: Some(Self::RustCommon),
+            // Both own the terminal: they read stdin and write stdout.
+            conflicts: &[Self::RustClientWS, Self::RustMcp],
+            _desc: "Terminal UI in praline's style, built on ratatui.",
+            _category: Some(Category::Build),
+            emit: Emit::Dir(&RUST_TUI),
             ..OptDef::default()
         }
     }
