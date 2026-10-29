@@ -1,6 +1,6 @@
-result = can.listening(sink) => {
+result = can.listening(can_rx) => {
     tracing::info!("CAN listening stopped: {:?}", result);
 },
-result = can.writing(source) => {
+result = can.writing(can_tx_source) => {
     tracing::info!("CAN writing stopped: {:?}", result);
 },

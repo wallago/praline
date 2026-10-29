@@ -1,3 +1,4 @@
+use futures_channel::mpsc::UnboundedReceiver;
 use futures_util::{StreamExt, future, pin_mut};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
@@ -5,7 +6,7 @@ use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 use crate::prelude::*;
 
 /// WebSocket connection.
-pub(super) async fn conn(address: &str, port: &str) -> Result<()> {
+pub(super) async fn conn(address: &str, port: u16) -> Result<()> {
     let (stdin_tx, stdin_rx) = futures_channel::mpsc::unbounded();
 
     tokio::select! {
