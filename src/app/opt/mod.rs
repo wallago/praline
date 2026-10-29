@@ -81,6 +81,9 @@ pub(crate) enum OptId {
     /// Serve the MCP server over Streamable HTTP on the server, not stdio.
     #[strum(serialize = "rust.mcp.http")]
     RustMcpHttp,
+    /// Terminal UI in praline's style, built on `ratatui`.
+    #[strum(serialize = "rust.tui")]
+    RustTui,
 }
 
 impl OptId {
@@ -102,6 +105,7 @@ impl OptId {
             Self::RustNotif => Self::def_rust_notif(),
             Self::RustMcp => Self::def_rust_mcp(),
             Self::RustMcpHttp => Self::def_rust_mcp_http(),
+            Self::RustTui => Self::def_rust_tui(),
         }
     }
 }

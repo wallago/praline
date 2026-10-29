@@ -16,6 +16,7 @@ async fn main() {
         2 => Level::DEBUG,
         _ => Level::TRACE, // -vvv and beyond
     };
+    // {ifnot:rust.tui}
     let under_journal = std::env::var_os("JOURNAL_STREAM").is_some();
     let fmt = tracing_subscriber::fmt()
         .with_max_level(level)
@@ -25,6 +26,18 @@ async fn main() {
     } else {
         fmt.init();
     }
+    // {endif:rust.tui}
+    // {if:rust.tui}
+    // The TUI owns the terminal, so logs go to a file instead of stderr.
+    match log_file() {
+        Ok(file) => tracing_subscriber::fmt()
+            .with_max_level(level)
+            .with_ansi(false)
+            .with_writer(std::sync::Mutex::new(file))
+            .init(),
+        Err(e) => eprintln!("logging disabled: {e}"),
+    }
+    // {endif:rust.tui}
 
     tracing::info!("welcome into {}", version!());
     match {ident}::run(&args).await {
@@ -35,3 +48,22 @@ async fn main() {
         }
     }
 }
+// {if:rust.tui}
+
+/// Opens (appending) `<state dir>/<crate>/<crate>.log`, creating the folder.
+///
+/// # Errors
+///
+/// Returns an error if the folder or the file can't be created.
+fn log_file() -> std::io::Result<std::fs::File> {
+    let dir = dirs::state_dir()
+        .or_else(dirs::cache_dir)
+        .unwrap_or_else(std::env::temp_dir)
+        .join(env!("CARGO_PKG_NAME"));
+    std::fs::create_dir_all(&dir)?;
+    std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dir.join(concat!(env!("CARGO_PKG_NAME"), ".log")))
+}
+// {endif:rust.tui}

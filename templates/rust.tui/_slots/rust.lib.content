@@ -1,0 +1,3 @@
+result = tui::run() => {
+    tracing::info!("TUI stopped: {:?}", result);
+},

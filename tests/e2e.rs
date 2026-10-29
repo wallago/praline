@@ -76,6 +76,7 @@ fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
 #[case::notif("e2e-notif", &["rust.notif"])]
 #[case::mcp("e2e-mcp", &["rust.mcp"])]
 #[case::mcp_http("e2e-mcp-http", &["rust.server", "rust.mcp", "rust.mcp.http"])]
+#[case::tui("e2e-tui", &["rust.tui"])]
 // Together: options sharing slots (select!, deps, errors, config, routes).
 #[case::mcp_http_ws(
     "e2e-mcp-http-ws",
@@ -86,6 +87,10 @@ fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
     &["rust.server", "rust.server.ws", "rust.can", "rust.notif", "rust.mcp", "rust.mcp.http"],
 )]
 #[case::client_side("e2e-client-side", &["rust.client_ws", "rust.can", "rust.notif"])]
+#[case::tui_side(
+    "e2e-tui-side",
+    &["rust.tui", "rust.server", "rust.server.ws", "rust.can", "rust.notif"],
+)]
 #[ignore = "slow, needs crates.io: run with `just e2e`"]
 fn generated_repo_builds_lints_and_passes(#[case] name: &str, #[case] opts: &[&str]) -> Outcome {
     let repo = generate(name, opts)?;
