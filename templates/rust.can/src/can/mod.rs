@@ -6,7 +6,7 @@ use tokio::sync::broadcast::{Receiver, Sender};
 use crate::prelude::*;
 
 /// A CAN frame as an (id, data) pair.
-pub type CanMessage = (u32, Vec<u8>);
+pub(crate) type CanMessage = (u32, Vec<u8>);
 
 /// A `SocketCAN` interface, shared by one reader and one writer.
 #[derive(Debug)]
@@ -25,7 +25,7 @@ impl Can {
     ///
     /// Returns an error if the interface can't be opened, if an entry of
     /// `expected_frames` isn't valid hex, or if the filters can't be set.
-    pub(crate) fn new(ifname: &str, expected_frames: Option<&HashSet<&str>>) -> Result<Self> {
+    pub(crate) fn new(ifname: &str, expected_frames: Option<&HashSet<String>>) -> Result<Self> {
         let socket = CanSocket::open(ifname)?;
         if let Some(frames) = expected_frames {
             let mask = 0x7FF;

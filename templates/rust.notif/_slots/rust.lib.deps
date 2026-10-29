@@ -1,2 +1,3 @@
-let (sink, _) = tokio::sync::broadcast::channel::<String>(100);
-let source = sink.subscribe();
+// Other modules raise a notification by sending on a clone of `notif_sink`
+// ("summary/body"); the binding keeps the channel open until `run` returns.
+let (_notif_sink, notif_source) = tokio::sync::broadcast::channel::<String>(100);

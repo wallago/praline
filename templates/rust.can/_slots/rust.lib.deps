@@ -10,4 +10,8 @@ let can = if let Some(can) = cans.first()
 } else {
     return Err(Error::Config("expecting exactly one CAN setup".to_string()));
 };
-let (sink, source) = tokio::sync::broadcast::channel::<can::CanMessage>(100);
+// Frames read from the bus go out on `can_rx`; frames sent on `can_tx` are
+// written to it. Clone `can_rx` to subscribe, or `_can_tx` to write; the
+// underscored bindings keep both channels open.
+let (can_rx, _can_rx_keep) = tokio::sync::broadcast::channel::<can::CanMessage>(100);
+let (_can_tx, can_tx_source) = tokio::sync::broadcast::channel::<can::CanMessage>(100);
