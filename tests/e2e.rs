@@ -67,13 +67,25 @@ fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
 }
 
 #[rstest]
+// One option at a time: every template file compiles alone.
 #[case::common("e2e-common", &[])]
+#[case::server("e2e-server", &["rust.server"])]
+#[case::server_ws("e2e-server-ws", &["rust.server", "rust.server.ws"])]
+#[case::can("e2e-can", &["rust.can"])]
+#[case::client_ws("e2e-client-ws", &["rust.client_ws"])]
+#[case::notif("e2e-notif", &["rust.notif"])]
 #[case::mcp("e2e-mcp", &["rust.mcp"])]
 #[case::mcp_http("e2e-mcp-http", &["rust.server", "rust.mcp", "rust.mcp.http"])]
+// Together: options sharing slots (select!, deps, errors, config, routes).
 #[case::mcp_http_ws(
     "e2e-mcp-http-ws",
     &["rust.server", "rust.server.ws", "rust.mcp", "rust.mcp.http"],
 )]
+#[case::kitchen_sink(
+    "e2e-kitchen-sink",
+    &["rust.server", "rust.server.ws", "rust.can", "rust.notif", "rust.mcp", "rust.mcp.http"],
+)]
+#[case::client_side("e2e-client-side", &["rust.client_ws", "rust.can", "rust.notif"])]
 #[ignore = "slow, needs crates.io: run with `just e2e`"]
 fn generated_repo_builds_lints_and_passes(#[case] name: &str, #[case] opts: &[&str]) -> Outcome {
     let repo = generate(name, opts)?;
