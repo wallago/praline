@@ -1,0 +1,10 @@
+let protected = match &config.server.bearer_token {
+    Some(token) => {
+        tracing::info!("Bearer auth on");
+        protected.layer(axum::middleware::from_fn_with_state(
+            std::sync::Arc::<str>::from(token.as_str()),
+            auth::require,
+        ))
+    }
+    None => protected,
+};
