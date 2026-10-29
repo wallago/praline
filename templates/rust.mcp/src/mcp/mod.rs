@@ -43,6 +43,7 @@ impl Server {
     }
 }
 
+#[allow(clippy::unused_async_trait_impl)]
 #[tool_handler]
 impl ServerHandler for Server {
     fn get_info(&self) -> ServerConfig {
