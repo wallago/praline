@@ -1,0 +1,4 @@
+- `src/mcp/`: MCP server on rmcp; a tool is a `#[tool]` method on `Server`. It must not glob-import the prelude: rmcp's macros expand to a bare two-argument `Result`.
+  <!-- {ifnot:rust.mcp.http} -->
+  Over stdio, stdout carries the protocol: log to stderr only.
+  <!-- {endif:rust.mcp.http} -->

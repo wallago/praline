@@ -95,6 +95,8 @@
               cargo-llvm-cov
 
               # repo tooling
+              just
+              actionlint
               typos
               committed
               git-cliff

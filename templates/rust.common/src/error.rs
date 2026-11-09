@@ -2,7 +2,7 @@
 
 use thiserror::Error as ThisError;
 
-/// Errors that can occur while running [`run`].
+/// Errors that can occur while running [`crate::run`].
 #[derive(Debug, ThisError)]
 pub enum Error {
     /// Error that may occur during I/O operations.

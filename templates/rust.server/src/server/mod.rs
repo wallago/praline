@@ -13,8 +13,9 @@ async fn health() -> StatusCode {
 
 /// Global server routes.
 fn routes() -> Router {
-    Router::new().route("/health", get(health))
+    let router = Router::new();
     // {slot:rust.server.routes}
+    router.route("/health", get(health))
 }
 
 /// Start web services.
@@ -22,9 +23,8 @@ pub(super) async fn start(config: &Config) -> Result<()> {
     let (address, port) = (&config.server.address, config.server.port);
     let listener = tokio::net::TcpListener::bind(format!("{address}:{port}")).await?;
     tracing::info!("Server running");
-    let routes = routes()
-        // {slot:rust.server.routes.config}
-        // {slot:rust.server.serve}
-    ;
+    let routes = routes();
+    // {slot:rust.server.routes.config}
+    // {slot:rust.server.serve}
     Ok(serve(listener, routes).await?)
 }

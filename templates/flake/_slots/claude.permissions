@@ -1,0 +1,6 @@
+"Bash(nix flake check*)",
+"Bash(nix eval*)",
+"Bash(nix build --dry-run*)",
+"Bash(nix search nixpkgs*)",
+"Bash(statix check*)",
+"Bash(deadnix*)",
