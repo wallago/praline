@@ -1,2 +1,2 @@
-axum = { version = "0.8.9", features = ["ws"] }
 
+axum = { version = "0.8.9", features = ["ws"] }

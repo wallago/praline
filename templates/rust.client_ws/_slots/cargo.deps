@@ -1,3 +1,4 @@
-futures-channel = "0.3.34"
+
+futures-channel   = "0.3.34"
+futures-util      = "0.3.34"
 tokio-tungstenite = "0.30.0"
-futures-util = "0.3.34"

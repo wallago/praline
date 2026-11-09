@@ -1,0 +1,8 @@
+- fmt-check
+- toml-check
+- lint
+- test
+- doc
+- udeps
+- deny
+- audit

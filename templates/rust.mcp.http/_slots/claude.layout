@@ -1,0 +1,1 @@
+- `src/mcp/http.rs`: serves MCP over Streamable HTTP at `/mcp`, mounted by the server; `allowed_hosts` in the config guards the `Host` header.

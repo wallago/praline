@@ -1,2 +1,1 @@
-@echo "▶ firmware"
-cd firmware && cargo build --release
+@just build

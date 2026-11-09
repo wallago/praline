@@ -1,0 +1,9 @@
+- `src/main.rs`: parses `Args`, sets up tracing, calls `run`. Keep it thin.
+- `src/lib.rs`: `run` builds every component from `Config`, then waits on all
+  of them in one `tokio::select!` until Ctrl-C or the first one stops. A new
+  component is a module, a field in `Config`, and an arm in that `select!`.
+- `src/config/`: `Config`, read from TOML; one table per component, each
+  listed in `config.example.toml` (a test loads it).
+- `src/error.rs`: the crate's one `Error` enum; add a variant per new failure
+  source, with `#[from]` where it wraps a library error.
+- `tests/cli.rs`: runs the built binary the way a user would.

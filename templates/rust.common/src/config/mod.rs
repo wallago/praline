@@ -12,13 +12,14 @@ use crate::prelude::*;
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub(crate) struct Config {
+    // One table per component, from the options picked at scaffold time.
     // {slot:rust.config.params}
 }
 
 impl Config {
     /// Loads the config: explicit `--config` path, else
     /// `$XDG_CONFIG_HOME/env!("CARGO_PKG_NAME")/config.toml` if present, else defaults.
-    ///  
+    ///
     /// # Errors
     ///
     /// Returns an error if a config file is found but cannot be read or parsed.

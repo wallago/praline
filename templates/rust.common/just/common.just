@@ -1,4 +1,6 @@
 # {if:just}
+# ── Dev ───────────────────────────────────────────────────────
+
 # Run the app with `config.toml`. Usage: just run -- [ARGS]
 [group('dev')]
 run *ARGS:
@@ -13,4 +15,54 @@ build:
 [group('dev')]
 check:
     cargo check --all-targets
+
+# Run the test suite. Usage: just test [FILTER]
+[group('dev')]
+test *ARGS:
+    cargo test {{ ARGS }}
+
+# Format Rust and TOML sources in place
+[group('dev')]
+fmt:
+    cargo fmt
+    taplo fmt
+
+# ── Quality ───────────────────────────────────────────────────
+
+# Check Rust formatting
+[group('quality')]
+fmt-check:
+    cargo fmt --check
+
+# Check TOML formatting
+[group('quality')]
+toml-check:
+    taplo fmt --check --diff
+
+# Lint with clippy, treating warnings as errors
+[group('quality')]
+lint:
+    cargo clippy --all-targets -- -D warnings
+
+# Build the docs, treating warnings as errors
+[group('quality')]
+doc:
+    RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps
+
+# Report unused dependencies
+[group('quality')]
+udeps:
+    cargo machete
+
+# ── Security ──────────────────────────────────────────────────
+
+# Check licenses, banned crates, sources and advisories
+[group('security')]
+deny:
+    cargo deny check
+
+# Audit dependencies against the RustSec advisory DB
+[group('security')]
+audit:
+    cargo audit
 # {endif:just}

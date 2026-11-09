@@ -52,6 +52,9 @@ mod tests {
 
     use super::*;
 
+    /// `argv[0]`; any name does, a fixed one keeps rustfmt's layout stable.
+    const BIN: &str = "app";
+
     #[test]
     fn test_args() {
         Args::command().debug_assert();
@@ -59,7 +62,7 @@ mod tests {
 
     #[test]
     fn defaults_without_flags() -> Result<(), clap::Error> {
-        let args = Args::try_parse_from(["{name}"])?;
+        let args = Args::try_parse_from([BIN])?;
         assert_eq!(args.verbose, 0);
         assert_eq!(args.config, None);
         Ok(())
@@ -67,14 +70,14 @@ mod tests {
 
     #[test]
     fn parses_config_path() -> Result<(), clap::Error> {
-        let args = Args::try_parse_from(["{name}", "--config", "app.toml"])?;
+        let args = Args::try_parse_from([BIN, "--config", "app.toml"])?;
         assert_eq!(args.config.as_deref(), Some(Path::new("app.toml")));
         Ok(())
     }
 
     #[test]
     fn rejects_unknown_flag() {
-        assert!(Args::try_parse_from(["{name}", "--nope"]).is_err());
+        assert!(Args::try_parse_from([BIN, "--nope"]).is_err());
     }
 
     #[rstest]
@@ -87,7 +90,7 @@ mod tests {
         #[case] flags: &[&str],
         #[case] level: Level,
     ) -> Result<(), clap::Error> {
-        let args = Args::try_parse_from(std::iter::once("{name}").chain(flags.iter().copied()))?;
+        let args = Args::try_parse_from(std::iter::once(BIN).chain(flags.iter().copied()))?;
         assert_eq!(args.log_level(), level);
         Ok(())
     }

@@ -6,12 +6,12 @@ rust = pkgs.rust-bin.nightly.latest.default.override {
   ];
 };
 
+# {if:flake.package}
 naersk' = pkgs.callPackage inputs.naersk {
   cargo = rust;
   rustc = rust;
 };
 
-# {if:flake.package}
 # ── Build helper ──────────────────────────────────────────
 buildApp =
 { release }:

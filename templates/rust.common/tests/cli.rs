@@ -2,9 +2,15 @@
 
 use std::process::{Command, Output};
 
+/// The crate's binary, built by `cargo test`.
+const BIN: &str = env!("CARGO_BIN_EXE_{name}");
+
+/// What `--version` prints first.
+const VERSION: &str = concat!(env!("CARGO_PKG_NAME"), " ", env!("CARGO_PKG_VERSION"));
+
 /// Runs the crate's binary with `args` and returns what it printed.
 fn run(args: &[&str]) -> std::io::Result<Output> {
-    Command::new(env!("CARGO_BIN_EXE_{name}")).args(args).output()
+    Command::new(BIN).args(args).output()
 }
 
 #[test]
@@ -12,10 +18,7 @@ fn version_names_the_binary() -> std::io::Result<()> {
     let out = run(&["--version"])?;
     assert!(out.status.success());
     let stdout = String::from_utf8_lossy(&out.stdout);
-    assert!(
-        stdout.starts_with(concat!("{name} ", env!("CARGO_PKG_VERSION"))),
-        "{stdout}"
-    );
+    assert!(stdout.starts_with(VERSION), "{stdout}");
     Ok(())
 }
 

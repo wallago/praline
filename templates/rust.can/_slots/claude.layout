@@ -1,0 +1,1 @@
+- `src/can/`: CAN bus reader and writer; frames flow through the `can_rx` / `can_tx` channels made in `run`.

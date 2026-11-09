@@ -1,0 +1,1 @@
+- `.github/workflows/ci.yml`: one job per `just ci` recipe, each run in the flake's CI shell, plus the Nix flake check and the commit-format check.
