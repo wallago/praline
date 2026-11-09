@@ -1,0 +1,5 @@
+@just fmt-check
+@just lint
+@just check
+@just test
+@just build

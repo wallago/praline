@@ -67,17 +67,33 @@ fn subsets(ids: &[OptId]) -> impl Iterator<Item = HashSet<OptId>> + '_ {
     })
 }
 
+/// Top-level options that conflict with each other, each with its own
+/// subtree. Each is crossed with every non-stack option on its own: crossing
+/// them with each other only adds conflicting sets, and walking those
+/// subsets would take most of the test time.
+const STACKS: &[OptId] = &[OptId::Rust, OptId::Web];
+
+/// The top-level option `id` hangs off.
+fn root(id: OptId) -> OptId {
+    id.def().parent.map_or(id, root)
+}
+
 /// One app per distinct active set. Every subset of the non-repo-wide options
 /// the UI lets through (no two checked options conflict), with the repo-wide
 /// ones all off and all on; then every subset of the repo-wide ones, on an
 /// empty repo, on `just` + `flake`, and on the kitchen sink.
 fn every_setup() -> Vec<(Vec<OptId>, App)> {
-    let others: Vec<OptId> = OptId::iter().filter(|id| !REPO_WIDE.contains(id)).collect();
     let all_repo_wide: HashSet<OptId> = REPO_WIDE.iter().copied().collect();
     let mut candidates = Vec::new();
-    for base in subsets(&others) {
-        candidates.push(base.union(&all_repo_wide).copied().collect());
-        candidates.push(base);
+    for &stack in STACKS {
+        let others: Vec<OptId> = OptId::iter()
+            .filter(|id| !REPO_WIDE.contains(id))
+            .filter(|&id| !STACKS.contains(&root(id)) || root(id) == stack)
+            .collect();
+        for base in subsets(&others) {
+            candidates.push(base.union(&all_repo_wide).copied().collect());
+            candidates.push(base);
+        }
     }
     for repo_wide in subsets(REPO_WIDE) {
         for base in [&[][..], &[OptId::Just, OptId::Flake][..], KITCHEN_SINK] {
@@ -523,4 +539,52 @@ fn every_template_folder_is_rendered_by_its_option() {
         unrendered.is_empty(),
         "never rendered from templates/: {unrendered:?}"
     );
+}
+
+/// `deps` as `(name, version range)` pairs, sorted.
+fn json_deps(deps: Option<&serde_json::Value>) -> Vec<(String, String)> {
+    let mut out: Vec<(String, String)> = deps
+        .and_then(serde_json::Value::as_object)
+        .into_iter()
+        .flatten()
+        .map(|(name, range)| (name.clone(), range.as_str().unwrap_or_default().to_owned()))
+        .collect();
+    out.sort();
+    out
+}
+
+/// `deps` of the lockfile's root importer as `(name, version range)` pairs, sorted.
+fn lock_deps(deps: &Yaml) -> Vec<(String, String)> {
+    let mut out: Vec<(String, String)> = deps
+        .as_hash()
+        .into_iter()
+        .flatten()
+        .map(|(name, dep)| {
+            (
+                name.as_str().unwrap_or_default().to_owned(),
+                dep["specifier"].as_str().unwrap_or_default().to_owned(),
+            )
+        })
+        .collect();
+    out.sort();
+    out
+}
+
+#[test]
+fn web_lockfile_matches_package_json() {
+    let (_, tree) = renders()
+        .iter()
+        .find(|(active, _)| active.contains(&OptId::WebReact))
+        .expect("no setup renders web.react");
+    let manifest: serde_json::Value =
+        serde_json::from_slice(&tree[Path::new("package.json")]).unwrap();
+    let lock = yaml(std::str::from_utf8(&tree[Path::new("pnpm-lock.yaml")]).unwrap()).unwrap();
+    let root = &lock["importers"]["."];
+    for key in ["dependencies", "devDependencies"] {
+        assert_eq!(
+            json_deps(manifest.get(key)),
+            lock_deps(&root[key]),
+            "{key} in package.json and pnpm-lock.yaml differ: run `just web-lock`"
+        );
+    }
 }

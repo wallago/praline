@@ -195,3 +195,33 @@ fn generated_repo_without_rust_passes_its_gate() -> Outcome {
     run(&repo, "just", &["ci"])?;
     run(&repo, "just", &["commits"])
 }
+
+/// Options every web setup starts from.
+const WEB_BASE: &[&str] = &["just", "flake", "web", "web.react"];
+
+#[rstest]
+#[case::web("e2e-web", &[])]
+#[case::web_pages("e2e-web-pages", &["web.pages"])]
+#[ignore = "slow, needs the npm registry: run with `just e2e`"]
+fn generated_web_repo_passes_its_gate(#[case] name: &str, #[case] opts: &[&str]) -> Outcome {
+    let all: Vec<&str> = WEB_BASE
+        .iter()
+        .chain(TOOLING)
+        .chain(opts)
+        .copied()
+        .collect();
+    let repo = generate(name, &all)?;
+    commit_all(&repo)?;
+    // Typecheck, tests, the build and every repo-wide check, from the
+    // shipped lockfile: `install` fails if it no longer matches `package.json`.
+    run(&repo, "just", &["ci"])?;
+    run(&repo, "just", &["commits"])
+}
+
+/// The stripped-down web render: no repo-wide tooling, still green.
+#[test]
+#[ignore = "slow, needs the npm registry: run with `just e2e`"]
+fn generated_web_repo_without_tooling_passes_its_gate() -> Outcome {
+    let repo = generate("e2e-web-no-tooling", WEB_BASE)?;
+    run(&repo, "just", &["ci"])
+}

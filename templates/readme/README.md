@@ -39,6 +39,21 @@ cargo run -- --help
 Settings are read from a TOML file; `config.example.toml` lists them.
 
 <!-- {endif:rust.common} -->
+<!-- {if:web.react} -->
+
+## Usage
+
+```sh
+just dev      # serve the site with hot reload
+just build    # build it into dist/
+```
+
+<!-- {if:web.pages} -->
+Every push to `main` deploys `dist/` to GitHub Pages. Turn Pages on once in
+the repo settings, with GitHub Actions as the source.
+
+<!-- {endif:web.pages} -->
+<!-- {endif:web.react} -->
 <!-- {if:git} -->
 
 ## License

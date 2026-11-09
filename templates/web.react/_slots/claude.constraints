@@ -1,0 +1,8 @@
+- TypeScript is `strict` with `noUncheckedIndexedAccess`: no `any`, no `!`
+  non-null assertions; narrow instead.
+- Biome lints with warnings as errors and owns formatting and import order:
+  let `biome check --write` format, don't hand-format.
+- Tests use Testing Library: query by role or text, as a user would, not by
+  class name or test id.
+- Dependencies are locked in `pnpm-lock.yaml`; add one with `pnpm add`, and say
+  what it buys before pulling it in.

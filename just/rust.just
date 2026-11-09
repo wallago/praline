@@ -15,6 +15,11 @@ build:
 check:
     cargo check --all-targets
 
+# Re-lock the web.react template after editing its package.json
+[group('dev')]
+web-lock:
+    cd templates/web.react && pnpm install --lockfile-only
+
 # Run the test suite. Usage: just test [pattern]
 [group('dev')]
 test *ARGS:

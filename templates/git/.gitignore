@@ -21,6 +21,14 @@ lcov.info
 # {endif:codecov}
 
 # {endif:rust}
+# {if:web}
+# ── Web / pnpm ───────────────────────────────────────────────
+node_modules/
+dist/
+*.tsbuildinfo
+
+# NOTE: pnpm-lock.yaml is committed on purpose
+# {endif:web}
 # {if:flake}
 # ── Nix ──────────────────────────────────────────────────────
 # Build result symlinks (result, result-bin, result-1, …)
