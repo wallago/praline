@@ -13,6 +13,15 @@ updates:
       cargo-dependencies:
         patterns: ["*"]
   # {endif:rust.common}
+  # {if:web}
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-dependencies:
+        patterns: ["*"]
+  # {endif:web}
   # {if:flake}
   - package-ecosystem: "nix"
     directory: "/"

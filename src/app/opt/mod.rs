@@ -13,6 +13,8 @@ mod just;
 mod repo;
 /// Rust options.
 mod rust;
+/// Web options.
+mod web;
 
 /// A selectable option, serialized as the name of its `templates/` folder.
 #[derive(
@@ -85,6 +87,19 @@ pub(crate) enum OptId {
     RustMcpHttp,
 
     //------------------------------------------------------------------//
+    //                               Web                                //
+    //------------------------------------------------------------------//
+    /// Parent of the web stacks; switches the repo-wide `{if:web}` blocks.
+    #[strum(serialize = "web")]
+    Web,
+    /// Vite + React + TypeScript app, with Vitest and Biome.
+    #[strum(serialize = "web.react")]
+    WebReact,
+    /// GitHub Pages deploy of the built site.
+    #[strum(serialize = "web.pages")]
+    WebPages,
+
+    //------------------------------------------------------------------//
     //                               Repo                               //
     //------------------------------------------------------------------//
     /// `.editorconfig`, checked by editorconfig-checker.
@@ -135,6 +150,9 @@ impl OptId {
             Self::RustNotif => Self::def_rust_notif(),
             Self::RustMcp => Self::def_rust_mcp(),
             Self::RustMcpHttp => Self::def_rust_mcp_http(),
+            Self::Web => Self::def_web(),
+            Self::WebReact => Self::def_web_react(),
+            Self::WebPages => Self::def_web_pages(),
             Self::Editorconfig => Self::def_editorconfig(),
             Self::Typos => Self::def_typos(),
             Self::Lychee => Self::def_lychee(),

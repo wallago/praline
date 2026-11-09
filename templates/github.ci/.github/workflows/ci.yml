@@ -42,6 +42,14 @@ jobs:
         with:
           key: ${{ matrix.recipe }}
       # {endif:rust.common}
+      # {if:web.react}
+      - name: Cache the pnpm store
+        uses: actions/cache@v6
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+      # {endif:web.react}
       - name: Run just ${{ matrix.recipe }}
         run: nix develop .#ci --command just ${{ matrix.recipe }}
         # {if:lychee}

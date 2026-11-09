@@ -29,6 +29,10 @@ recipe.
 <!-- {if:rust.common} -->
 - `just check`, `just test`, `just lint`, `just fmt`: the fast loop.
 <!-- {endif:rust.common} -->
+<!-- {if:web.react} -->
+- `just check`, `just test`, `just lint`, `just fmt`: the fast loop.
+  `just dev` serves the site; it doesn't exit, so ask the user to run it.
+<!-- {endif:web.react} -->
 <!-- {endif:just} -->
 
 ## Constraints

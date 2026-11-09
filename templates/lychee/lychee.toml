@@ -3,4 +3,11 @@
 # The repo's own GitHub pages 404 until the first push.
 exclude = ["^https://github\\.com/{owner}/{name}"]
 # Build output and the direnv cache hold Markdown that isn't ours.
-exclude_path = ["target", ".direnv"]
+exclude_path = [
+  "target",
+  ".direnv",
+  # {if:web}
+  "node_modules",
+  "dist",
+  # {endif:web}
+]

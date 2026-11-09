@@ -111,6 +111,10 @@
               statix
               deadnix
 
+              # web tooling: the e2e runs generated web repos' gate
+              nodejs_24
+              pnpm
+
               # deps
               sqlite
             ];
