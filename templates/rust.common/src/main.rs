@@ -2,13 +2,13 @@
 
 use std::process::exit;
 
-use clap::Parser;
+// One crate import, so rustfmt's ordering doesn't depend on the crate name.
 use {ident}::{prelude::*, version};
 
 /// Runs the crate and maps the outcome to a process exit code.
 #[tokio::main]
 async fn main() {
-    let args = Args::parse();
+    let args = <Args as clap::Parser>::parse();
     let under_journal = std::env::var_os("JOURNAL_STREAM").is_some();
     let fmt = tracing_subscriber::fmt()
         .with_max_level(args.log_level())

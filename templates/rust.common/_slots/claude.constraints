@@ -1,0 +1,6 @@
+- Clippy runs with `-D warnings` and `Cargo.toml` warns on `unwrap_used`,
+  `expect_used`, `panic`, `todo`, `print_stdout` and
+  `missing_docs_in_private_items`: no `.unwrap()`, no `.expect()`, no bare
+  `panic!`, and every item gets a doc comment.
+- A new crate has to clear `cargo deny check` and `cargo audit`; `cargo
+  machete` fails on a dependency nothing uses.

@@ -1,0 +1,7 @@
+- `index.html`: the page shell Vite serves and builds; the app mounts on `#root`.
+- `src/main.tsx`: mounts `App`. Keep it thin.
+- `src/App.tsx`: the page. A new section is a component in `src/components/`,
+  rendered from here.
+- `src/components/`: one component per file, its test next to it
+  (`Counter.tsx`, `Counter.test.tsx`).
+- `public/`: files served as-is at the site root.

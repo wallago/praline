@@ -6,16 +6,13 @@
   };
 
   outputs =
-    {
-      self,
-      ...
-    }@inputs:
+    inputs:
     {
       # {if:flake.module.home}
-      homeModules.default = import ./nix/hm-module.nix self;
+      homeModules.default = import ./nix/hm-module.nix inputs.self;
       # {endif:flake.module.home}
       # {if:flake.module.nixos}
-      nixModules.default = import ./nix/nixos-module.nix self;
+      nixModules.default = import ./nix/nixos-module.nix inputs.self;
       # {endif:flake.module.nixos}
     }
     # ── Then merge the per-system outputs onto it ──
@@ -55,10 +52,10 @@
               default = {name};
             };
 
-            # {endif:flake.package}
             # ── Checks (nix flake check) ─────────────────────────────
-            checks.check = self.packages.${system}."{name}-debug";
+            checks.check = inputs.self.packages.${system}."{name}-debug";
 
+            # {endif:flake.package}
             # ── Dev Shell (nix develop) ──────────────────────────────
             devShells.default =
               let
@@ -80,8 +77,8 @@
                     commits=$(git rev-list --count HEAD)
                     nixpkgs=$(date -d @"$(jq -r .nodes.nixpkgs.locked.lastModified flake.lock)" +%F)
 
-                    title=$(gum style --foreground 111 --bold 'praline')
-                    desc=$(gum style --foreground 244 --italic "Helper TUI app to scaffold an idiomatic repo.")
+                    title=$(gum style --foreground 111 --bold '{name}')
+                    desc=$(gum style --foreground 244 --italic "{desc}")
                     keys=$(gum style --foreground 80 --align right --padding "0 2 0 0" \
                       created updated commits nixpkgs)
                     vals=$(gum style --foreground 255 \

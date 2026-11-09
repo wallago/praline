@@ -1,0 +1,1 @@
+- Commit messages are Conventional Commits (`type(scope): subject`); CI checks every commit of a PR with `committed`, and `git-cliff` builds the changelog from them.

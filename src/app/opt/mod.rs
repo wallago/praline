@@ -9,8 +9,12 @@ use crate::app::category::Category;
 mod flake;
 /// Just options.
 mod just;
+/// Repo-wide options: checks, docs, git, GitHub and Claude.
+mod repo;
 /// Rust options.
 mod rust;
+/// Web options.
+mod web;
 
 /// A selectable option, serialized as the name of its `templates/` folder.
 #[derive(
@@ -81,6 +85,50 @@ pub(crate) enum OptId {
     /// Serve the MCP server over Streamable HTTP on the server, not stdio.
     #[strum(serialize = "rust.mcp.http")]
     RustMcpHttp,
+
+    //------------------------------------------------------------------//
+    //                               Web                                //
+    //------------------------------------------------------------------//
+    /// Parent of the web stacks; switches the repo-wide `{if:web}` blocks.
+    #[strum(serialize = "web")]
+    Web,
+    /// Vite + React + TypeScript app, with Vitest and Biome.
+    #[strum(serialize = "web.react")]
+    WebReact,
+    /// GitHub Pages deploy of the built site.
+    #[strum(serialize = "web.pages")]
+    WebPages,
+
+    //------------------------------------------------------------------//
+    //                               Repo                               //
+    //------------------------------------------------------------------//
+    /// `.editorconfig`, checked by editorconfig-checker.
+    #[strum(serialize = "editorconfig")]
+    Editorconfig,
+    /// `typos.toml`, spell-check.
+    #[strum(serialize = "typos")]
+    Typos,
+    /// `lychee.toml`, link check.
+    #[strum(serialize = "lychee")]
+    Lychee,
+    /// `README.md`.
+    #[strum(serialize = "readme")]
+    Readme,
+    /// `.gitignore`, licences, commit format and changelog.
+    #[strum(serialize = "git")]
+    Git,
+    /// `.github/` templates and dependabot.
+    #[strum(serialize = "github")]
+    Github,
+    /// `.github/workflows/ci.yml`, running `just ci` recipe by recipe.
+    #[strum(serialize = "github.ci")]
+    GithubCi,
+    /// Test coverage uploaded to Codecov from CI.
+    #[strum(serialize = "codecov")]
+    Codecov,
+    /// `CLAUDE.md` and `.claude/`.
+    #[strum(serialize = "claude")]
+    Claude,
 }
 
 impl OptId {
@@ -102,6 +150,18 @@ impl OptId {
             Self::RustNotif => Self::def_rust_notif(),
             Self::RustMcp => Self::def_rust_mcp(),
             Self::RustMcpHttp => Self::def_rust_mcp_http(),
+            Self::Web => Self::def_web(),
+            Self::WebReact => Self::def_web_react(),
+            Self::WebPages => Self::def_web_pages(),
+            Self::Editorconfig => Self::def_editorconfig(),
+            Self::Typos => Self::def_typos(),
+            Self::Lychee => Self::def_lychee(),
+            Self::Readme => Self::def_readme(),
+            Self::Git => Self::def_git(),
+            Self::Github => Self::def_github(),
+            Self::GithubCi => Self::def_github_ci(),
+            Self::Codecov => Self::def_codecov(),
+            Self::Claude => Self::def_claude(),
         }
     }
 }

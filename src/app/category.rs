@@ -2,11 +2,11 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, strum::Display)]
 pub(crate) enum Category {
     /// Format code.
-    _Format,
+    Format,
     /// Lint code.
-    _Lint,
+    Lint,
     /// Run tests.
-    _Test,
+    Test,
     /// Scan for security issues.
     _Security,
     /// Build the project.
@@ -14,7 +14,7 @@ pub(crate) enum Category {
     /// Publish or release.
     _Release,
     /// Version control.
-    _Git,
+    Git,
     /// Environment and tooling setup.
     Env,
 }

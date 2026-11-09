@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use include_dir::Dir;
 
-use crate::app::engine::marker::marker;
+use crate::app::engine::{condition::Lines, marker::marker};
 
 /// Marker a hub file puts, alone on its line, where contributions go.
 pub(super) const SLOT_MARKER: &str = "{slot:";
@@ -30,7 +30,7 @@ pub(super) fn collect_slots(dir: &Dir<'_>, slots: &mut Slots) {
 
 /// Replaces each `{slot:<name>}` line with the blocks contributed to
 /// `<name>`, every line indented like the marker line. A slot nobody fills
-/// disappears. Blocks are filled in turn, so a block can hold slots of its
+/// disappears, and so does a blank line that leaves doubled. Blocks are filled in turn, so a block can hold slots of its
 /// own.
 pub(super) fn fill_slots(content: &str, slots: &Slots) -> String {
     fill(content, slots, &mut Vec::new())
@@ -42,13 +42,13 @@ fn fill(content: &str, slots: &Slots, open: &mut Vec<String>) -> String {
     if !content.contains(SLOT_MARKER) {
         return content.to_string();
     }
-    let mut out = String::with_capacity(content.len());
+    let mut out = Lines::default();
     for line in content.lines() {
         let Some(name) = marker(line, SLOT_MARKER) else {
-            out.push_str(line);
-            out.push('\n');
+            out.push(line);
             continue;
         };
+        out.dropped();
         if open.iter().any(|o| o == name) {
             continue;
         }
@@ -56,16 +56,16 @@ fn fill(content: &str, slots: &Slots, open: &mut Vec<String>) -> String {
         open.push(name.to_string());
         for block in slots.get(name).into_iter().flatten() {
             for entry in fill(block, slots, open).lines() {
-                if !entry.is_empty() {
-                    out.push_str(indent);
+                if entry.is_empty() {
+                    out.push(entry);
+                } else {
+                    out.push(&format!("{indent}{entry}"));
                 }
-                out.push_str(entry);
-                out.push('\n');
             }
         }
         open.pop();
     }
-    out
+    out.text
 }
 
 #[cfg(test)]
@@ -119,6 +119,23 @@ mod tests {
     #[test]
     fn a_slot_nobody_fills_disappears() {
         assert_eq!(fill_slots("a\n# {slot:deps}\nb\n", &Slots::new()), "a\nb\n");
+    }
+
+    #[test]
+    fn an_empty_slot_between_blank_lines_leaves_one() {
+        assert_eq!(
+            fill_slots("a\n\n# {slot:deps}\n\nb\n", &Slots::new()),
+            "a\n\nb\n"
+        );
+    }
+
+    #[test]
+    fn a_block_opening_on_a_blank_line_after_one_leaves_one() {
+        let deps = slots(&[("deps", "\nmod x;\n")]);
+        assert_eq!(
+            fill_slots("a\n\n# {slot:deps}\n\nb\n", &deps),
+            "a\n\nmod x;\n\nb\n"
+        );
     }
 
     #[test]

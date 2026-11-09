@@ -1,0 +1,8 @@
+@just fmt-check
+@just toml-check
+@just lint
+@just test
+@just doc
+@just udeps
+@just deny
+@just audit

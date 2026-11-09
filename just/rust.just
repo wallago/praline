@@ -15,12 +15,17 @@ build:
 check:
     cargo check --all-targets
 
+# Re-lock the web.react template after editing its package.json
+[group('dev')]
+web-lock:
+    cd templates/web.react && pnpm install --lockfile-only
+
 # Run the test suite. Usage: just test [pattern]
 [group('dev')]
 test *ARGS:
     cargo nextest run {{ ARGS }}
 
-# Generate each setup, then build, lint and test it (slow, needs crates.io)
+# Generate each setup, then build, lint, test it and run its own `just ci` (slow, needs crates.io and the dev shell's tools)
 [group('dev')]
 e2e *ARGS:
     cargo nextest run --test e2e --run-ignored only {{ ARGS }}

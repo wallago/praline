@@ -1,2 +1,3 @@
-/// Server settings. 
+
+/// Server settings.
 pub(crate) mod server;
