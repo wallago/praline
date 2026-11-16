@@ -15,7 +15,7 @@ impl State {
                     binds.push((self.keybindings.scroll_up.to_string(), "Scroll UP"));
                     binds.push((self.keybindings.scroll_down.to_string(), "Scroll DOWN"));
                     if self.dashboard.focus == DashboardPane::Options {
-                        binds.push((self.keybindings.enter.to_string(), "Toogle opt"));
+                        binds.push((self.keybindings.enter.to_string(), "Toggle opt"));
                     } else if self.dashboard.picker.is_some() {
                         binds.push((self.keybindings.scroll_left.to_string(), "Move to parent"));
                     }
