@@ -1,0 +1,4 @@
+# configuration for https://github.com/oppiliappan/statix
+
+# Template sources hold `{slot:}` markers: they are not Nix until rendered.
+ignore = ["templates"]

@@ -1,15 +1,5 @@
 # ── Release ───────────────────────────────────────────────────
 
-# Verify commit messages follow Conventional Commits
-[group('release')]
-commits:
-    committed -vv HEAD
-
-# Regenerate CHANGELOG.md from git history
-[group('release')]
-changelog:
-    git-cliff -o CHANGELOG.md
-
 # Step 1: open the release PR (version bump + changelog on `release/vVERSION`). Usage: just release 0.3.0
 [group('release')]
 release VERSION:

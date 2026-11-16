@@ -1,12 +1,10 @@
-# ── Quality ───────────────────────────────────────────────────
+# ── Nix ───────────────────────────────────────────────────────
 
 # Lint Nix (statix) and report dead Nix code (deadnix)
 [group('quality')]
 nix-lint:
     statix check .
-    deadnix --fail .
-
-# ── Dev ───────────────────────────────────────────────────────
+    deadnix --fail --exclude templates .
 
 # Build & check every flake output on all systems
 [group('dev')]
