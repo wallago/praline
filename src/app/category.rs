@@ -12,7 +12,7 @@ pub(crate) enum Category {
     /// Build the project.
     Build,
     /// Publish or release.
-    _Release,
+    Release,
     /// Version control.
     Git,
     /// Environment and tooling setup.
