@@ -26,7 +26,7 @@ pub(super) fn render_options(state: &mut State, frame: &mut Frame, chunk: Rect) 
         .border_style(super::border(state, DashboardPane::Options));
     let mut options = Vec::new();
     push_tree(&state.app.options, None, 0, &mut options);
-    let highligh_style = if state
+    let highlight_style = if state
         .dashboard
         .options
         .selected()
@@ -40,7 +40,7 @@ pub(super) fn render_options(state: &mut State, frame: &mut Frame, chunk: Rect) 
     let list = List::new(options)
         .block(block)
         .style(SECONDARY)
-        .highlight_style(highligh_style)
+        .highlight_style(highlight_style)
         .highlight_symbol(Span::styled("▌ ", ASCENT))
         .highlight_spacing(HighlightSpacing::Always);
     frame.render_stateful_widget(list, chunk, &mut state.dashboard.options);
