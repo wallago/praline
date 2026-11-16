@@ -42,7 +42,7 @@ impl OptId {
             parent: Some(Self::WebReact),
             requires: &[Self::GithubCi],
             _desc: "Deploy the built site to GitHub Pages on every push to main.",
-            _category: Some(Category::Build),
+            _category: Some(Category::Release),
             emit: Emit::Dir(&WEB_PAGES),
             ..OptDef::default()
         }
