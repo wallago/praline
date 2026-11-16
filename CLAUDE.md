@@ -47,7 +47,7 @@ reachable from `CLAUDE.md` get loaded, so a new rule needs a line below.
 
 ## Verifying a change
 
-`just ci-light` is the gate. Green means green.
+`just ci` is the gate. Green means green.
 
 <!-- TODO — what the gate *cannot* catch here, and how it gets checked instead.
      Be specific. "The binary is a full-screen TUI so it can't be driven

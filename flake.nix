@@ -95,6 +95,8 @@
               cargo-llvm-cov
 
               # repo tooling
+              just
+              actionlint
               typos
               committed
               git-cliff
@@ -168,11 +170,9 @@
                   ciTools
                   ++ (with pkgs; [
                     rust-analyzer
-                    just
                     claude
 
-                    # `just e2e` runs the generated repos' own gate
-                    actionlint
+                    # `just e2e` runs the generated web repos' own gate
                     nodejs_24
                     pnpm
                   ]);
