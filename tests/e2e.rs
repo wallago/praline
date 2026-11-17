@@ -160,7 +160,7 @@ fn check_rust_repo(repo: &Path) -> Outcome {
         "rust.notif",
         "rust.mcp",
         "rust.mcp.http",
-        "codecov",
+        "rust.codecov",
     ],
 )]
 #[case::client_side("e2e-client-side", &["rust.client_ws", "rust.can", "rust.notif"])]

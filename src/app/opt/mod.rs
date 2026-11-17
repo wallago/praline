@@ -85,6 +85,9 @@ pub(crate) enum OptId {
     /// Serve the MCP server over Streamable HTTP on the server, not stdio.
     #[strum(serialize = "rust.mcp.http")]
     RustMcpHttp,
+    /// Test coverage with cargo-llvm-cov, uploaded to Codecov from CI.
+    #[strum(serialize = "rust.codecov")]
+    RustCodecov,
 
     //------------------------------------------------------------------//
     //                               Web                                //
@@ -123,9 +126,6 @@ pub(crate) enum OptId {
     /// `.github/workflows/ci.yml`, running `just ci` recipe by recipe.
     #[strum(serialize = "github.ci")]
     GithubCi,
-    /// Test coverage uploaded to Codecov from CI.
-    #[strum(serialize = "codecov")]
-    Codecov,
     /// `CLAUDE.md` and `.claude/`.
     #[strum(serialize = "claude")]
     Claude,
@@ -150,6 +150,7 @@ impl OptId {
             Self::RustNotif => Self::def_rust_notif(),
             Self::RustMcp => Self::def_rust_mcp(),
             Self::RustMcpHttp => Self::def_rust_mcp_http(),
+            Self::RustCodecov => Self::def_rust_codecov(),
             Self::Web => Self::def_web(),
             Self::WebReact => Self::def_web_react(),
             Self::WebPages => Self::def_web_pages(),
@@ -160,7 +161,6 @@ impl OptId {
             Self::Git => Self::def_git(),
             Self::Github => Self::def_github(),
             Self::GithubCi => Self::def_github_ci(),
-            Self::Codecov => Self::def_codecov(),
             Self::Claude => Self::def_claude(),
         }
     }
