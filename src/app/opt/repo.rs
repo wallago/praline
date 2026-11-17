@@ -19,8 +19,6 @@ static GIT: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/git");
 static GITHUB: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/github");
 /// `github.ci` templates.
 static GITHUB_CI: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/github.ci");
-/// `codecov` templates.
-static CODECOV: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/codecov");
 /// `claude` templates.
 static CLAUDE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/claude");
 
@@ -102,19 +100,6 @@ impl OptId {
             _category: Some(Category::Test),
             default: true,
             emit: Emit::Dir(&GITHUB_CI),
-            ..OptDef::default()
-        }
-    }
-
-    /// Codecov option definition.
-    pub(super) fn def_codecov() -> OptDef {
-        OptDef {
-            parent: Some(Self::RustCommon),
-            // The upload is a CI job; it needs the repo's CODECOV_TOKEN secret.
-            requires: &[Self::GithubCi],
-            _desc: "Coverage with cargo-llvm-cov, uploaded to Codecov from CI.",
-            _category: Some(Category::Test),
-            emit: Emit::Dir(&CODECOV),
             ..OptDef::default()
         }
     }

@@ -25,6 +25,8 @@ static RUST_NOTIF: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.no
 static RUST_MCP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp");
 /// `rust.mcp.http` templates.
 static RUST_MCP_HTTP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp.http");
+/// `rust.codecov` templates.
+static RUST_CODECOV: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.codecov");
 
 impl OptId {
     /// Rust option definition.
@@ -137,6 +139,19 @@ impl OptId {
             _desc: "Serve MCP over HTTP at /mcp, for remote clients.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_MCP_HTTP),
+            ..OptDef::default()
+        }
+    }
+
+    /// Rust Codecov option definition.
+    pub(super) fn def_rust_codecov() -> OptDef {
+        OptDef {
+            parent: Some(Self::RustCommon),
+            // The upload is a CI job; it needs the repo's CODECOV_TOKEN secret.
+            requires: &[Self::GithubCi],
+            _desc: "Coverage with cargo-llvm-cov, uploaded to Codecov from CI.",
+            _category: Some(Category::Test),
+            emit: Emit::Dir(&RUST_CODECOV),
             ..OptDef::default()
         }
     }
