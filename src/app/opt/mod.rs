@@ -86,17 +86,17 @@ pub(crate) enum OptId {
     #[strum(serialize = "rust.mcp.http")]
     RustMcpHttp,
     /// `cargo machete`: unused dependencies.
-    #[strum(serialize = "rust.common.udeps")]
-    RustCommonUdeps,
+    #[strum(serialize = "cargo.udeps")]
+    CargoUdeps,
     /// `cargo deny`: licences, bans, sources and advisories.
-    #[strum(serialize = "rust.common.deny")]
-    RustCommonDeny,
+    #[strum(serialize = "cargo.deny")]
+    CargoDeny,
     /// `cargo audit` against the `RustSec` advisory DB.
-    #[strum(serialize = "rust.common.audit")]
-    RustCommonAudit,
+    #[strum(serialize = "cargo.audit")]
+    CargoAudit,
     /// Test coverage with cargo-llvm-cov, uploaded to Codecov from CI.
-    #[strum(serialize = "rust.common.codecov")]
-    RustCommonCodecov,
+    #[strum(serialize = "cargo.codecov")]
+    CargoCodecov,
 
     //------------------------------------------------------------------//
     //                               Web                                //
@@ -159,10 +159,10 @@ impl OptId {
             Self::RustNotif => Self::def_rust_notif(),
             Self::RustMcp => Self::def_rust_mcp(),
             Self::RustMcpHttp => Self::def_rust_mcp_http(),
-            Self::RustCommonUdeps => Self::def_rust_common_udeps(),
-            Self::RustCommonDeny => Self::def_rust_common_deny(),
-            Self::RustCommonAudit => Self::def_rust_common_audit(),
-            Self::RustCommonCodecov => Self::def_rust_common_codecov(),
+            Self::CargoUdeps => Self::def_cargo_udeps(),
+            Self::CargoDeny => Self::def_cargo_deny(),
+            Self::CargoAudit => Self::def_cargo_audit(),
+            Self::CargoCodecov => Self::def_cargo_codecov(),
             Self::Web => Self::def_web(),
             Self::WebReact => Self::def_web_react(),
             Self::WebPages => Self::def_web_pages(),

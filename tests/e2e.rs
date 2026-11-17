@@ -30,7 +30,7 @@ const TOOLING: &[&str] = &[
 
 /// Rust dependency checks, which the TUI ticks with `rust.common`: on in
 /// every Rust case but `no_tooling`.
-const RUST_TOOLS: &[&str] = &["rust.common.deny", "rust.common.audit", "rust.common.udeps"];
+const RUST_TOOLS: &[&str] = &["cargo.deny", "cargo.audit", "cargo.udeps"];
 
 /// Target dir shared by every generated repo, so dependencies build once.
 fn shared_target() -> PathBuf {
@@ -164,7 +164,7 @@ fn check_rust_repo(repo: &Path) -> Outcome {
         "rust.notif",
         "rust.mcp",
         "rust.mcp.http",
-        "rust.common.codecov",
+        "cargo.codecov",
     ],
 )]
 #[case::client_side("e2e-client-side", &["rust.client_ws", "rust.can", "rust.notif"])]

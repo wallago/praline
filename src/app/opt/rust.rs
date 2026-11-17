@@ -25,15 +25,14 @@ static RUST_NOTIF: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.no
 static RUST_MCP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp");
 /// `rust.mcp.http` templates.
 static RUST_MCP_HTTP: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.mcp.http");
-/// `rust.common.deny` templates.
-static RUST_COMMON_DENY: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common.deny");
-/// `rust.common.audit` templates.
-static RUST_COMMON_AUDIT: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common.audit");
-/// `rust.common.udeps` templates.
-static RUST_COMMON_UDEPS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common.udeps");
-/// `rust.common.codecov` templates.
-static RUST_COMMON_CODECOV: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/rust.common.codecov");
+/// `cargo.deny` templates.
+static CARGO_DENY: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/cargo.deny");
+/// `cargo.audit` templates.
+static CARGO_AUDIT: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/cargo.audit");
+/// `cargo.udeps` templates.
+static CARGO_UDEPS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/cargo.udeps");
+/// `cargo.codecov` templates.
+static CARGO_CODECOV: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/cargo.codecov");
 
 impl OptId {
     /// Rust option definition.
@@ -151,50 +150,50 @@ impl OptId {
     }
 
     /// Rust cargo-deny option definition.
-    pub(super) fn def_rust_common_deny() -> OptDef {
+    pub(super) fn def_cargo_deny() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             _desc: "Check licences, banned crates, sources and advisories with cargo-deny.",
             _category: Some(Category::Security),
             default: true,
-            emit: Emit::Dir(&RUST_COMMON_DENY),
+            emit: Emit::Dir(&CARGO_DENY),
             ..OptDef::default()
         }
     }
 
     /// Rust cargo-audit option definition.
-    pub(super) fn def_rust_common_audit() -> OptDef {
+    pub(super) fn def_cargo_audit() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             _desc: "Audit dependencies against the RustSec advisory DB with cargo-audit.",
             _category: Some(Category::Security),
             default: true,
-            emit: Emit::Dir(&RUST_COMMON_AUDIT),
+            emit: Emit::Dir(&CARGO_AUDIT),
             ..OptDef::default()
         }
     }
 
     /// Rust cargo-machete option definition.
-    pub(super) fn def_rust_common_udeps() -> OptDef {
+    pub(super) fn def_cargo_udeps() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             _desc: "Fail on unused dependencies with cargo-machete.",
             _category: Some(Category::Lint),
             default: true,
-            emit: Emit::Dir(&RUST_COMMON_UDEPS),
+            emit: Emit::Dir(&CARGO_UDEPS),
             ..OptDef::default()
         }
     }
 
     /// Rust Codecov option definition.
-    pub(super) fn def_rust_common_codecov() -> OptDef {
+    pub(super) fn def_cargo_codecov() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
             // The upload is a CI job; it needs the repo's CODECOV_TOKEN secret.
             requires: &[Self::GithubCi],
             _desc: "Coverage with cargo-llvm-cov, uploaded to Codecov from CI.",
             _category: Some(Category::Test),
-            emit: Emit::Dir(&RUST_COMMON_CODECOV),
+            emit: Emit::Dir(&CARGO_CODECOV),
             ..OptDef::default()
         }
     }
