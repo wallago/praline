@@ -2,7 +2,7 @@ use include_dir::{Dir, include_dir};
 
 use crate::app::{
     category::Category,
-    opt::{Emit, OptDef, OptId},
+    opt::{Emit, OptDef, OptId, Scope},
 };
 
 /// `editorconfig` templates.
@@ -26,10 +26,11 @@ impl OptId {
     /// Editorconfig option definition.
     pub(super) fn def_editorconfig() -> OptDef {
         OptDef {
-            _desc: "`.editorconfig`, checked by editorconfig-checker.",
+            desc: "`.editorconfig`, checked by editorconfig-checker.",
             _category: Some(Category::Format),
             default: true,
             emit: Emit::Dir(&EDITORCONFIG),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -37,10 +38,11 @@ impl OptId {
     /// Typos option definition.
     pub(super) fn def_typos() -> OptDef {
         OptDef {
-            _desc: "Spell-check the repo with typos.",
+            desc: "Spell-check the repo with typos.",
             _category: Some(Category::Lint),
             default: true,
             emit: Emit::Dir(&TYPOS),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -48,10 +50,11 @@ impl OptId {
     /// Lychee option definition.
     pub(super) fn def_lychee() -> OptDef {
         OptDef {
-            _desc: "Check the links in every Markdown file with lychee.",
+            desc: "Check the links in every Markdown file with lychee.",
             _category: Some(Category::Lint),
             default: true,
             emit: Emit::Dir(&LYCHEE),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -59,10 +62,11 @@ impl OptId {
     /// README option definition.
     pub(super) fn def_readme() -> OptDef {
         OptDef {
-            _desc: "`README.md` with setup, tasks, usage and licence.",
+            desc: "`README.md` with setup, tasks, usage and licence.",
             _category: Some(Category::Git),
             default: true,
             emit: Emit::Dir(&README),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -70,10 +74,11 @@ impl OptId {
     /// Git option definition.
     pub(super) fn def_git() -> OptDef {
         OptDef {
-            _desc: "`.gitignore`, MIT + Apache licences, committed and git-cliff.",
+            desc: "`.gitignore`, MIT + Apache licences, committed and git-cliff.",
             _category: Some(Category::Git),
             default: true,
             emit: Emit::Dir(&GIT),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -82,10 +87,11 @@ impl OptId {
     pub(super) fn def_github() -> OptDef {
         OptDef {
             parent: Some(Self::Git),
-            _desc: "Issue and PR templates, CODEOWNERS, dependabot.",
+            desc: "Issue and PR templates, CODEOWNERS, dependabot.",
             _category: Some(Category::Git),
             default: true,
             emit: Emit::Dir(&GITHUB),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -96,10 +102,11 @@ impl OptId {
             parent: Some(Self::Github),
             // Jobs run `just <recipe>` inside the flake's CI shell.
             requires: &[Self::Flake, Self::Just],
-            _desc: "CI workflow running every `just ci` recipe in the flake's CI shell.",
+            desc: "CI workflow running every `just ci` recipe in the flake's CI shell.",
             _category: Some(Category::Test),
             default: true,
             emit: Emit::Dir(&GITHUB_CI),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -107,10 +114,11 @@ impl OptId {
     /// Claude option definition.
     pub(super) fn def_claude() -> OptDef {
         OptDef {
-            _desc: "`CLAUDE.md`, rules and settings for Claude Code.",
+            desc: "`CLAUDE.md`, rules and settings for Claude Code.",
             _category: Some(Category::Env),
             default: true,
             emit: Emit::Dir(&CLAUDE),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }

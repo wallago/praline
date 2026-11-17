@@ -2,7 +2,7 @@ use include_dir::{Dir, include_dir};
 
 use crate::app::{
     category::Category,
-    opt::{Emit, OptDef, OptId},
+    opt::{Emit, OptDef, OptId, Scope},
 };
 
 /// `flake` templates.
@@ -17,10 +17,11 @@ impl OptId {
     /// Flake option definition.
     pub(super) fn def_flake() -> OptDef {
         OptDef {
-            _desc: "Dependencies and environments setup.",
+            desc: "Nix flake dev shell with every tool, loaded by direnv.",
             _category: Some(Category::Env),
             default: true,
             emit: Emit::Dir(&FLAKE),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -28,9 +29,10 @@ impl OptId {
     pub(super) fn def_flake_package() -> OptDef {
         OptDef {
             parent: Some(Self::Flake),
-            _desc: ".",
+            desc: "Build the app as a Nix package (`nix build`).",
             _category: Some(Category::Env),
             emit: Emit::Flag,
+            single_app_only: true,
             ..OptDef::default()
         }
     }
@@ -38,9 +40,10 @@ impl OptId {
     pub(super) fn def_flake_module_home() -> OptDef {
         OptDef {
             parent: Some(Self::FlakePackage),
-            _desc: "Dependencies and environments setup.",
+            desc: "Home Manager module that installs the package.",
             _category: Some(Category::Env),
             emit: Emit::Dir(&FLAKE_MODULE_HOME),
+            single_app_only: true,
             ..OptDef::default()
         }
     }
@@ -48,9 +51,10 @@ impl OptId {
     pub(super) fn def_flake_module_nixos() -> OptDef {
         OptDef {
             parent: Some(Self::FlakePackage),
-            _desc: "Dependencies and environments setup.",
+            desc: "NixOS module that installs the package.",
             _category: Some(Category::Env),
             emit: Emit::Dir(&FLAKE_MODULE_NIXOS),
+            single_app_only: true,
             ..OptDef::default()
         }
     }

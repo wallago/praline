@@ -17,7 +17,7 @@ impl OptId {
         OptDef {
             // Both own `src/` and the flake package.
             conflicts: &[Self::Rust, Self::FlakePackage],
-            _desc: "Website or web app, built with Node and pnpm.",
+            desc: "Website or web app, built with Node and pnpm.",
             _category: Some(Category::Build),
             emit: Emit::Flag,
             ..OptDef::default()
@@ -28,7 +28,7 @@ impl OptId {
     pub(super) fn def_web_react() -> OptDef {
         OptDef {
             parent: Some(Self::Web),
-            _desc: "Vite + React + TypeScript app, tested with Vitest, linted by Biome.",
+            desc: "Vite + React + TypeScript app, tested with Vitest, linted by Biome.",
             _category: Some(Category::Build),
             default: true,
             emit: Emit::Dir(&WEB_REACT),
@@ -41,9 +41,10 @@ impl OptId {
         OptDef {
             parent: Some(Self::WebReact),
             requires: &[Self::GithubCi],
-            _desc: "Deploy the built site to GitHub Pages on every push to main.",
+            desc: "Deploy the built site to GitHub Pages on every push to main.",
             _category: Some(Category::Release),
             emit: Emit::Dir(&WEB_PAGES),
+            single_app_only: true,
             ..OptDef::default()
         }
     }

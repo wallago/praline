@@ -60,9 +60,12 @@ impl State {
             running: true,
             mode: Mode::default(),
             keybindings: config.keybindings,
-            focus: Focus::Sidebar,
+            // Straight into the options: the sidebar only switches pages.
+            focus: Focus::Page,
             status: None,
             dashboard: Dashboard {
+                // The first app: what most runs start by picking.
+                apps: ListState::default().with_selected(Some(1)),
                 options: ListState::default().with_selected(Some(0)),
                 ..Dashboard::default()
             },

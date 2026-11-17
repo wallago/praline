@@ -59,6 +59,9 @@ pub enum InputError {
     /// Conflict between options detected.
     #[error("conflict options detected between: {0} / {1}")]
     Conflict(&'static str, &'static str),
+    /// An app is badly declared: the app, then why.
+    #[error("app `{0}`: {1}")]
+    App(String, String),
 }
 
 #[cfg(test)]

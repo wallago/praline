@@ -108,6 +108,8 @@ mod tests {
             vars: Vec::new(),
             active: active.iter().copied().collect(),
             slots: Slots::new(),
+            workspace: false,
+            apps: false,
         }
     }
     #[rstest]

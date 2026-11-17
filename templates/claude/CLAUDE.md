@@ -1,6 +1,16 @@
 # {name}
 
 {desc}
+<!-- {if:apps} -->
+
+## Apps
+
+Each app has its own folder, its own `justfile` and its own checks. The root
+`justfile` loads each one as a module, and `just ci` runs every app's `ci`
+after the repo-wide checks.
+
+<!-- {slot:workspace.apps} -->
+<!-- {endif:apps} -->
 
 ## Layout
 
@@ -26,6 +36,7 @@ recipe.
 
 - `just ci`: the gate. It runs every check CI runs, recipe by recipe, so a
   green `just ci` is a green CI. Run it before calling a change done.
+<!-- {ifnot:apps} -->
 <!-- {if:rust.common} -->
 - `just check`, `just test`, `just lint`, `just fmt`: the fast loop.
 <!-- {endif:rust.common} -->
@@ -33,6 +44,11 @@ recipe.
 - `just check`, `just test`, `just lint`, `just fmt`: the fast loop.
   `just dev` serves the site; it doesn't exit, so ask the user to run it.
 <!-- {endif:web.react} -->
+<!-- {endif:apps} -->
+<!-- {if:apps} -->
+- `just --list <app>` lists an app's recipes; run them as `<app>::check`,
+  `<app>::test`, `<app>::lint`, `<app>::fmt` for the fast loop.
+<!-- {endif:apps} -->
 <!-- {endif:just} -->
 
 ## Constraints

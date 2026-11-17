@@ -16,6 +16,8 @@ mod helper;
 /// Input key handling.
 mod input;
 
+pub(crate) use input::app_name_error;
+
 /// Shared pieces the per-mode handlers use.
 mod prelude {
     pub(super) use super::{Action, neighbour, step_in};
@@ -54,6 +56,12 @@ pub(super) enum Action {
     Start,
     /// Validate declaration in picker.
     Validate,
+    /// Add an app (apps pane).
+    AddApp,
+    /// Rename the selected app (apps pane).
+    RenameApp,
+    /// Remove the selected app (apps pane).
+    RemoveApp,
 }
 
 impl State {
@@ -82,6 +90,9 @@ impl State {
             KeyCode::Char('_') => Action::Start,
             KeyCode::Char('v') => Action::Validate,
             KeyCode::Char('?') => Action::Help,
+            KeyCode::Char('a') => Action::AddApp,
+            KeyCode::Char('r') => Action::RenameApp,
+            KeyCode::Char('d') | KeyCode::Delete => Action::RemoveApp,
             _ => Action::Nothing,
         }
     }
@@ -108,7 +119,6 @@ impl State {
                         self.details.focus = edge(forward);
                         true
                     }
-                    Mode::Settings => false,
                 };
                 if entered {
                     self.focus = Focus::Page;
@@ -121,7 +131,6 @@ impl State {
                 let stayed = match self.mode {
                     Mode::Dashboard => self.dashboard.step_pane(forward),
                     Mode::Details => self.details.step_pane(forward),
-                    Mode::Settings => false,
                 };
                 if !stayed {
                     self.focus = Focus::Sidebar;
@@ -130,7 +139,6 @@ impl State {
             (Focus::Page, _) => match self.mode {
                 Mode::Dashboard => self.dashboard.on_action(action, &mut self.app)?,
                 Mode::Details => self.details.on_action(action, &mut self.app),
-                Mode::Settings => {}
             },
             _ => {}
         }

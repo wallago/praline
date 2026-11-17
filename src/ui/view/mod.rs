@@ -41,7 +41,7 @@ pub(super) fn render(state: &mut State, frame: &mut Frame) {
         .split(frame.area());
         sidebar::render(state, frame, chunks[0]);
         match state.mode {
-            Mode::Dashboard | Mode::Settings => mode::dashboard::render(state, frame, chunks[1]),
+            Mode::Dashboard => mode::dashboard::render(state, frame, chunks[1]),
             Mode::Details => mode::details::render(state, frame, chunks[1]),
         }
     }

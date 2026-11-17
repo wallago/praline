@@ -2,7 +2,7 @@ use include_dir::{Dir, include_dir};
 
 use crate::app::{
     category::Category,
-    opt::{Emit, OptDef, OptId},
+    opt::{Emit, OptDef, OptId, Scope},
 };
 
 /// `rust.firmware` templates.
@@ -38,7 +38,7 @@ impl OptId {
     /// Rust option definition.
     pub(super) fn def_rust() -> OptDef {
         OptDef {
-            _desc: ".",
+            desc: "Rust app, built with the nightly toolchain from the flake.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST),
             ..OptDef::default()
@@ -49,7 +49,7 @@ impl OptId {
     pub(super) fn def_rust_common() -> OptDef {
         OptDef {
             parent: Some(Self::Rust),
-            _desc: ".",
+            desc: "Binary crate: args, TOML config, errors, tracing, tests.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_COMMON),
             ..OptDef::default()
@@ -61,7 +61,7 @@ impl OptId {
         OptDef {
             parent: Some(Self::Rust),
             conflicts: &[Self::RustCommon],
-            _desc: ".",
+            desc: "no_std firmware crate for a microcontroller, flashed with probe-rs.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_FIRMWARE),
             ..OptDef::default()
@@ -73,7 +73,7 @@ impl OptId {
         OptDef {
             parent: Some(Self::RustCommon),
             conflicts: &[Self::RustClientWS],
-            _desc: ".",
+            desc: "HTTP server with axum, run next to the other components.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_SERVER),
             ..OptDef::default()
@@ -84,7 +84,7 @@ impl OptId {
     pub(super) fn def_rust_server_ws() -> OptDef {
         OptDef {
             parent: Some(Self::RustServer),
-            _desc: ".",
+            desc: "WebSocket endpoint on the server.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_SERVER_WS),
             ..OptDef::default()
@@ -95,7 +95,7 @@ impl OptId {
     pub(super) fn def_rust_can() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
-            _desc: ".",
+            desc: "CAN bus reader and writer over SocketCAN.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_CAN),
             ..OptDef::default()
@@ -106,7 +106,7 @@ impl OptId {
     pub(super) fn def_rust_client_ws() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
-            _desc: ".",
+            desc: "WebSocket client that connects to a server.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_CLIENT_WS),
             ..OptDef::default()
@@ -117,7 +117,7 @@ impl OptId {
     pub(super) fn def_rust_notif() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
-            _desc: ".",
+            desc: "Desktop notifications for the messages other components send.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_NOTIF),
             ..OptDef::default()
@@ -130,7 +130,7 @@ impl OptId {
             parent: Some(Self::RustCommon),
             // Both own stdin: the MCP client speaks over it.
             conflicts: &[Self::RustClientWS],
-            _desc: "MCP server over stdio, built on rmcp.",
+            desc: "MCP server over stdio, built on rmcp.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_MCP),
             ..OptDef::default()
@@ -142,7 +142,7 @@ impl OptId {
         OptDef {
             parent: Some(Self::RustMcp),
             requires: &[Self::RustServer],
-            _desc: "Serve MCP over HTTP at /mcp, for remote clients.",
+            desc: "Serve MCP over HTTP at /mcp, for remote clients.",
             _category: Some(Category::Build),
             emit: Emit::Dir(&RUST_MCP_HTTP),
             ..OptDef::default()
@@ -153,10 +153,11 @@ impl OptId {
     pub(super) fn def_cargo_deny() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
-            _desc: "Check licences, banned crates, sources and advisories with cargo-deny.",
+            desc: "Check licences, banned crates, sources and advisories with cargo-deny.",
             _category: Some(Category::Security),
             default: true,
             emit: Emit::Dir(&CARGO_DENY),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -165,10 +166,11 @@ impl OptId {
     pub(super) fn def_cargo_audit() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
-            _desc: "Audit dependencies against the RustSec advisory DB with cargo-audit.",
+            desc: "Audit dependencies against the RustSec advisory DB with cargo-audit.",
             _category: Some(Category::Security),
             default: true,
             emit: Emit::Dir(&CARGO_AUDIT),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -177,10 +179,11 @@ impl OptId {
     pub(super) fn def_cargo_udeps() -> OptDef {
         OptDef {
             parent: Some(Self::RustCommon),
-            _desc: "Fail on unused dependencies with cargo-machete.",
+            desc: "Fail on unused dependencies with cargo-machete.",
             _category: Some(Category::Lint),
             default: true,
             emit: Emit::Dir(&CARGO_UDEPS),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }
@@ -191,9 +194,10 @@ impl OptId {
             parent: Some(Self::RustCommon),
             // The upload is a CI job; it needs the repo's CODECOV_TOKEN secret.
             requires: &[Self::GithubCi],
-            _desc: "Coverage with cargo-llvm-cov, uploaded to Codecov from CI.",
+            desc: "Coverage with cargo-llvm-cov, uploaded to Codecov from CI.",
             _category: Some(Category::Test),
             emit: Emit::Dir(&CARGO_CODECOV),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }

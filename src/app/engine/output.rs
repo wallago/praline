@@ -10,8 +10,9 @@ use crate::app::engine::template::substitute;
 use crate::error::EngineError::PathCollision;
 use crate::prelude::*;
 
-/// Renders `dir` into `tree`, minus `_slots/` and minus files that render empty.
-pub(super) fn render_dir(dir: &Dir<'_>, ctx: &Ctx, tree: &mut Tree) -> Result<()> {
+/// Renders `dir` into `tree` under `prefix`, minus `_slots/` and minus files
+/// that render empty.
+pub(super) fn render_dir(dir: &Dir<'_>, ctx: &Ctx, prefix: &Path, tree: &mut Tree) -> Result<()> {
     for file in dir.files() {
         let bytes = match file.contents_utf8() {
             Some(text) => substitute(text, ctx)?,
@@ -21,7 +22,7 @@ pub(super) fn render_dir(dir: &Dir<'_>, ctx: &Ctx, tree: &mut Tree) -> Result<()
         if bytes.iter().all(u8::is_ascii_whitespace) {
             continue;
         }
-        let path = file.path().to_path_buf();
+        let path = prefix.join(file.path());
         if tree.contains_key(&path) {
             return Err(PathCollision(path).into());
         }
@@ -32,7 +33,7 @@ pub(super) fn render_dir(dir: &Dir<'_>, ctx: &Ctx, tree: &mut Tree) -> Result<()
         if sub.path() == Path::new(SLOTS_DIR) {
             continue;
         }
-        render_dir(sub, ctx, tree)?;
+        render_dir(sub, ctx, prefix, tree)?;
     }
     Ok(())
 }

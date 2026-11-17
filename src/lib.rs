@@ -33,7 +33,7 @@ use crate::config::Config;
 pub fn run(args: Args) -> Result<()> {
     let config = Config::load(args.config.as_deref())?;
     let headless = args.headless;
-    let mut app = app::App::new(args);
+    let mut app = app::App::new(args)?;
     if headless {
         app.generate()?;
         app.create()
