@@ -283,7 +283,7 @@ mod tests {
     #[case::top_level_default(OptId::Just, true)]
     #[case::default_under_default(OptId::GithubCi, true)]
     #[case::default_under_unchecked_parent(OptId::WebReact, false)]
-    #[case::default_under_unchecked_rust(OptId::RustCommonDeny, false)]
+    #[case::default_under_unchecked_rust(OptId::CargoDeny, false)]
     fn the_tui_starts_with_defaults_whose_parents_are_defaults(
         #[case] id: OptId,
         #[case] checked: bool,
@@ -295,26 +295,22 @@ mod tests {
     fn headless_checks_only_what_it_is_given() {
         let checked = with_opts(&["rust.common"]).checked();
         assert!(checked.contains(&OptId::RustCommon));
-        assert!(!checked.contains(&OptId::RustCommonDeny));
+        assert!(!checked.contains(&OptId::CargoDeny));
     }
 
     #[rstest]
     #[case::the_parent(OptId::RustCommon)]
-    #[case::a_child_that_checks_the_parent(OptId::RustCommonCodecov)]
+    #[case::a_child_that_checks_the_parent(OptId::CargoCodecov)]
     fn toggling_on_checks_the_default_children(#[case] id: OptId) {
         let mut app = with_opts(&["just"]);
         app.toggle(id);
         let checked = app.checked();
-        for tool in [
-            OptId::RustCommonDeny,
-            OptId::RustCommonAudit,
-            OptId::RustCommonUdeps,
-        ] {
+        for tool in [OptId::CargoDeny, OptId::CargoAudit, OptId::CargoUdeps] {
             assert!(checked.contains(&tool), "{tool:?}");
         }
         assert_eq!(
-            checked.contains(&OptId::RustCommonCodecov),
-            id == OptId::RustCommonCodecov
+            checked.contains(&OptId::CargoCodecov),
+            id == OptId::CargoCodecov
         );
     }
 
@@ -322,10 +318,10 @@ mod tests {
     fn a_default_child_can_be_unchecked() {
         let mut app = with_opts(&["just"]);
         app.toggle(OptId::RustCommon);
-        app.toggle(OptId::RustCommonDeny);
+        app.toggle(OptId::CargoDeny);
         let checked = app.checked();
         assert!(checked.contains(&OptId::RustCommon));
-        assert!(!checked.contains(&OptId::RustCommonDeny));
+        assert!(!checked.contains(&OptId::CargoDeny));
     }
 
     #[test]
