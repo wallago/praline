@@ -52,6 +52,11 @@ pub struct Args {
         ),
     )]
     pub opt: Vec<String>,
+    /// An app of the repo, as `<name>:<option>,<option>`; repeat it for each
+    /// app. With two or more, each lands in `apps/<name>/` and `--opt` only
+    /// takes repo-wide options.
+    #[arg(long, value_name = "NAME:OPTS")]
+    pub app: Vec<String>,
 }
 
 #[cfg(test)]

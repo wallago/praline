@@ -13,13 +13,16 @@ pub(super) type Slots = HashMap<String, Vec<String>>;
 /// Folder in an option's templates holding its slot contributions.
 pub(super) const SLOTS_DIR: &str = "_slots";
 
-/// Adds each `_slots/<name>` file of `dir` to `slots[<name>]`.
-pub(super) fn collect_slots(dir: &Dir<'_>, slots: &mut Slots) {
+/// Adds each `_slots/<name>` file of `dir` that `keep` lets through to
+/// `slots[<name>]`.
+pub(super) fn collect_slots(dir: &Dir<'_>, slots: &mut Slots, keep: impl Fn(&str) -> bool) {
     let Some(contrib) = dir.get_dir(SLOTS_DIR) else {
         return;
     };
     for file in contrib.files() {
-        if let (Some(name), Some(text)) = (file.path().file_name(), file.contents_utf8()) {
+        if let (Some(name), Some(text)) = (file.path().file_name(), file.contents_utf8())
+            && keep(&name.to_string_lossy())
+        {
             slots
                 .entry(name.to_string_lossy().into_owned())
                 .or_default()

@@ -2,12 +2,11 @@ use std::{env::current_dir, path::Path};
 
 use ratatui::style::Style;
 use ratatui_explorer::{FileExplorer, FileExplorerBuilder, Theme};
-use strum::IntoEnumIterator;
 use tui_input::Input;
 
 use super::prelude::*;
 use crate::{
-    app::{App, prelude::OptId},
+    app::App,
     prelude::*,
     ui::{prelude::*, state::bind::edge},
 };
@@ -16,27 +15,50 @@ impl Dashboard {
     /// Runs `action` against the focused pane.
     pub(super) fn on_action(&mut self, action: Action, app: &mut App) -> Result<()> {
         match (self.focus, action) {
+            (DashboardPane::Apps, Action::Up | Action::Down) => {
+                // The repo, each app, then "add app".
+                step_in(&mut self.apps, app.apps.len() + 2, action == Action::Down);
+                self.options.select(Some(0));
+            }
+            (DashboardPane::Apps, Action::Enter) => match self.apps_row(app) {
+                AppsRow::Add => self.start_app_edit(AppEdit::New, String::new()),
+                AppsRow::Repo | AppsRow::App(_) => self.focus = DashboardPane::Options,
+            },
+            (_, Action::AddApp) => {
+                self.focus = DashboardPane::Apps;
+                self.apps.select(Some(app.apps.len() + 1));
+                self.start_app_edit(AppEdit::New, String::new());
+            }
+            (DashboardPane::Apps, Action::RenameApp) => {
+                if let AppsRow::App(at) = self.apps_row(app) {
+                    self.start_app_edit(AppEdit::Rename(at), app.apps[at].name.clone());
+                }
+            }
+            (DashboardPane::Apps, Action::RemoveApp) => {
+                if let AppsRow::App(at) = self.apps_row(app) {
+                    app.remove_app(at);
+                    app.generate()?;
+                    let last = app.apps.len();
+                    self.apps.select(Some(at.min(last - 1) + 1));
+                }
+            }
             (DashboardPane::Options, Action::Up | Action::Down) => {
-                step_in(
-                    &mut self.options,
-                    OptId::iter().len(),
-                    action == Action::Down,
-                );
+                let len = app.rows(self.view(app)).len();
+                step_in(&mut self.options, len, action == Action::Down);
             }
             (DashboardPane::Options, Action::Enter) => {
-                let Some((id, conflicted)) = self
+                let view = self.view(app);
+                let Some(row) = self
                     .options
                     .selected()
-                    .and_then(|at| app.options.get(at))
-                    .map(|opt| (opt.id, opt.conflicted))
+                    .and_then(|at| app.rows(view).into_iter().nth(at))
                 else {
                     return Ok(());
                 };
-                if conflicted {
+                if row.conflicted {
                     return Ok(());
                 }
-                app.toggle(id);
-                app.mark_conflicts();
+                app.toggle(view, row.id);
                 app.generate()?;
             }
             (DashboardPane::Form, Action::Enter) => {
@@ -53,6 +75,12 @@ impl Dashboard {
             _ => {}
         }
         Ok(())
+    }
+
+    /// Opens the name buffer of the apps pane, holding `value`.
+    fn start_app_edit(&mut self, edit: AppEdit, value: String) {
+        self.app_edit = Some(edit);
+        self.editing = Some(Input::new(value));
     }
 
     /// Drives the open picker: move, step in and out of directories,

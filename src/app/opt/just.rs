@@ -2,7 +2,7 @@ use include_dir::{Dir, include_dir};
 
 use crate::app::{
     category::Category,
-    opt::{Emit, OptDef, OptId},
+    opt::{Emit, OptDef, OptId, Scope},
 };
 
 /// `just` templates.
@@ -13,10 +13,11 @@ impl OptId {
     pub(super) fn def_just() -> OptDef {
         OptDef {
             parent: None,
-            _desc: "Task runner recipes: check, lint, fmt, ci.",
+            desc: "Task runner recipes: check, lint, fmt, ci.",
             _category: Some(Category::Env),
             default: true,
             emit: Emit::Dir(&JUST),
+            scope: Scope::Repo,
             ..OptDef::default()
         }
     }

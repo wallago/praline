@@ -78,6 +78,12 @@ fn run(dir: &Path, cmd: &str, args: &[&str]) -> Outcome {
 
 /// Generates `name` with exactly `opts`, and returns the repo's path.
 fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
+    generate_apps(name, &[], opts)
+}
+
+/// Generates `name` with these `--app` specs and repo-wide `opts`, and
+/// returns the repo's path.
+fn generate_apps(name: &str, apps: &[&str], opts: &[&str]) -> Result<PathBuf, String> {
     let dest = env::temp_dir().join("praline-e2e");
     let repo = dest.join(name);
     let _ = fs::remove_dir_all(&repo);
@@ -94,6 +100,9 @@ fn generate(name: &str, opts: &[&str]) -> Result<PathBuf, String> {
         "--dest",
         &dest_arg,
     ];
+    for app in apps {
+        args.extend(["--app", app]);
+    }
     for opt in opts {
         args.extend(["--opt", opt]);
     }
@@ -234,4 +243,46 @@ fn generated_web_repo_passes_its_gate(#[case] name: &str, #[case] opts: &[&str])
 fn generated_web_repo_without_tooling_passes_its_gate() -> Outcome {
     let repo = generate("e2e-web-no-tooling", WEB_BASE)?;
     run(&repo, "just", &["ci"])
+}
+
+/// Repo-wide options of a repo with several apps: the shared tooling, plus
+/// the Rust dependency checks, which run once over the whole workspace.
+const SHARED: &[&str] = &["just", "flake", "cargo.deny", "cargo.audit", "cargo.udeps"];
+
+#[rstest]
+// Two Rust apps in one workspace, which can't share one crate (they conflict),
+// and a site next to them.
+#[case::server_client_site(
+    "e2e-apps",
+    &[
+        "server:rust.server,rust.server.ws",
+        "client:rust.client_ws,rust.notif",
+        "site:web.react",
+    ],
+)]
+// The smallest workspace: two crates, nothing else.
+#[case::two_crates("e2e-apps-two-crates", &["api:rust.server", "worker:rust.notif"])]
+#[ignore = "slow, needs crates.io and the npm registry: run with `just e2e`"]
+fn generated_multi_app_repo_passes_its_gate(#[case] name: &str, #[case] apps: &[&str]) -> Outcome {
+    let opts: Vec<&str> = SHARED.iter().chain(TOOLING).copied().collect();
+    let repo = generate_apps(name, apps, &opts)?;
+    commit_all(&repo)?;
+    // The workspace builds, lints and tests as one, from the root.
+    run(&repo, "cargo", &["build", "--workspace", "--all-targets"])?;
+    run(
+        &repo,
+        "cargo",
+        &[
+            "clippy",
+            "--workspace",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    )?;
+    run(&repo, "cargo", &["test", "--workspace"])?;
+    // The root gate: the repo-wide checks, then each app's own `ci`.
+    run(&repo, "just", &["ci"])?;
+    run(&repo, "just", &["commits"])
 }

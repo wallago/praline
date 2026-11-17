@@ -208,6 +208,18 @@ impl OptId {
     }
 }
 
+/// Where an option's files land once the repo holds several apps.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) enum Scope {
+    /// In each app's own folder: its crate or its site. Each app checks it on
+    /// its own.
+    #[default]
+    App,
+    /// Once, at the repo root: tooling every app shares. One checkbox for the
+    /// whole repo.
+    Repo,
+}
+
 /// What an option writes.
 #[derive(Debug, Default)]
 pub(crate) enum Emit {
@@ -228,7 +240,7 @@ pub(crate) struct OptDef {
     /// Other options that can't take part with this one to.
     pub conflicts: &'static [OptId],
     /// One-line summary shown in the UI.
-    pub _desc: &'static str,
+    pub desc: &'static str,
     /// Group it's listed under.
     pub _category: Option<Category>,
     /// Whether it gets checked with its parent: at start for a top-level
@@ -236,4 +248,9 @@ pub(crate) struct OptDef {
     pub default: bool,
     /// What it writes when it's active.
     pub emit: Emit,
+    /// Per app, or once for the repo.
+    pub scope: Scope,
+    /// Only takes part while the repo holds a single app: it assumes the app
+    /// sits at the root.
+    pub single_app_only: bool,
 }

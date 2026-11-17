@@ -25,8 +25,6 @@ pub(crate) enum Mode {
     Dashboard,
     /// Browse the generated files and read each one.
     Details,
-    /// App preferences; not built yet.
-    Settings,
 }
 
 impl Mode {

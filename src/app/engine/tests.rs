@@ -121,9 +121,9 @@ fn every_setup() -> Vec<(Vec<OptId>, App)> {
             name: "demo-app".into(),
             desc: "Demo app.".into(),
             owner: "demo".into(),
-            ..App::new(Args::default())
+            ..App::new(Args::default()).unwrap()
         };
-        for opt in &mut app.options {
+        for opt in &mut app.apps[0].options {
             opt.checked = checked.contains(&opt.id);
         }
         setups.push((active, app));
@@ -518,6 +518,8 @@ fn every_slot_has_a_hub_and_a_contributor() {
         orphans.is_empty(),
         "contributed to, never declared: {orphans:?}"
     );
+    // Filled by the engine itself, from the list of apps.
+    contributed.insert("workspace.apps");
     let empty: Vec<_> = hubs.difference(&contributed).collect();
     assert!(
         empty.is_empty(),
@@ -590,4 +592,169 @@ fn web_lockfile_matches_package_json() {
             "{key} in package.json and pnpm-lock.yaml differ: run `just web-lock`"
         );
     }
+}
+
+/// The render of a repo with these `--app` specs and repo-wide `opts`.
+fn render_apps(apps: &[&str], opts: &[&str]) -> Tree {
+    let app = App::new(Args {
+        name: Some("demo-repo".into()),
+        owner: Some("demo".into()),
+        desc: Some("Demo repo.".into()),
+        app: apps.iter().map(|&a| a.into()).collect(),
+        opt: opts.iter().map(|&o| o.into()).collect(),
+        ..Args::default()
+    })
+    .unwrap();
+    generate(&app).unwrap()
+}
+
+/// Three apps, two of them Rust, with the whole repo-wide tooling.
+fn three_apps() -> Tree {
+    let mut opts: Vec<&str> = REPO_WIDE.iter().map(|&id| id.into()).collect();
+    opts.extend(["just", "flake"]);
+    opts.retain(|&opt| opt != "cargo.codecov");
+    render_apps(
+        &[
+            "server:rust.server,rust.server.ws",
+            "client:rust.client_ws,rust.notif",
+            "site:web.react",
+        ],
+        &opts,
+    )
+}
+
+/// `path` of `tree` as text.
+fn text<'a>(tree: &'a Tree, path: &str) -> &'a str {
+    let bytes = tree.get(Path::new(path));
+    assert!(bytes.is_some(), "no `{path}` in {:?}", tree.keys());
+    std::str::from_utf8(bytes.unwrap()).unwrap()
+}
+
+#[test]
+fn several_apps_each_render_in_their_own_folder() {
+    let tree = three_apps();
+    for path in [
+        "apps/server/Cargo.toml",
+        "apps/server/src/server/mod.rs",
+        "apps/client/src/client_ws/mod.rs",
+        "apps/site/package.json",
+        "apps/site/src/App.tsx",
+        "apps/server/justfile",
+        "flake.nix",
+        "justfile",
+        ".github/workflows/ci.yml",
+    ] {
+        assert!(tree.contains_key(Path::new(path)), "no `{path}`");
+    }
+    assert!(
+        !tree.keys().any(|path| path.starts_with("src")),
+        "an app leaked to the root"
+    );
+}
+
+#[test]
+fn an_app_keeps_its_own_dependencies() {
+    let tree = three_apps();
+    assert!(text(&tree, "apps/server/Cargo.toml").contains("axum"));
+    assert!(!text(&tree, "apps/client/Cargo.toml").contains("axum"));
+    assert!(text(&tree, "apps/client/Cargo.toml").contains("notify-rust"));
+}
+
+#[test]
+fn the_shared_flake_gets_every_app_tool_once() {
+    let tree = three_apps();
+    let flake = text(&tree, "flake.nix");
+    for tool in ["rust-overlay.url", "rust-analyzer", "taplo", "pnpm"] {
+        assert_eq!(flake.matches(tool).count(), 1, "`{tool}` in flake.nix");
+    }
+}
+
+#[test]
+fn the_root_cargo_toml_is_a_workspace_of_the_rust_apps() {
+    let tree = three_apps();
+    let root: toml::Table = toml::from_str(text(&tree, "Cargo.toml")).unwrap();
+    let members = root["workspace"]["members"].as_array().unwrap();
+    let members: Vec<&str> = members.iter().filter_map(toml::Value::as_str).collect();
+    assert_eq!(members, ["apps/server", "apps/client"]);
+    // Cargo only reads profiles at the root.
+    assert!(root.contains_key("profile"));
+    let member: toml::Table = toml::from_str(text(&tree, "apps/server/Cargo.toml")).unwrap();
+    assert!(!member.contains_key("profile"));
+    assert_eq!(member["package"]["name"].as_str(), Some("server"));
+    assert_eq!(
+        member["package"]["repository"].as_str(),
+        Some("https://github.com/demo/demo-repo")
+    );
+}
+
+#[test]
+fn a_firmware_stays_out_of_the_workspace() {
+    let tree = render_apps(&["host:rust.server", "fw:rust.firmware"], &["just"]);
+    let root: toml::Table = toml::from_str(text(&tree, "Cargo.toml")).unwrap();
+    let excluded = root["workspace"]["exclude"].as_array().unwrap();
+    assert_eq!(excluded[0].as_str(), Some("apps/fw"));
+}
+
+#[test]
+fn the_root_gate_runs_each_app_ci_and_ci_runs_the_same() {
+    let tree = three_apps();
+    let justfile = text(&tree, "justfile");
+    for app in ["server", "client", "site"] {
+        assert!(
+            justfile.contains(&format!("mod {app} 'apps/{app}'")),
+            "{app}"
+        );
+        let app_justfile = text(&tree, &format!("apps/{app}/justfile"));
+        assert!(app_justfile.contains("ci:"), "{app} has no ci recipe");
+        // The repo-wide checks stay at the root.
+        assert!(!app_justfile.contains("typos"), "{app} runs typos");
+    }
+    let recipes = just_recipes(&tree);
+    let mut in_just = ci_recipes(&[], &recipes);
+    let workflow = yaml(text(&tree, ".github/workflows/ci.yml")).unwrap();
+    let mut in_github: Vec<String> = workflow["jobs"]["check"]["strategy"]["matrix"]["recipe"]
+        .as_vec()
+        .unwrap()
+        .iter()
+        .filter_map(Yaml::as_str)
+        .map(str::to_string)
+        .collect();
+    in_just.sort_unstable();
+    in_github.sort_unstable();
+    assert_eq!(in_just, in_github);
+    assert!(in_just.iter().any(|recipe| recipe == "site::ci"));
+}
+
+#[test]
+fn every_file_of_a_multi_app_render_parses() {
+    let tree = three_apps();
+    for (path, bytes) in &tree {
+        let text = std::str::from_utf8(bytes).unwrap();
+        for left in [SLOT_MARKER, "{if:", "{ifnot:", "{endif:"] {
+            assert!(!text.contains(left), "{} keeps `{left}`", path.display());
+        }
+        match path.extension().and_then(|ext| ext.to_str()) {
+            Some("toml") => assert!(
+                toml::from_str::<toml::Table>(text).is_ok(),
+                "{}",
+                path.display()
+            ),
+            Some("json") => assert!(
+                serde_json::from_str::<serde_json::Value>(text).is_ok(),
+                "{}",
+                path.display()
+            ),
+            Some("yml" | "yaml") => assert!(yaml(text).is_ok(), "{}", path.display()),
+            _ => {}
+        }
+    }
+}
+
+#[test]
+fn single_app_only_options_drop_out_with_several_apps() {
+    let tree = render_apps(
+        &["site:web.pages", "api:rust.server"],
+        &["just", "github.ci"],
+    );
+    assert!(!tree.keys().any(|path| path.ends_with("pages.yml")));
 }

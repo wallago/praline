@@ -19,7 +19,7 @@ use crate::{
 pub(super) fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
     let title = Line::from(vec![
         Span::raw(" "),
-        Span::styled("form", SECONDARY).bold(),
+        Span::styled("repo", SECONDARY).bold(),
         Span::raw(" "),
     ]);
     let block = Block::bordered()
@@ -33,8 +33,8 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
         [
             Constraint::Length(3),
             Constraint::Length(3),
-            Constraint::Min(0),
-            Constraint::Length(6),
+            Constraint::Length(5),
+            Constraint::Length(4),
         ],
     )
     .horizontal_margin(2)
@@ -42,19 +42,20 @@ pub(super) fn render_form(state: &mut State, frame: &mut Frame, chunk: Rect) {
     .split(chunk);
     {
         let form = state.focus == Focus::Page && state.dashboard.focus == DashboardPane::Form;
+        let dashboard = &state.dashboard;
         let fields = [
             (Field::Owner, "owner"),
-            (Field::Name, "app"),
+            (Field::Name, "name"),
             (Field::Desc, "desc"),
         ];
         for (&rect, (field, title)) in chunks.iter().zip(fields) {
-            let focused = form && state.dashboard.row.field() == Some(field);
-            let editing = state.dashboard.editing.as_ref().filter(|_| focused);
+            let focused = form && dashboard.row.field() == Some(field);
+            let editing = dashboard.editing.as_ref().filter(|_| focused);
             let error = editing.and_then(|input| field.validate(input.value()).err());
             let value = field.get(&state.app);
             render_input(frame, rect, title, value, focused, editing, error);
         }
-        let focused = form && state.dashboard.row == FormRow::Dest;
+        let focused = form && dashboard.row == FormRow::Dest;
         render_button(
             frame,
             chunks[3],

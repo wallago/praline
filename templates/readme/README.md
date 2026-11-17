@@ -28,6 +28,16 @@ just ci       # every check CI runs; run it before pushing
 ```
 
 <!-- {endif:just} -->
+<!-- {if:apps} -->
+
+## Apps
+
+<!-- {slot:workspace.apps} -->
+
+`just --list <app>` shows what an app can do.
+
+<!-- {endif:apps} -->
+<!-- {ifnot:apps} -->
 <!-- {if:rust.common} -->
 
 ## Usage
@@ -54,6 +64,7 @@ the repo settings, with GitHub Actions as the source.
 
 <!-- {endif:web.pages} -->
 <!-- {endif:web.react} -->
+<!-- {endif:apps} -->
 <!-- {if:git} -->
 
 ## License
