@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::env::current_dir;
 use std::path::PathBuf;
 
@@ -68,7 +69,7 @@ impl App {
                 .into_iter()
                 .map(|id| Opt {
                     id,
-                    checked: args.opt.is_empty() && id.def().default,
+                    checked: args.opt.is_empty() && id.starts_checked(),
                     conflicted: false,
                 })
                 .collect(),
@@ -164,6 +165,35 @@ impl App {
         })
     }
 
+    /// The options currently checked.
+    fn checked(&self) -> HashSet<OptId> {
+        self.options
+            .iter()
+            .filter(|o| o.checked)
+            .map(|o| o.id)
+            .collect()
+    }
+
+    /// Toggles `id` the way the options pane does: like [`Self::nested_check`],
+    /// and every option that gets checked on the way also checks its default
+    /// children, which can then be unchecked one by one.
+    pub(crate) fn toggle(&mut self, id: OptId) {
+        let before = self.checked();
+        self.nested_check(id, None);
+        let now = self.checked();
+        for parent in now.difference(&before) {
+            self.check_defaults(*parent);
+        }
+    }
+
+    /// Checks every default child of `parent`, and theirs.
+    fn check_defaults(&mut self, parent: OptId) {
+        for child in OptId::iter().filter(|c| c.def().parent == Some(parent) && c.def().default) {
+            self.nested_check(child, Some(true));
+            self.check_defaults(child);
+        }
+    }
+
     /// Checks or toggles `id`; once checked, also checks its parent and every
     /// option it requires, so it can take part.
     pub(crate) fn nested_check(&mut self, id: OptId, check: Option<bool>) {
@@ -240,12 +270,68 @@ mod tests {
     fn checking_an_option_checks_what_it_requires() {
         let mut app = with_opts(&[]);
         app.nested_check(OptId::RustMcpHttp, Some(true));
-        let checked: std::collections::HashSet<OptId> = app
+        let checked: HashSet<OptId> = app
             .options
             .iter()
             .filter(|o| o.checked)
             .map(|o| o.id)
             .collect();
         assert!(OptId::RustMcpHttp.is_active(&checked));
+    }
+
+    #[rstest]
+    #[case::top_level_default(OptId::Just, true)]
+    #[case::default_under_default(OptId::GithubCi, true)]
+    #[case::default_under_unchecked_parent(OptId::WebReact, false)]
+    #[case::default_under_unchecked_rust(OptId::RustCommonDeny, false)]
+    fn the_tui_starts_with_defaults_whose_parents_are_defaults(
+        #[case] id: OptId,
+        #[case] checked: bool,
+    ) {
+        assert_eq!(with_opts(&[]).checked().contains(&id), checked);
+    }
+
+    #[test]
+    fn headless_checks_only_what_it_is_given() {
+        let checked = with_opts(&["rust.common"]).checked();
+        assert!(checked.contains(&OptId::RustCommon));
+        assert!(!checked.contains(&OptId::RustCommonDeny));
+    }
+
+    #[rstest]
+    #[case::the_parent(OptId::RustCommon)]
+    #[case::a_child_that_checks_the_parent(OptId::RustCommonCodecov)]
+    fn toggling_on_checks_the_default_children(#[case] id: OptId) {
+        let mut app = with_opts(&["just"]);
+        app.toggle(id);
+        let checked = app.checked();
+        for tool in [
+            OptId::RustCommonDeny,
+            OptId::RustCommonAudit,
+            OptId::RustCommonUdeps,
+        ] {
+            assert!(checked.contains(&tool), "{tool:?}");
+        }
+        assert_eq!(
+            checked.contains(&OptId::RustCommonCodecov),
+            id == OptId::RustCommonCodecov
+        );
+    }
+
+    #[test]
+    fn a_default_child_can_be_unchecked() {
+        let mut app = with_opts(&["just"]);
+        app.toggle(OptId::RustCommon);
+        app.toggle(OptId::RustCommonDeny);
+        let checked = app.checked();
+        assert!(checked.contains(&OptId::RustCommon));
+        assert!(!checked.contains(&OptId::RustCommonDeny));
+    }
+
+    #[test]
+    fn toggling_web_on_checks_react() {
+        let mut app = with_opts(&["just"]);
+        app.toggle(OptId::Web);
+        assert!(app.checked().contains(&OptId::WebReact));
     }
 }

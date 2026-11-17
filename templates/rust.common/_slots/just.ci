@@ -3,6 +3,3 @@
 @just lint
 @just test
 @just doc
-@just udeps
-@just deny
-@just audit

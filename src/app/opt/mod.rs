@@ -85,9 +85,18 @@ pub(crate) enum OptId {
     /// Serve the MCP server over Streamable HTTP on the server, not stdio.
     #[strum(serialize = "rust.mcp.http")]
     RustMcpHttp,
+    /// `cargo machete`: unused dependencies.
+    #[strum(serialize = "rust.common.udeps")]
+    RustCommonUdeps,
+    /// `cargo deny`: licences, bans, sources and advisories.
+    #[strum(serialize = "rust.common.deny")]
+    RustCommonDeny,
+    /// `cargo audit` against the `RustSec` advisory DB.
+    #[strum(serialize = "rust.common.audit")]
+    RustCommonAudit,
     /// Test coverage with cargo-llvm-cov, uploaded to Codecov from CI.
-    #[strum(serialize = "rust.codecov")]
-    RustCodecov,
+    #[strum(serialize = "rust.common.codecov")]
+    RustCommonCodecov,
 
     //------------------------------------------------------------------//
     //                               Web                                //
@@ -150,7 +159,10 @@ impl OptId {
             Self::RustNotif => Self::def_rust_notif(),
             Self::RustMcp => Self::def_rust_mcp(),
             Self::RustMcpHttp => Self::def_rust_mcp_http(),
-            Self::RustCodecov => Self::def_rust_codecov(),
+            Self::RustCommonUdeps => Self::def_rust_common_udeps(),
+            Self::RustCommonDeny => Self::def_rust_common_deny(),
+            Self::RustCommonAudit => Self::def_rust_common_audit(),
+            Self::RustCommonCodecov => Self::def_rust_common_codecov(),
             Self::Web => Self::def_web(),
             Self::WebReact => Self::def_web_react(),
             Self::WebPages => Self::def_web_pages(),
@@ -167,6 +179,13 @@ impl OptId {
 }
 
 impl OptId {
+    /// Whether the TUI starts with it checked: a default under defaults only,
+    /// so no option shows checked under an unchecked parent.
+    pub(crate) fn starts_checked(self) -> bool {
+        let def = self.def();
+        def.default && def.parent.is_none_or(Self::starts_checked)
+    }
+
     /// Whether `id` takes part: checked, and so is everything it hangs off.
     pub(crate) fn is_active(self, checked: &HashSet<OptId>) -> bool {
         let def = self.def();
@@ -212,7 +231,8 @@ pub(crate) struct OptDef {
     pub _desc: &'static str,
     /// Group it's listed under.
     pub _category: Option<Category>,
-    /// Whether it starts checked.
+    /// Whether it gets checked with its parent: at start for a top-level
+    /// option, and in the TUI when the parent gets checked.
     pub default: bool,
     /// What it writes when it's active.
     pub emit: Emit,

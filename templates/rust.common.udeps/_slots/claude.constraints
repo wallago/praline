@@ -1,0 +1,1 @@
+- `cargo machete` fails on a dependency nothing uses; drop it in the change that orphans it.
