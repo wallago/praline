@@ -14,11 +14,11 @@ target/
 **/mutants.out*/
 
 # NOTE: Cargo.lock is committed on purpose
-# {if:rust.codecov}
+# {if:rust.common.codecov}
 
 # Coverage report from `just coverage`
 lcov.info
-# {endif:rust.codecov}
+# {endif:rust.common.codecov}
 
 # {endif:rust}
 # {if:web}

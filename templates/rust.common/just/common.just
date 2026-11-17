@@ -48,21 +48,4 @@ lint:
 [group('quality')]
 doc:
     RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps
-
-# Report unused dependencies
-[group('quality')]
-udeps:
-    cargo machete
-
-# ── Security ──────────────────────────────────────────────────
-
-# Check licenses, banned crates, sources and advisories
-[group('security')]
-deny:
-    cargo deny check
-
-# Audit dependencies against the RustSec advisory DB
-[group('security')]
-audit:
-    cargo audit
 # {endif:just}

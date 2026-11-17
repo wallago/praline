@@ -28,6 +28,10 @@ const TOOLING: &[&str] = &[
     "claude",
 ];
 
+/// Rust dependency checks, which the TUI ticks with `rust.common`: on in
+/// every Rust case but `no_tooling`.
+const RUST_TOOLS: &[&str] = &["rust.common.deny", "rust.common.audit", "rust.common.udeps"];
+
 /// Target dir shared by every generated repo, so dependencies build once.
 fn shared_target() -> PathBuf {
     env::temp_dir().join("praline-e2e-target")
@@ -160,7 +164,7 @@ fn check_rust_repo(repo: &Path) -> Outcome {
         "rust.notif",
         "rust.mcp",
         "rust.mcp.http",
-        "rust.codecov",
+        "rust.common.codecov",
     ],
 )]
 #[case::client_side("e2e-client-side", &["rust.client_ws", "rust.can", "rust.notif"])]
@@ -169,15 +173,21 @@ fn generated_repo_builds_lints_passes_and_packages(
     #[case] name: &str,
     #[case] opts: &[&str],
 ) -> Outcome {
-    let all: Vec<&str> = BASE.iter().chain(TOOLING).chain(opts).copied().collect();
+    let all: Vec<&str> = BASE
+        .iter()
+        .chain(RUST_TOOLS)
+        .chain(TOOLING)
+        .chain(opts)
+        .copied()
+        .collect();
     let repo = generate(name, &all)?;
     check_rust_repo(&repo)?;
     // The commit format the CI job checks, and the workflows the gate lints.
     run(&repo, "just", &["commits"])
 }
 
-/// The stripped-down render: a Rust crate with no repo-wide tooling still
-/// passes its gate.
+/// The stripped-down render: a Rust crate with no dependency checks and no
+/// repo-wide tooling still passes its gate.
 #[test]
 #[ignore = "slow, needs crates.io: run with `just e2e`"]
 fn generated_repo_without_tooling_passes_its_gate() -> Outcome {

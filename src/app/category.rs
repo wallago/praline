@@ -8,7 +8,7 @@ pub(crate) enum Category {
     /// Run tests.
     Test,
     /// Scan for security issues.
-    _Security,
+    Security,
     /// Build the project.
     Build,
     /// Publish or release.

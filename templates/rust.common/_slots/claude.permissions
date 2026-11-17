@@ -8,7 +8,4 @@
 "Bash(cargo test*)",
 "Bash(cargo tree*)",
 "Bash(cargo doc*)",
-"Bash(cargo machete*)",
-"Bash(cargo deny check*)",
-"Bash(cargo audit*)",
 "Bash(taplo*)",

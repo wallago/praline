@@ -35,7 +35,7 @@ impl Dashboard {
                 if conflicted {
                     return Ok(());
                 }
-                app.nested_check(id, None);
+                app.toggle(id);
                 app.mark_conflicts();
                 app.generate()?;
             }

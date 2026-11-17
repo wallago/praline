@@ -35,7 +35,10 @@ const REPO_WIDE: &[OptId] = &[
     OptId::Git,
     OptId::Github,
     OptId::GithubCi,
-    OptId::RustCodecov,
+    OptId::RustCommonDeny,
+    OptId::RustCommonAudit,
+    OptId::RustCommonUdeps,
+    OptId::RustCommonCodecov,
     OptId::Claude,
 ];
 

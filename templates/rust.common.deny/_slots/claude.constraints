@@ -1,0 +1,1 @@
+- A new crate has to clear `cargo deny check`: licences, bans, sources and advisories.

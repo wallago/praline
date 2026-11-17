@@ -30,6 +30,7 @@ impl OptId {
             parent: Some(Self::Web),
             _desc: "Vite + React + TypeScript app, tested with Vitest, linted by Biome.",
             _category: Some(Category::Build),
+            default: true,
             emit: Emit::Dir(&WEB_REACT),
             ..OptDef::default()
         }
