@@ -6,8 +6,13 @@ impl State {
         let keys = &self.keybindings;
         let mut binds = Vec::new();
         if self.confirm {
-            binds.push((keys.confirm.to_string(), "create and quit"));
-            binds.push((keys.leave.to_string(), "back"));
+            binds.push((
+                format!("{}/{}", keys.scroll_left, keys.scroll_right),
+                "yes or no",
+            ));
+            binds.push(("y".into(), "yes"));
+            binds.push(("n".into(), "no"));
+            binds.push((keys.confirm.to_string(), "answer"));
             return binds;
         }
         if self.dashboard.picker.is_some() {
@@ -49,7 +54,7 @@ impl State {
             binds.push(("Tab".into(), "next pane"));
             binds.push((keys.leave.to_string(), "pages"));
         }
-        binds.push((keys.create.to_string(), "create repo"));
+        binds.push((keys.generate.to_string(), "generate"));
         binds.push((keys.quit.to_string(), "quit"));
         binds
     }

@@ -51,7 +51,7 @@ fn render_navigate(state: &mut State, frame: &mut Frame, chunk: Rect) {
     frame.render_stateful_widget(list, chunk, &mut list_state);
 }
 
-/// What `c` would create: where, which layout, how many files.
+/// What generating would write: where, which layout, how many files.
 fn render_summary(state: &State, frame: &mut Frame, chunk: Rect) {
     let app = &state.app;
     let files = app
