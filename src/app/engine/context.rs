@@ -17,6 +17,8 @@ const WORKSPACE: &str = "workspace";
 /// Name `{if:}` takes for "these are the root files of a repo with several
 /// apps".
 const APPS: &str = "apps";
+/// Name `{if:}` takes for "the flake exports a home-manager or NixOS module".
+const FLAKE_MODULE: &str = "flake.module";
 
 /// What every template can read. Built once per render, read-only after.
 #[derive(Debug)]
@@ -164,6 +166,10 @@ impl Ctx {
         }
         if name == APPS {
             return Ok(self.apps);
+        }
+        if name == FLAKE_MODULE {
+            return Ok(self.active.contains(&OptId::FlakeModuleHome)
+                || self.active.contains(&OptId::FlakeModuleNixos));
         }
         let id: OptId = name
             .parse()

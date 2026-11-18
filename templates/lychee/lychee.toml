@@ -4,7 +4,9 @@
 exclude = ["^https://github\\.com/{owner}/{name}"]
 # Build output and the direnv cache hold Markdown that isn't ours.
 exclude_path = [
+  # {if:rust}
   "target",
+  # {endif:rust}
   ".direnv",
   # {if:web}
   "node_modules",

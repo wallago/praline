@@ -758,3 +758,35 @@ fn single_app_only_options_drop_out_with_several_apps() {
     );
     assert!(!tree.keys().any(|path| path.ends_with("pages.yml")));
 }
+
+#[test]
+fn a_web_only_repo_has_no_rust_config_or_empty_flake_stub() {
+    let mut opts: Vec<&str> = REPO_WIDE.iter().map(|&id| id.into()).collect();
+    opts.extend(["just", "flake"]);
+    opts.retain(|&opt| !opt.starts_with("cargo."));
+    let tree = render_apps(&["site:web.react"], &opts);
+    for (path, rust) in [
+        (".editorconfig", "[*.rs]"),
+        (".github/workflows/ci.yml", "CARGO_TERM_COLOR"),
+        (".github/ISSUE_TEMPLATE/bug_report.md", "Rust version"),
+        ("lychee.toml", "\"target\""),
+        ("flake.nix", "    {\n    }"),
+    ] {
+        assert!(!text(&tree, path).contains(rust), "`{rust}` in {path}");
+    }
+}
+
+#[test]
+fn the_flake_merges_the_modules_after_the_systems() {
+    let tree = render_apps(
+        &["demo:rust.server,flake.module.home,flake.module.nixos"],
+        &["just", "flake"],
+    );
+    let flake = text(&tree, "flake.nix");
+    assert!(
+        flake.contains(
+            "      )\n    // {\n      homeModules.default = import ./nix/hm-module.nix inputs.self;\n      nixModules.default"
+        ),
+        "{flake}"
+    );
+}

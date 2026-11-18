@@ -13,8 +13,10 @@ permissions:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+# {if:rust}
 env:
   CARGO_TERM_COLOR: always
+# {endif:rust}
 jobs:
   # Every recipe of `just ci`, each in the flake's CI shell: same tools, same
   # commands as a local run.
