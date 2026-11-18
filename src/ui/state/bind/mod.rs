@@ -77,6 +77,7 @@ impl State {
             (&keys.leave, Action::Leave),
             (&keys.confirm, Action::Enter),
             (&keys.create, Action::Create),
+            (&keys.generate, Action::Create),
         ];
         if let Some(&(_, action)) = bound.iter().find(|(pattern, _)| pattern.matches(key)) {
             return action;
@@ -100,10 +101,10 @@ impl State {
     /// Runs `action` against the panes.
     fn on_action(&mut self, action: Action) -> Result<()> {
         match (self.focus, action) {
+            // A last look first: the dialog shows what will be written.
             (_, Action::Create) => {
-                self.app.create()?;
-                let target = self.app.dest.join(&self.app.name);
-                self.status = Some(Status::Info(format!("created `{}`", target.display())));
+                self.app.generate()?;
+                self.confirm = true;
             }
             (_, Action::Quit) => self.running = false,
             (Focus::Sidebar, Action::Up) => self.mode = self.mode.previous(),
@@ -160,6 +161,9 @@ impl State {
             self.running = false;
             return Ok(());
         }
+        if self.confirm {
+            return self.on_confirm_key(key);
+        }
         if self.dashboard.editing.is_some() {
             return self.on_edit_key(key);
         }
@@ -169,6 +173,22 @@ impl State {
             return Ok(());
         }
         self.on_action(self.action(&key))
+    }
+}
+
+impl State {
+    /// Drives the create dialog: `confirm` writes the repo and quits, `leave`
+    /// goes back to editing. A failed write keeps the dialog open, with the
+    /// reason on the bottom line.
+    fn on_confirm_key(&mut self, key: KeyEvent) -> Result<()> {
+        if self.keybindings.leave.matches(&key) {
+            self.confirm = false;
+        } else if self.keybindings.confirm.matches(&key) {
+            self.app.create()?;
+            self.created = Some(self.app.dest.join(&self.app.name));
+            self.running = false;
+        }
+        Ok(())
     }
 }
 

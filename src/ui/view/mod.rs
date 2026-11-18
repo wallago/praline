@@ -10,6 +10,8 @@ use tui_input::Input;
 use super::prelude::*;
 use crate::ui::state::mode::Mode;
 
+/// The create dialog.
+mod confirm;
 /// One page renderer per mode.
 mod mode;
 /// Left column: mode navigation and summary.
@@ -45,6 +47,7 @@ pub(super) fn render(state: &mut State, frame: &mut Frame) {
             Mode::Details => mode::details::render(state, frame, chunks[1]),
         }
     }
+    confirm::render_confirm(state, frame);
     if let Some(status) = &state.status {
         render_status(status, frame, frame.area());
     } else {
@@ -85,7 +88,6 @@ fn render_key_bindings(state: &mut State, frame: &mut Frame, rect: Rect) {
 fn render_status(status: &Status, frame: &mut Frame, rect: Rect) {
     let chunks = Layout::vertical([Constraint::Percentage(100), Constraint::Min(1)]).split(rect);
     let line = match status {
-        Status::Info(message) => Line::from(format!(" {} ", message.as_str())).fg(SECONDARY),
         Status::Error(message) => Line::from(format!(" {} ", message.as_str()))
             .fg(ERROR)
             .bold(),

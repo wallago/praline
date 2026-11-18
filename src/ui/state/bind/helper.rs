@@ -5,6 +5,20 @@ impl State {
     pub(crate) fn get_key_bindings(&self) -> Vec<(String, &'static str)> {
         let keys = &self.keybindings;
         let mut binds = Vec::new();
+        if self.confirm {
+            binds.push((keys.confirm.to_string(), "create and quit"));
+            binds.push((keys.leave.to_string(), "back"));
+            return binds;
+        }
+        if self.dashboard.picker.is_some() {
+            binds.push((format!("{}/{}", keys.scroll_up, keys.scroll_down), "move"));
+            binds.push((keys.enter.to_string(), "open dir"));
+            binds.push(("-".into(), "parent"));
+            binds.push(("_".into(), "start dir"));
+            binds.push(("v".into(), "pick this dir"));
+            binds.push((keys.leave.to_string(), "cancel"));
+            return binds;
+        }
         if self.dashboard.editing.is_some() {
             binds.push((keys.confirm.to_string(), "save"));
             binds.push((keys.leave.to_string(), "cancel"));
@@ -25,10 +39,6 @@ impl State {
                     DashboardPane::Options => {
                         binds.push((keys.enter.to_string(), "toggle"));
                         binds.push(("a".into(), "add app"));
-                    }
-                    DashboardPane::Form if self.dashboard.picker.is_some() => {
-                        binds.push(("v".into(), "pick this dir"));
-                        binds.push(("-".into(), "parent"));
                     }
                     DashboardPane::Form => binds.push((keys.enter.to_string(), "edit")),
                 },
