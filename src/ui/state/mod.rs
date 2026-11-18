@@ -24,8 +24,6 @@ pub(crate) enum Focus {
 /// Outcome of the last app action.
 #[derive(Debug)]
 pub(crate) enum Status {
-    /// It worked; says what was done.
-    Info(String),
     /// It failed; says why.
     Error(String),
 }
@@ -49,6 +47,10 @@ pub(crate) struct State {
     pub(crate) app: App,
     /// Outcome of the last action; cleared by the next key.
     pub(super) status: Option<Status>,
+    /// The create dialog is open: a last look before the repo is written.
+    pub(crate) confirm: bool,
+    /// Where the repo was created; set just before the TUI quits.
+    pub(crate) created: Option<std::path::PathBuf>,
 }
 
 impl State {
@@ -63,6 +65,8 @@ impl State {
             // Straight into the options: the sidebar only switches pages.
             focus: Focus::Page,
             status: None,
+            confirm: false,
+            created: None,
             dashboard: Dashboard {
                 // The first app: what most runs start by picking.
                 apps: ListState::default().with_selected(Some(1)),
