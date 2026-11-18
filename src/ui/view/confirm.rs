@@ -8,24 +8,23 @@ use ratatui::{
 
 use crate::{
     app::{APPS_DIR, App, View, opt::Scope},
+    prelude::OptId,
     ui::prelude::*,
 };
 
-/// Draws the generate dialog over the page while it's open: a panel for the
-/// repo and one per app, each listing its options, then the question.
+/// Draws the generate dialog over the page while it's open: a summary, a
+/// panel for the repo and one per app, each listing its options, then the
+/// question.
 pub(super) fn render_confirm(state: &State, frame: &mut Frame) {
     if !state.confirm {
         return;
     }
     let app = &state.app;
-    let count = app.apps.len() + 1;
-    // A panel's text width: the dialog less its border and padding, split
-    // between the panels, less each panel's border and padding.
-    let dialog_width = usize::from(frame.area().width) * 8 / 10;
-    let width = (dialog_width.saturating_sub(6) / count)
-        .saturating_sub(5)
-        .max(1);
-    let mut panels = vec![("repo".to_string(), repo_lines(app, width))];
+    let summary = summary_lines(app);
+    let summary_height = u16::try_from(summary.len())
+        .unwrap_or(u16::MAX)
+        .saturating_add(2);
+    let mut panels = vec![("repo".to_string(), repo_lines(app))];
     panels.extend((0..app.apps.len()).map(|at| (app_title(app, at), app_lines(app, at))));
     let tallest = panels
         .iter()
@@ -34,7 +33,9 @@ pub(super) fn render_confirm(state: &State, frame: &mut Frame) {
         .unwrap_or(0);
     // The panels' borders and lines, then a blank line and the question.
     let panels_height = u16::try_from(tallest).unwrap_or(u16::MAX).saturating_add(2);
-    let height = 3 + panels_height + 1 + 1;
+    // The outer border and padding, the summary, the panels, a blank line and
+    // the question.
+    let height = 3 + summary_height + panels_height + 1 + 1;
     let area = frame
         .area()
         .centered(Constraint::Percentage(80), Constraint::Length(height));
@@ -43,13 +44,18 @@ pub(super) fn render_confirm(state: &State, frame: &mut Frame) {
     frame.render_widget(Clear, area);
     frame.render_widget(outer.bg(BACKGROUND), area);
 
-    let [row, _, question] = Layout::vertical([
+    let [summary_area, row, _, question] = Layout::vertical([
+        Constraint::Length(summary_height),
         Constraint::Length(panels_height),
         Constraint::Length(1),
         Constraint::Length(1),
     ])
     .areas(inner);
-    let count = u32::try_from(count).unwrap_or(u32::MAX);
+    frame.render_widget(
+        Paragraph::new(Text::from(summary)).block(titled("summary", false)),
+        summary_area,
+    );
+    let count = u32::try_from(panels.len()).unwrap_or(u32::MAX);
     let areas = Layout::horizontal(panels.iter().map(|_| Constraint::Ratio(1, count)))
         .spacing(1)
         .split(row);
@@ -83,36 +89,43 @@ fn titled(title: &str, strong: bool) -> Block<'_> {
 /// `key` in the muted column, then `value`.
 fn row(key: &'static str, value: String) -> Line<'static> {
     Line::from(vec![
-        Span::styled(format!("{key:<6}"), SECONDARY),
+        Span::styled(format!("{key:<7}"), SECONDARY),
         Span::styled(value, PRIMARY),
     ])
 }
 
-/// Where the repo goes, cut into lines of `width`, what it holds, then its
-/// repo-wide options.
-fn repo_lines(app: &App, width: usize) -> Vec<Line<'static>> {
+/// What generating writes: the repo, how its apps are laid out, how many
+/// files, and where.
+fn summary_lines(app: &App) -> Vec<Line<'static>> {
     let files = app
         .staged
         .as_ref()
         .map_or(0, std::collections::BTreeMap::len);
-    let target: Vec<char> = app
-        .dest
-        .join(&app.name)
-        .display()
-        .to_string()
-        .chars()
-        .collect();
-    let mut lines = vec![Line::styled("into", SECONDARY)];
-    lines.extend(
-        target
-            .chunks(width)
-            .map(|chunk| Line::styled(chunk.iter().collect::<String>(), PRIMARY)),
-    );
-    lines.extend([
+    let workspace =
+        (0..app.apps.len()).any(|at| app.checked(View::App(at)).contains(&OptId::RustCommon));
+    let layout = match (app.is_multi(), workspace) {
+        (false, _) => "one app, at the root".into(),
+        (true, true) => format!(
+            "{} apps in {APPS_DIR}/, one Cargo workspace",
+            app.apps.len()
+        ),
+        (true, false) => format!("{} apps in {APPS_DIR}/", app.apps.len()),
+    };
+    vec![
+        row("repo", app.name.clone()),
+        row("layout", layout),
         row("files", files.to_string()),
+        row("into", app.dest.join(&app.name).display().to_string()),
+    ]
+}
+
+/// Who the repo is for, then its repo-wide options.
+fn repo_lines(app: &App) -> Vec<Line<'static>> {
+    let mut lines = vec![
         row("owner", app.owner.clone()),
+        row("desc", app.desc.clone()),
         Line::default(),
-    ]);
+    ];
     lines.extend(options(app, View::Repo, Scope::Repo));
     lines
 }
