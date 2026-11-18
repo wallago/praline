@@ -47,8 +47,10 @@ pub(crate) struct State {
     pub(crate) app: App,
     /// Outcome of the last action; cleared by the next key.
     pub(super) status: Option<Status>,
-    /// The create dialog is open: a last look before the repo is written.
+    /// The generate dialog is open: a last look before the repo is written.
     pub(crate) confirm: bool,
+    /// Which answer the generate dialog has selected: yes, or no.
+    pub(crate) confirm_yes: bool,
     /// Where the repo was created; set just before the TUI quits.
     pub(crate) created: Option<std::path::PathBuf>,
 }
@@ -66,6 +68,7 @@ impl State {
             focus: Focus::Page,
             status: None,
             confirm: false,
+            confirm_yes: true,
             created: None,
             dashboard: Dashboard {
                 // The first app: what most runs start by picking.

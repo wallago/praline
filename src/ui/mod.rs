@@ -116,25 +116,31 @@ mod tests {
     }
 
     #[test]
-    fn create_asks_first_then_writes_the_repo_and_quits() {
+    fn generate_asks_yes_or_no_then_writes_the_repo_and_quits() {
         let dest = std::env::temp_dir().join(format!("praline-ui-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dest);
         std::fs::create_dir_all(&dest).unwrap();
         let mut state = state();
         state.app.dest.clone_from(&dest);
-        press(&mut state, &[KeyCode::Char('c')]);
+        press(&mut state, &[KeyCode::Char('g')]);
         assert!(
             state.confirm && state.running,
             "nothing is written before the dialog"
         );
         let screen = screen(&mut state);
         assert!(
-            screen.contains("create repo") && screen.contains("create and quit"),
+            screen.contains("generate") && screen.contains("yes") && screen.contains("no"),
             "{screen}"
         );
         press(&mut state, &[KeyCode::Esc]);
         assert!(!state.confirm && state.running);
-        press(&mut state, &[KeyCode::Char('c'), KeyCode::Enter]);
+        // `no` keeps the app open; `yes` writes the repo and quits.
+        press(
+            &mut state,
+            &[KeyCode::Char('g'), KeyCode::Right, KeyCode::Enter],
+        );
+        assert!(!state.confirm && state.running);
+        press(&mut state, &[KeyCode::Char('g'), KeyCode::Enter]);
         assert!(!state.running);
         assert!(dest.join("demo-name").join("justfile").exists());
         let _ = std::fs::remove_dir_all(&dest);

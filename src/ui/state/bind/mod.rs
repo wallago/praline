@@ -48,8 +48,8 @@ pub(super) enum Action {
     Enter,
     /// Hand focus back to the sidebar.
     Leave,
-    /// Create generated repo.
-    Create,
+    /// Open the generate dialog.
+    Generate,
     /// Up to the parent directory (oil's `-`).
     Parent,
     /// Back to the directory praline started in (oil's `_`).
@@ -76,8 +76,7 @@ impl State {
             (&keys.scroll_right, Action::Right),
             (&keys.leave, Action::Leave),
             (&keys.confirm, Action::Enter),
-            (&keys.create, Action::Create),
-            (&keys.generate, Action::Create),
+            (&keys.generate, Action::Generate),
         ];
         if let Some(&(_, action)) = bound.iter().find(|(pattern, _)| pattern.matches(key)) {
             return action;
@@ -85,6 +84,8 @@ impl State {
         match key.code {
             KeyCode::Up => Action::Up,
             KeyCode::Down => Action::Down,
+            KeyCode::Left => Action::Left,
+            KeyCode::Right => Action::Right,
             KeyCode::Tab => Action::NextPane,
             KeyCode::BackTab => Action::PrevPane,
             KeyCode::Char('-') => Action::Parent,
@@ -102,9 +103,10 @@ impl State {
     fn on_action(&mut self, action: Action) -> Result<()> {
         match (self.focus, action) {
             // A last look first: the dialog shows what will be written.
-            (_, Action::Create) => {
+            (_, Action::Generate) => {
                 self.app.generate()?;
                 self.confirm = true;
+                self.confirm_yes = true;
             }
             (_, Action::Quit) => self.running = false,
             (Focus::Sidebar, Action::Up) => self.mode = self.mode.previous(),
@@ -177,17 +179,29 @@ impl State {
 }
 
 impl State {
-    /// Drives the create dialog: `confirm` writes the repo and quits, `leave`
-    /// goes back to editing. A failed write keeps the dialog open, with the
-    /// reason on the bottom line.
+    /// Drives the generate dialog: left and right (or Tab) move between
+    /// yes and no, `y` and `n` answer at once, `confirm` takes the one
+    /// selected, `leave` is no. Yes writes the repo and quits; a failed write
+    /// keeps the dialog open, with the reason on the bottom line.
     fn on_confirm_key(&mut self, key: KeyEvent) -> Result<()> {
-        if self.keybindings.leave.matches(&key) {
+        // `y` and `n` first: a config may bind `n` to moving left.
+        let answer = match (key.code, self.action(&key)) {
+            (KeyCode::Char('y'), _) => true,
+            (KeyCode::Char('n'), _) | (_, Action::Leave) => false,
+            (_, Action::Left | Action::Right | Action::NextPane | Action::PrevPane) => {
+                self.confirm_yes = !self.confirm_yes;
+                return Ok(());
+            }
+            (_, Action::Enter) => self.confirm_yes,
+            _ => return Ok(()),
+        };
+        if !answer {
             self.confirm = false;
-        } else if self.keybindings.confirm.matches(&key) {
-            self.app.create()?;
-            self.created = Some(self.app.dest.join(&self.app.name));
-            self.running = false;
+            return Ok(());
         }
+        self.app.create()?;
+        self.created = Some(self.app.dest.join(&self.app.name));
+        self.running = false;
         Ok(())
     }
 }
