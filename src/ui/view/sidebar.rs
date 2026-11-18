@@ -12,15 +12,10 @@ use crate::{
     ui::{prelude::*, state::mode::Mode},
 };
 
-/// Draws the sidebar: the pages, what the repo will be, and a word on what's
-/// under the cursor.
+/// Draws the sidebar in three equal cells: what the repo will be, the pages,
+/// and a word on what's under the cursor.
 pub(super) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
-    let [navigate, summary, about] = Layout::vertical([
-        Constraint::Length(5),
-        Constraint::Length(8),
-        Constraint::Min(0),
-    ])
-    .areas(chunk);
+    let [summary, navigate, about] = Layout::vertical([Constraint::Ratio(1, 3); 3]).areas(chunk);
     render_navigate(state, frame, navigate);
     render_summary(state, frame, summary);
     render_about(state, frame, about);

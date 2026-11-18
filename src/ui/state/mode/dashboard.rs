@@ -8,13 +8,13 @@ use crate::prelude::*;
 /// Focusable panes on the dashboard, in Tab order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, strum::EnumIter)]
 pub(crate) enum DashboardPane {
-    /// The repo and its apps: picks whose options the next pane shows.
-    Apps,
     /// Option list of the entry picked in `Apps`.
     #[default]
     Options,
     /// Form fields.
     Form,
+    /// The repo and its apps: picks whose options `Options` shows.
+    Apps,
 }
 
 /// What the name being typed in the apps pane is for.

@@ -15,16 +15,13 @@ mod options;
 /// Draws `picker`.
 mod picker;
 
-/// Draws the build page: the repo and its apps, the options of the one
-/// picked, and the repo's fields.
+/// Draws the build page: the options of the entry picked, then a column
+/// with the repo's fields on top and its apps below.
 pub(in crate::ui::view) fn render(state: &mut State, frame: &mut Frame, chunk: Rect) {
-    let [apps, options, form] = Layout::horizontal([
-        Constraint::Length(30),
-        Constraint::Min(30),
-        Constraint::Length(36),
-    ])
-    .spacing(2)
-    .areas(chunk);
+    let [options, side] = Layout::horizontal([Constraint::Min(30), Constraint::Length(36)])
+        .spacing(2)
+        .areas(chunk);
+    let [form, apps] = Layout::vertical([Constraint::Ratio(1, 2); 2]).areas(side);
     apps::render_apps(state, frame, apps);
     options::render_options(state, frame, options);
     form::render_form(state, frame, form);
