@@ -129,18 +129,18 @@ mod tests {
         );
         let screen = screen(&mut state);
         assert!(
-            screen.contains("generate") && screen.contains("yes") && screen.contains("no"),
+            screen.contains("Generate demo-name?") && screen.contains("y yes"),
             "{screen}"
         );
         press(&mut state, &[KeyCode::Esc]);
         assert!(!state.confirm && state.running);
-        // `no` keeps the app open; `yes` writes the repo and quits.
-        press(
-            &mut state,
-            &[KeyCode::Char('g'), KeyCode::Right, KeyCode::Enter],
-        );
-        assert!(!state.confirm && state.running);
+        // No selection to move: Enter does nothing, `n` closes, `y` writes
+        // the repo and quits.
         press(&mut state, &[KeyCode::Char('g'), KeyCode::Enter]);
+        assert!(state.confirm && state.running);
+        press(&mut state, &[KeyCode::Char('n')]);
+        assert!(!state.confirm && state.running);
+        press(&mut state, &[KeyCode::Char('g'), KeyCode::Char('y')]);
         assert!(!state.running);
         assert!(dest.join("demo-name").join("justfile").exists());
         let _ = std::fs::remove_dir_all(&dest);

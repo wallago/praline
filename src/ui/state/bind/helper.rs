@@ -6,13 +6,8 @@ impl State {
         let keys = &self.keybindings;
         let mut binds = Vec::new();
         if self.confirm {
-            binds.push((
-                format!("{}/{}", keys.scroll_left, keys.scroll_right),
-                "yes or no",
-            ));
-            binds.push(("y".into(), "yes"));
-            binds.push(("n".into(), "no"));
-            binds.push((keys.confirm.to_string(), "answer"));
+            binds.push(("y".into(), "generate"));
+            binds.push(("n".into(), "back"));
             return binds;
         }
         if self.dashboard.picker.is_some() {
