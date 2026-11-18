@@ -106,7 +106,6 @@ impl State {
             (_, Action::Generate) => {
                 self.app.generate()?;
                 self.confirm = true;
-                self.confirm_yes = true;
             }
             (_, Action::Quit) => self.running = false,
             (Focus::Sidebar, Action::Up) => self.mode = self.mode.previous(),
@@ -179,20 +178,14 @@ impl State {
 }
 
 impl State {
-    /// Drives the generate dialog: left and right (or Tab) move between
-    /// yes and no, `y` and `n` answer at once, `confirm` takes the one
-    /// selected, `leave` is no. Yes writes the repo and quits; a failed write
+    /// Drives the generate dialog: `y` writes the repo and quits, `n` or
+    /// `leave` closes the dialog, any other key does nothing. A failed write
     /// keeps the dialog open, with the reason on the bottom line.
     fn on_confirm_key(&mut self, key: KeyEvent) -> Result<()> {
         // `y` and `n` first: a config may bind `n` to moving left.
         let answer = match (key.code, self.action(&key)) {
             (KeyCode::Char('y'), _) => true,
             (KeyCode::Char('n'), _) | (_, Action::Leave) => false,
-            (_, Action::Left | Action::Right | Action::NextPane | Action::PrevPane) => {
-                self.confirm_yes = !self.confirm_yes;
-                return Ok(());
-            }
-            (_, Action::Enter) => self.confirm_yes,
             _ => return Ok(()),
         };
         if !answer {
