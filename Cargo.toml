@@ -1,6 +1,6 @@
 [package]
 name         = "praline"
-version      = "0.3.0"
+version      = "0.4.0-alpha"
 description  = "Build your repo like a lazy boss."
 authors      = ["wallago <henrotte.hugo@gmail.com>"]
 license      = "MIT OR Apache-2.0"

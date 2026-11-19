@@ -1,9 +1,15 @@
 # Changelog
 
-## 0.3.0 - 2026-11-17
+## 0.4.0-alpha - 2026-11-19
 
 ### 🚀 Features
 
+- *(ui)* Summary box on top of the generate dialog by @claude
+- *(ui)* Generate dialog with a panel per app and y/n keys by @claude
+- *(ui)* Generate with g only, yes/no dialog in boxes by @claude
+- *(ui)* Confirm before creating, then quit; show the picker's keys by @claude
+- *(app)* Generate several apps in one repo by @claude
+- *(opt)* [**breaking**] Make Rust dependency checks their own options by @claude
 - [**breaking**] Rebuild praline on the option engine by @wallago in [#30](https://github.com/wallago/praline/pull/30)
 - *(templates/web)* Add web, web.react and web.pages options by @claude
 - *(templates)* Add dev tooling and CI options by @claude
@@ -44,6 +50,8 @@
 
 ### 🐛 Bug Fixes
 
+- *(templates)* No Rust config or empty flake stub in a repo without them by @claude in [#34](https://github.com/wallago/praline/pull/34)
+- *(opt)* Stop web.react starting checked by @claude
 - *(ui)* Correct typos in the dashboard and key hints by @claude
 - *(flake)* Expose the home-manager module by @claude
 - *(rust)* Lower rust-version to 1.100 by @claude
@@ -67,6 +75,9 @@
 
 ### 🚜 Refactor
 
+- *(ui)* Lay the build page out in thirds and halves by @claude
+- *(opt)* [**breaking**] Name the Rust tool options cargo.* by @claude in [#33](https://github.com/wallago/praline/pull/33)
+- *(opt)* [**breaking**] Rename codecov to rust.codecov by @claude
 - *(args)* Remove color ascent cause useless by @wallago
 - *(opts)* Make it more clean by @wallago
 - *(clippy)* Make it more clear and add tests for engine by @wallago
@@ -106,9 +117,9 @@
 
 
 ## New Contributors
-* @claude made their first contribution in [#29](https://github.com/wallago/praline/pull/29)
+* @claude made their first contribution in [#34](https://github.com/wallago/praline/pull/34)
 
-**Full Changelog**: https://github.com/wallago/praline/compare/v0.2.0...v0.3.0
+**Full Changelog**: https://github.com/wallago/praline/compare/v0.2.0...v0.4.0-alpha
 
 ## 0.2.0 - 2026-08-16
 
