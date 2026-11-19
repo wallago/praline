@@ -221,6 +221,8 @@ const WEB_BASE: &[&str] = &["just", "flake", "web", "web.react"];
 #[rstest]
 #[case::web("e2e-web", &[])]
 #[case::web_pages("e2e-web-pages", &["web.pages"])]
+#[case::web_pwa("e2e-web-pwa", &["web.pwa"])]
+#[case::web_pwa_pages("e2e-web-pwa-pages", &["web.pwa", "web.pages"])]
 #[ignore = "slow, needs the npm registry: run with `just e2e`"]
 fn generated_web_repo_passes_its_gate(#[case] name: &str, #[case] opts: &[&str]) -> Outcome {
     let all: Vec<&str> = WEB_BASE
@@ -234,7 +236,39 @@ fn generated_web_repo_passes_its_gate(#[case] name: &str, #[case] opts: &[&str])
     // Typecheck, tests, the build and every repo-wide check, from the
     // shipped lockfile: `install` fails if it no longer matches `package.json`.
     run(&repo, "just", &["ci"])?;
+    if opts.contains(&"web.pwa") {
+        check_pwa_build(&repo)?;
+    }
     run(&repo, "just", &["commits"])
+}
+
+/// Checks what `just build` left in `site`'s `dist/` makes an installable,
+/// offline PWA: the manifest and its icons, and a worker with the build's
+/// files written in.
+fn check_pwa_build(site: &Path) -> Outcome {
+    let dist = site.join("dist");
+    let at = dist.display();
+    let read = |file: &str| {
+        fs::read_to_string(dist.join(file)).map_err(|err| format!("{at}: can't read {file}: {err}"))
+    };
+    let index = read("index.html")?;
+    if !index.contains("manifest.webmanifest") {
+        return Err(format!("{at}: index.html links no manifest"));
+    }
+    let manifest = read("manifest.webmanifest")?;
+    for icon in ["icon-192.png", "icon-512.png", "icon-maskable-512.png"] {
+        if !manifest.contains(icon) || !dist.join("icons").join(icon).is_file() {
+            return Err(format!("{at}: icon {icon} is missing"));
+        }
+    }
+    let worker = read("sw.js")?;
+    if worker.contains("__PRECACHE__") || worker.contains("__VERSION__") {
+        return Err(format!("{at}: sw.js still has its placeholders"));
+    }
+    if !worker.contains("assets/") {
+        return Err(format!("{at}: sw.js precaches no built asset"));
+    }
+    Ok(())
 }
 
 /// The stripped-down web render: no repo-wide tooling, still green.
@@ -257,7 +291,7 @@ const SHARED: &[&str] = &["just", "flake", "cargo.deny", "cargo.audit", "cargo.u
     &[
         "server:rust.server,rust.server.ws",
         "client:rust.client_ws,rust.notif",
-        "site:web.react",
+        "site:web.react,web.pwa",
     ],
 )]
 // The smallest workspace: two crates, nothing else.
@@ -284,5 +318,8 @@ fn generated_multi_app_repo_passes_its_gate(#[case] name: &str, #[case] apps: &[
     run(&repo, "cargo", &["test", "--workspace"])?;
     // The root gate: the repo-wide checks, then each app's own `ci`.
     run(&repo, "just", &["ci"])?;
+    if apps.iter().any(|app| app.contains("web.pwa")) {
+        check_pwa_build(&repo.join("apps/site"))?;
+    }
     run(&repo, "just", &["commits"])
 }

@@ -1,0 +1,8 @@
+- `public/manifest.webmanifest`, `public/icons/`: what the browser shows when
+  it offers to install the app. Paths in it are relative, so the site works
+  under any base path.
+- `sw.ts`: the service worker. `vite-sw.ts` builds it to `dist/sw.js` and
+  writes the list of built files into it; `tsconfig.sw.json` type-checks it
+  against the WebWorker lib. A new worker takes over once every tab of the
+  old build is closed.
+- `src/register-sw.ts`: registers the worker, in production builds only.

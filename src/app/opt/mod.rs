@@ -110,6 +110,9 @@ pub(crate) enum OptId {
     /// GitHub Pages deploy of the built site.
     #[strum(serialize = "web.pages")]
     WebPages,
+    /// Installable PWA: manifest, icons and an offline service worker.
+    #[strum(serialize = "web.pwa")]
+    WebPwa,
 
     //------------------------------------------------------------------//
     //                               Repo                               //
@@ -166,6 +169,7 @@ impl OptId {
             Self::Web => Self::def_web(),
             Self::WebReact => Self::def_web_react(),
             Self::WebPages => Self::def_web_pages(),
+            Self::WebPwa => Self::def_web_pwa(),
             Self::Editorconfig => Self::def_editorconfig(),
             Self::Typos => Self::def_typos(),
             Self::Lychee => Self::def_lychee(),
