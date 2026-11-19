@@ -1,0 +1,2 @@
+- The service worker only runs from a production build: check offline
+  behaviour with `vite build` then `vite preview`, never the dev server.

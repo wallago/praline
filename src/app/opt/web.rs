@@ -9,6 +9,8 @@ use crate::app::{
 static WEB_REACT: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/web.react");
 /// `web.pages` templates.
 static WEB_PAGES: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/web.pages");
+/// `web.pwa` templates.
+static WEB_PWA: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/web.pwa");
 
 impl OptId {
     /// Web option definition: a group, switching the `{if:web}` blocks the
@@ -45,6 +47,17 @@ impl OptId {
             _category: Some(Category::Release),
             emit: Emit::Dir(&WEB_PAGES),
             single_app_only: true,
+            ..OptDef::default()
+        }
+    }
+
+    /// Web PWA option definition.
+    pub(super) fn def_web_pwa() -> OptDef {
+        OptDef {
+            parent: Some(Self::WebReact),
+            desc: "Installable PWA: web manifest, icons and an offline service worker.",
+            _category: Some(Category::Build),
+            emit: Emit::Dir(&WEB_PWA),
             ..OptDef::default()
         }
     }

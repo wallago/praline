@@ -20,6 +20,9 @@ build *ARGS: install
 [group('dev')]
 check: install
     pnpm exec tsc --noEmit
+    # {if:web.pwa}
+    pnpm exec tsc --noEmit -p tsconfig.sw.json
+    # {endif:web.pwa}
 
 # Run the test suite. Usage: just test [FILTER]
 [group('dev')]
