@@ -39,6 +39,55 @@ praline
 
 Pick the tools you want, and `praline` writes the configs for you. 💯
 
+### With Nix
+
+No need to add `praline` as an input to every repo. Run it straight from
+the flake:
+
+```bash
+nix run github:wallago/praline
+```
+
+Or register it once, then use the short name anywhere:
+
+```bash
+nix registry add praline github:wallago/praline
+nix run praline
+```
+
+To have it installed everywhere, add the flake once to your NixOS or
+home-manager config and use its overlay, which provides `pkgs.praline`:
+
+```nix
+{
+  inputs.praline.url = "github:wallago/praline";
+
+  outputs = { nixpkgs, praline, ... }: {
+    nixosConfigurations.my-host = nixpkgs.lib.nixosSystem {
+      modules = [
+        ({ pkgs, ... }: {
+          nixpkgs.overlays = [ praline.overlays.default ];
+          environment.systemPackages = [ pkgs.praline ];
+        })
+      ];
+    };
+  };
+}
+```
+
+With home-manager, the module installs it and writes `config.toml`:
+
+```nix
+{
+  imports = [ praline.homeModules.default ];
+
+  programs.praline = {
+    enable = true;
+    settings.keybindings.generate = "g";
+  };
+}
+```
+
 ## Tools
 
 Tools are grouped by subject.\

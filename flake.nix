@@ -20,9 +20,15 @@
       claude-code,
       ...
     }:
-    # ── System-agnostic outputs (modules) live out here ──
+    # ── System-agnostic outputs (modules, overlay) live out here ──
     {
       homeModules.default = import ./nix/hm-module.nix self;
+
+      # `pkgs.praline` for a NixOS or home-manager config that takes this
+      # flake as an input once, so other repos don't need it as an input.
+      overlays.default = final: _: {
+        praline = self.packages.${final.stdenv.hostPlatform.system}.default;
+      };
     }
     # ── Then merge the per-system outputs onto it ──
     //
@@ -124,7 +130,16 @@
             };
 
             # ── Checks (nix flake check) ─────────────────────────────
-            checks.check = self.packages.${system}.praline-debug;
+            checks = {
+              check = self.packages.${system}.praline-debug;
+
+              # The overlay must give the same derivation as `packages.default`.
+              # Compares at eval time, so it costs no second build.
+              overlay =
+                assert
+                  (pkgs.extend self.overlays.default).praline.drvPath == self.packages.${system}.default.drvPath;
+                pkgs.emptyFile;
+            };
 
             # ── Dev Shell (nix develop) ──────────────────────────────
             devShells.default =
