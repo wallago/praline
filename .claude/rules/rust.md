@@ -7,16 +7,10 @@ a feature newer than the MSRV to save three lines.
      `expect_used`, `panic`, `missing_docs_in_private_items`, …) and what each
      one means for everyday code. Copy them from `Cargo.toml` once, here. -->
 
-<!-- {if:clippy} -->
-
 ## Lints
 
 CI runs clippy with `-D warnings`. A warning is a failed build, not a hint.
 Fix the cause; `#[allow]` needs a comment saying why.
-
-<!-- {endif:clippy} -->
-
-<!-- {if:codecov} -->
 
 ## Tests
 
@@ -24,22 +18,13 @@ Tests run under `cargo nextest`, coverage under `cargo llvm-cov`. Write the
 failing test first — "add validation" means "test the invalid input, then make
 it pass".
 
-<!-- {endif:codecov} -->
-
 ## Dependencies
-
-<!-- {if:deny} -->
 
 - A new crate has to clear `cargo deny check` — licence, bans, sources,
   advisories — before it lands.
-  <!-- {endif:deny} -->
-  <!-- {if:audit} -->
 - `cargo audit` scans the RustSec DB in CI.
-  <!-- {endif:audit} -->
-  <!-- {if:machete} -->
 - `cargo machete` fails on unused dependencies; drop them in the same change
-that orphans them.
-<!-- {endif:machete} -->
+  that orphans them.
 
 Adding a dependency is a decision, not a detail. Say what it buys and what it
 costs before pulling it in.
