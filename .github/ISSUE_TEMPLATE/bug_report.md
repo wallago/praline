@@ -16,8 +16,8 @@ assignees: "wallago"
 Steps to reproduce the behavior:
 1. Build with '...' arguments
 2. Run with '....' arguments
-4. Use '...' configuration options
-5. See error
+3. Use '...' configuration options
+4. See error
 -->
 
 **Expected behavior**
