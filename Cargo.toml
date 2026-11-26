@@ -43,7 +43,7 @@ tui-syntax-highlight = "0.2.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
-rstest            = "0.28"
+rstest            = "0.29"
 serde_json        = "1.0.154"
 yaml-rust2        = "0.13.0"
 
