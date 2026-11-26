@@ -1,0 +1,7 @@
+{
+  "name": "praline",
+  "description": "Align an existing repo with the tooling Praline generates.",
+  "author": { "name": "wallago" },
+  "repository": "https://github.com/wallago/praline",
+  "license": "MIT OR Apache-2.0"
+}

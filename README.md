@@ -89,6 +89,20 @@ praline --headless --name demo --owner you -D . -o flake -o just -o rust -o rust
 - `github.ci` — CI workflow running `just ci` recipe by recipe
 - `claude` — `CLAUDE.md` and `.claude/`
 
+## Existing repos
+
+Praline ships a [Claude Code](https://code.claude.com/docs) skill that brings
+a repo it didn't generate up to the same tooling: it renders the matching
+template next to your repo, compares the two, and proposes a plan before
+changing anything. Your code stays yours; only the tooling moves.
+
+```text
+/plugin marketplace add wallago/praline
+/plugin install praline@praline
+```
+
+Then, in the repo: `/praline:adopt`.
+
 ## Contributing
 
 Contributions are welcome! Feel free to open an issue or a pull request.

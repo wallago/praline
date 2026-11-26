@@ -1,0 +1,11 @@
+{
+  "name": "praline",
+  "owner": { "name": "wallago" },
+  "plugins": [
+    {
+      "name": "praline",
+      "source": "./plugin",
+      "description": "Align an existing repo with the tooling Praline generates."
+    }
+  ]
+}
