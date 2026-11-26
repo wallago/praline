@@ -1,9 +1,18 @@
 # Changelog
 
-## 0.3.0 - 2026-11-17
+## 0.4.0 - 2026-11-26
 
 ### 🚀 Features
 
+- [**breaking**] Publish on crates.io as praline-rs by @claude
+- *(claude)* Add /praline:adopt skill to align existing repos by @claude in [#42](https://github.com/wallago/praline/pull/42)
+- *(templates)* Add web.pwa option for installable, offline sites by @claude in [#37](https://github.com/wallago/praline/pull/37)
+- *(ui)* Summary box on top of the generate dialog by @claude
+- *(ui)* Generate dialog with a panel per app and y/n keys by @claude
+- *(ui)* Generate with g only, yes/no dialog in boxes by @claude
+- *(ui)* Confirm before creating, then quit; show the picker's keys by @claude
+- *(app)* Generate several apps in one repo by @claude
+- *(opt)* [**breaking**] Make Rust dependency checks their own options by @claude
 - [**breaking**] Rebuild praline on the option engine by @wallago in [#30](https://github.com/wallago/praline/pull/30)
 - *(templates/web)* Add web, web.react and web.pages options by @claude
 - *(templates)* Add dev tooling and CI options by @claude
@@ -44,6 +53,8 @@
 
 ### 🐛 Bug Fixes
 
+- *(templates)* No Rust config or empty flake stub in a repo without them by @claude in [#34](https://github.com/wallago/praline/pull/34)
+- *(opt)* Stop web.react starting checked by @claude
 - *(ui)* Correct typos in the dashboard and key hints by @claude
 - *(flake)* Expose the home-manager module by @claude
 - *(rust)* Lower rust-version to 1.100 by @claude
@@ -67,6 +78,9 @@
 
 ### 🚜 Refactor
 
+- *(ui)* Lay the build page out in thirds and halves by @claude
+- *(opt)* [**breaking**] Name the Rust tool options cargo.* by @claude in [#33](https://github.com/wallago/praline/pull/33)
+- *(opt)* [**breaking**] Rename codecov to rust.codecov by @claude
 - *(args)* Remove color ascent cause useless by @wallago
 - *(opts)* Make it more clean by @wallago
 - *(clippy)* Make it more clear and add tests for engine by @wallago
@@ -91,6 +105,7 @@
 
 ### ⚙️ Miscellaneous Tasks
 
+- Tidy repo setup and refresh README options by @claude in [#41](https://github.com/wallago/praline/pull/41)
 - *(repo)* Build praline's tooling from its own templates by @claude in [#29](https://github.com/wallago/praline/pull/29)
 - *(just)* Add a gh-based release tool by @claude in [#28](https://github.com/wallago/praline/pull/28)
 - *(just)* Move template recipes out of rust.just by @claude
@@ -106,9 +121,9 @@
 
 
 ## New Contributors
-* @claude made their first contribution in [#29](https://github.com/wallago/praline/pull/29)
+* @claude made their first contribution in [#43](https://github.com/wallago/praline/pull/43)
 
-**Full Changelog**: https://github.com/wallago/praline/compare/v0.2.0...v0.3.0
+**Full Changelog**: https://github.com/wallago/praline/compare/v0.2.0...v0.4.0
 
 ## 0.2.0 - 2026-08-16
 
