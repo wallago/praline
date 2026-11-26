@@ -51,8 +51,13 @@ release-publish VERSION:
     flags=()
     case "{{ VERSION }}" in *-*) flags+=(--prerelease) ;; esac
     last="$(git describe --tags --abbrev=0 origin/main 2>/dev/null || true)"
+    # git-cliff sends the range end to the GitHub API, which 404s on `origin/main`: use the SHA.
+    head="$(git rev-parse origin/main)"
+    notes="$(mktemp)"
+    trap 'rm -f "$notes"' EXIT
     echo "▶ release $tag from origin/main"
-    git-cliff ${last:+"$last..origin/main"} --tag "$tag" --strip all \
-        | gh release create "$tag" --target "$(git rev-parse origin/main)" \
-            --title "Release $tag" --notes-file - "${flags[@]}"
+    # Notes first, so a git-cliff failure stops before anything is published.
+    git-cliff ${last:+"$last..$head"} --tag "$tag" --strip all > "$notes"
+    gh release create "$tag" --target "$head" \
+        --title "Release $tag" --notes-file "$notes" "${flags[@]}"
     echo "✅ $tag is out; follow the build with: gh run watch"
