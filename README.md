@@ -8,8 +8,8 @@
     <em>"Build your repo like a lazy boss."</em>
     <br>
     <br>
-    <a href="https://crates.io/crates/praline">
-        <img src="https://img.shields.io/crates/v/praline?style=flat&labelColor=1d1d1d&color=e05f78&logo=Rust&logoColor=white"></a>
+    <a href="https://crates.io/crates/praline-rs">
+        <img src="https://img.shields.io/crates/v/praline-rs?style=flat&labelColor=1d1d1d&color=e05f78&logo=Rust&logoColor=white"></a>
     <a href="https://github.com/wallago/praline/releases">
         <img src="https://img.shields.io/github/v/release/wallago/praline?style=flat&labelColor=1d1d1d&color=e05f78&logo=GitHub&logoColor=white"></a>
     <br>
@@ -25,10 +25,10 @@
 
 ## Quickstart
 
-Install `praline` with `cargo`:
+Install `praline` with `cargo` (the crate is `praline-rs`, the command is `praline`):
 
 ```bash
-cargo install praline
+cargo install praline-rs
 ```
 
 Then just run it in (or next to) your project:

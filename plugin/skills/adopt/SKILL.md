@@ -19,7 +19,7 @@ still holds at every step.
 
 Run `praline --version`. If it is missing, use
 `nix run github:wallago/praline --` in its place, or ask the user to install
-it (`cargo install praline`). Read `praline --help`: its `--opt` list is the
+it (`cargo install praline-rs`). Read `praline --help`: its `--opt` list is the
 set of options this version knows. Don't use an option that isn't in it.
 
 ## 2. Pick the options

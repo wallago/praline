@@ -1,5 +1,5 @@
 [package]
-name         = "praline"
+name         = "praline-rs"
 version      = "0.3.0"
 description  = "Build your repo like a lazy boss."
 authors      = ["wallago <henrotte.hugo@gmail.com>"]
@@ -11,6 +11,16 @@ categories   = ["command-line-utilities", "development-tools"]
 edition      = "2024"
 rust-version = "1.100"
 include      = ["src/**/*", "templates/**/*", "Cargo.*", "LICENSE*", "README.md", "CHANGELOG.md"]
+
+# The crates.io name `praline` is taken: the package is `praline-rs`, but the
+# library and the command keep the name `praline`.
+[lib]
+name = "praline"
+path = "src/lib.rs"
+
+[[bin]]
+name = "praline"
+path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5.56", features = [
