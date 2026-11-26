@@ -138,6 +138,12 @@ pub(crate) enum OptId {
     /// `.github/workflows/ci.yml`, running `just ci` recipe by recipe.
     #[strum(serialize = "github.ci")]
     GithubCi,
+    /// `just release` / `just release-publish`, and `cd.yml` for binaries.
+    #[strum(serialize = "github.release")]
+    GithubRelease,
+    /// Publish the crates on crates.io from `cd.yml`.
+    #[strum(serialize = "github.release.crates")]
+    GithubReleaseCrates,
     /// `CLAUDE.md` and `.claude/`.
     #[strum(serialize = "claude")]
     Claude,
@@ -177,6 +183,8 @@ impl OptId {
             Self::Git => Self::def_git(),
             Self::Github => Self::def_github(),
             Self::GithubCi => Self::def_github_ci(),
+            Self::GithubRelease => Self::def_github_release(),
+            Self::GithubReleaseCrates => Self::def_github_release_crates(),
             Self::Claude => Self::def_claude(),
         }
     }

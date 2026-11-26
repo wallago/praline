@@ -23,6 +23,8 @@ mod context;
 mod marker;
 /// Renders option folders into a [`Tree`] and writes it to disk.
 mod output;
+/// `github.release`'s slots, which only the list of apps can fill.
+mod release;
 /// `{slot:}` hubs that other options' `_slots/` files fill.
 mod slot;
 /// Renders one template: slots, then conditionals, then `{key}` placeholders.

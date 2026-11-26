@@ -1,0 +1,65 @@
+# {if:rust.common}
+# Runs on the tag `just release-publish` creates: the GitHub release and its
+# notes already exist, so this only adds the binaries to it.
+name: CD
+on:
+  push:
+    tags:
+      - "v*.*.*"
+permissions:
+  contents: write
+concurrency:
+  group: cd-${{ github.ref }}
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  binaries:
+    name: Binaries for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Native runners, so no cross-compiling toolchain to set up.
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v7
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+      - name: Pack each binary with its licences and checksum
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          bins=(
+            # {slot:release.bins}
+          )
+          mkdir dist
+          for bin in "${bins[@]}"; do
+            dir="$bin-$TAG-$TARGET"
+            mkdir "$dir"
+            cp "target/$TARGET/release/$bin" LICENSE-* "$dir"/
+            if [ -f README.md ]; then cp README.md "$dir"/; fi
+            tar -czf "dist/$dir.tar.gz" "$dir"
+            (cd dist && shasum -a 256 "$dir.tar.gz" > "$dir.tar.gz.sha256")
+          done
+      - name: Attach them to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release upload "$TAG" dist/* --clobber
+  # {slot:release.cd.jobs}
+# {endif:rust.common}

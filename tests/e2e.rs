@@ -25,6 +25,7 @@ const TOOLING: &[&str] = &[
     "git",
     "github",
     "github.ci",
+    "github.release",
     "claude",
 ];
 
@@ -174,6 +175,7 @@ fn check_rust_repo(repo: &Path) -> Outcome {
         "rust.mcp",
         "rust.mcp.http",
         "cargo.codecov",
+        "github.release.crates",
     ],
 )]
 #[case::client_side("e2e-client-side", &["rust.client_ws", "rust.can", "rust.notif"])]
@@ -322,4 +324,283 @@ fn generated_multi_app_repo_passes_its_gate(#[case] name: &str, #[case] apps: &[
         check_pwa_build(&repo.join("apps/site"))?;
     }
     run(&repo, "just", &["commits"])
+}
+
+//------------------------------------------------------------------//
+//                             Release                              //
+//------------------------------------------------------------------//
+
+/// A `gh` that logs each call to `$GH_LOG`, with the notes or PR body it is
+/// handed, and succeeds: what the release recipes send GitHub, without
+/// GitHub.
+const FAKE_GH: &str = r#"#!/usr/bin/env bash
+set -eu
+{
+    echo "gh $*"
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --notes-file | --body-file) echo "--- $1"; cat "$2"; echo "---" ;;
+        esac
+        shift
+    done
+} >> "$GH_LOG"
+"#;
+
+/// A generated repo wired for the release recipes: a bare `origin` holding
+/// `main`, and a fake `gh` first on `PATH`.
+struct Released {
+    /// The generated repo, a clone of `origin`.
+    repo: PathBuf,
+    /// The bare repo standing in for GitHub.
+    origin: PathBuf,
+    /// Where the fake `gh` logs.
+    gh_log: PathBuf,
+    /// `PATH`, with the fake `gh` first.
+    path: String,
+}
+
+impl Released {
+    /// Generates `name` with `apps` and `opts`, commits it and pushes `main`.
+    fn new(name: &str, apps: &[&str], opts: &[&str]) -> Result<Self, String> {
+        let repo = generate_apps(name, apps, opts)?;
+        let fail = |what: &str, err: std::io::Error| format!("{name}: can't {what}: {err}");
+        let origin = repo.with_extension("git");
+        let bin = repo.with_extension("bin");
+        let _ = fs::remove_dir_all(&origin);
+        let _ = fs::remove_dir_all(&bin);
+        fs::create_dir_all(&bin).map_err(|err| fail("create bin/", err))?;
+        let gh = bin.join("gh");
+        fs::write(&gh, FAKE_GH).map_err(|err| fail("write gh", err))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(&gh, fs::Permissions::from_mode(0o755))
+                .map_err(|err| fail("make gh executable", err))?;
+        }
+        let path = format!("{}:{}", bin.display(), env::var("PATH").unwrap_or_default());
+        let gh_log = bin.join("gh.log");
+        let released = Self {
+            repo,
+            origin,
+            gh_log,
+            path,
+        };
+        commit_all(&released.repo)?;
+        let origin_arg = released.origin.to_string_lossy();
+        run(
+            &released.repo,
+            "git",
+            &[
+                "init",
+                "--quiet",
+                "--bare",
+                "--initial-branch",
+                "main",
+                &origin_arg,
+            ],
+        )?;
+        run(
+            &released.repo,
+            "git",
+            &["remote", "add", "origin", &origin_arg],
+        )?;
+        run(
+            &released.repo,
+            "git",
+            &["push", "--quiet", "origin", "main"],
+        )?;
+        Ok(released)
+    }
+
+    /// Runs `just <args>` in the repo, as a user with `gh` logged in would.
+    fn just(&self, args: &[&str]) -> Outcome {
+        let line = format!("`just {}` in {}", args.join(" "), self.repo.display());
+        let out = Command::new("just")
+            .args(args)
+            .current_dir(&self.repo)
+            .env("PATH", &self.path)
+            .env("GH_LOG", &self.gh_log)
+            // The changelog template asks GitHub about each commit; there is
+            // no such repo.
+            .env("GIT_CLIFF_OFFLINE", "true")
+            .env("GIT_AUTHOR_NAME", "e2e")
+            .env("GIT_AUTHOR_EMAIL", "e2e@example.com")
+            .env("GIT_COMMITTER_NAME", "e2e")
+            .env("GIT_COMMITTER_EMAIL", "e2e@example.com")
+            .env("NO_COLOR", "1")
+            .output()
+            .map_err(|err| format!("{line}: can't spawn: {err}"))?;
+        if out.status.success() {
+            return Ok(());
+        }
+        Err(format!(
+            "{line} failed\n{}{}",
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        ))
+    }
+
+    /// What the fake `gh` was asked so far.
+    fn gh_calls(&self) -> String {
+        fs::read_to_string(&self.gh_log).unwrap_or_default()
+    }
+
+    /// `path` as `origin` has it on `rev`.
+    fn on_origin(&self, rev: &str, path: &str) -> Result<String, String> {
+        let out = Command::new("git")
+            .args(["show", &format!("{rev}:{path}")])
+            .current_dir(&self.origin)
+            .output()
+            .map_err(|err| format!("can't spawn git show: {err}"))?;
+        if !out.status.success() {
+            return Err(format!(
+                "origin has no {path} on {rev}: {}",
+                String::from_utf8_lossy(&out.stderr)
+            ));
+        }
+        Ok(String::from_utf8_lossy(&out.stdout).into_owned())
+    }
+
+    /// Merges the release PR, as GitHub's squash merge would: one commit on
+    /// `main` titled like the PR, with ` (#1)` after it.
+    fn merge(&self, branch: &str, title: &str) -> Outcome {
+        let repo = &self.repo;
+        run(repo, "git", &["switch", "--quiet", "main"])?;
+        run(repo, "git", &["merge", "--quiet", "--squash", branch])?;
+        run(
+            repo,
+            "git",
+            &[
+                "-c",
+                "user.name=e2e",
+                "-c",
+                "user.email=e2e@example.com",
+                "commit",
+                "--quiet",
+                "--message",
+                &format!("{title} (#1)"),
+            ],
+        )?;
+        run(repo, "git", &["push", "--quiet", "origin", "main"])
+    }
+}
+
+/// Fails with `what` unless `cond` holds.
+fn ensure(cond: bool, what: impl FnOnce() -> String) -> Outcome {
+    if cond { Ok(()) } else { Err(what()) }
+}
+
+/// Both release steps, run for real against a local `origin` and a fake
+/// `gh`: the PR branch holds the bumped versions and the changelog, publishing
+/// refuses until it is merged, then tags main with notes.
+#[rstest]
+#[case::rust("e2e-release-rust", &[], &["rust", "rust.common"], &["Cargo.toml"])]
+#[case::web("e2e-release-web", &[], &["web", "web.react"], &["package.json"])]
+#[case::apps(
+    "e2e-release-apps",
+    &["api:rust.server", "worker:rust.notif", "site:web.react"],
+    &[],
+    &["apps/api/Cargo.toml", "apps/worker/Cargo.toml", "apps/site/package.json"],
+)]
+#[case::no_stack("e2e-release-no-stack", &[], &[], &[])]
+#[ignore = "needs git, just, git-cliff and cargo-edit; Rust cases need crates.io: run with `just e2e`"]
+fn generated_repo_releases_in_two_steps(
+    #[case] name: &str,
+    #[case] apps: &[&str],
+    #[case] stack: &[&str],
+    #[case] versioned: &[&str],
+) -> Outcome {
+    let opts: Vec<&str> = ["just", "git", "github", "github.release"]
+        .iter()
+        .chain(stack)
+        .copied()
+        .collect();
+    let rel = Released::new(name, apps, &opts)?;
+
+    rel.just(&["release", "0.2.0"])?;
+    let branch = "release/v0.2.0";
+    for file in versioned {
+        let text = rel.on_origin(branch, file)?;
+        ensure(text.contains("\"0.2.0\""), || {
+            format!("{name}: {file} on {branch} is not at 0.2.0:\n{text}")
+        })?;
+    }
+    let changelog = rel.on_origin(branch, "CHANGELOG.md")?;
+    ensure(changelog.contains("## 0.2.0"), || {
+        format!("{name}: no 0.2.0 section in the changelog:\n{changelog}")
+    })?;
+    ensure(rel.gh_calls().contains("gh pr create --base main"), || {
+        format!("{name}: no PR opened:\n{}", rel.gh_calls())
+    })?;
+
+    // Not merged yet: nothing gets published.
+    let early = rel.just(&["--yes", "release-publish", "0.2.0"]);
+    ensure(
+        early
+            .as_ref()
+            .is_err_and(|err| err.contains("merge the release PR first")),
+        || format!("{name}: publishing before the merge didn't stop on it: {early:?}"),
+    )?;
+    ensure(!rel.gh_calls().contains("gh release create"), || {
+        format!("{name}: gh release create ran anyway:\n{}", rel.gh_calls())
+    })?;
+
+    rel.merge(branch, "chore(release): prepare for v0.2.0")?;
+    rel.just(&["--yes", "release-publish", "0.2.0"])?;
+    let calls = rel.gh_calls();
+    let release = calls
+        .lines()
+        .find(|line| line.starts_with("gh release create v0.2.0 --target "))
+        .ok_or_else(|| format!("{name}: no release created:\n{calls}"))?;
+    ensure(!release.contains("--prerelease"), || {
+        format!("{name}: 0.2.0 marked as a pre-release: {release}")
+    })?;
+    // The target is main's SHA, never the `origin/main` name the GitHub API
+    // can't resolve.
+    let target = release.split_whitespace().nth(5).unwrap_or_default();
+    ensure(
+        target.len() == 40 && target.chars().all(|c| c.is_ascii_hexdigit()),
+        || format!("{name}: the release targets {target:?}, not a SHA"),
+    )?;
+    // The notes git-cliff wrote for this release, not an empty body.
+    let notes = calls
+        .split("--- --notes-file\n")
+        .nth(1)
+        .and_then(|rest| rest.split("\n---").next())
+        .unwrap_or_default();
+    ensure(
+        notes.to_lowercase().contains("scaffold with praline"),
+        || format!("{name}: the release notes miss the commits:\n{calls}"),
+    )?;
+    Ok(())
+}
+
+/// A version with a pre-release part is released as a GitHub pre-release,
+/// and a malformed version is refused before anything changes.
+#[test]
+#[ignore = "needs git, just and git-cliff: run with `just e2e`"]
+fn a_pre_release_is_marked_and_a_bad_version_refused() -> Outcome {
+    let rel = Released::new(
+        "e2e-release-rc",
+        &[],
+        &["just", "git", "github", "github.release"],
+    )?;
+    ensure(rel.just(&["release", "1.0"]).is_err(), || {
+        "`just release 1.0` went through".to_string()
+    })?;
+    ensure(rel.gh_calls().is_empty(), || {
+        format!("gh called for a bad version:\n{}", rel.gh_calls())
+    })?;
+    rel.just(&["release", "1.0.0-rc.1"])?;
+    rel.merge(
+        "release/v1.0.0-rc.1",
+        "chore(release): prepare for v1.0.0-rc.1",
+    )?;
+    rel.just(&["--yes", "release-publish", "1.0.0-rc.1"])?;
+    ensure(
+        rel.gh_calls().lines().any(|line| {
+            line.starts_with("gh release create v1.0.0-rc.1") && line.ends_with("--prerelease")
+        }),
+        || format!("not a pre-release:\n{}", rel.gh_calls()),
+    )
 }

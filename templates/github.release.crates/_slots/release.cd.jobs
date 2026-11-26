@@ -1,0 +1,17 @@
+crates-io:
+  name: Publish on crates.io
+  needs: binaries
+  # A pre-release (v1.2.0-rc.1) stays off crates.io.
+  if: ${{ !contains(github.ref_name, '-') }}
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v7
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    # Needs a crates.io API token with the publish-new and publish-update
+    # scopes, saved as the CARGO_REGISTRY_TOKEN repository secret.
+    - name: Publish
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      run: cargo publish --locked --workspace

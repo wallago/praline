@@ -87,6 +87,9 @@ praline --headless --name demo --owner you -D . -o flake -o just -o rust -o rust
 - `git` — `.gitignore`, licences, commit format (committed) and changelog (git-cliff)
 - `github` — `.github/` templates and dependabot
 - `github.ci` — CI workflow running `just ci` recipe by recipe
+- `github.release` — `just release X` opens the release PR (version bump +
+  changelog), `just release-publish X` tags main; `cd.yml` attaches binaries
+- `github.release.crates` — `cd.yml` also publishes the crates on crates.io
 - `claude` — `CLAUDE.md` and `.claude/`
 
 ## Existing repos
