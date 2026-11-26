@@ -7,3 +7,8 @@ exclude_path = [
   ".direnv",
   "templates",
 ]
+
+# The crate page 404s until `praline-rs` is first published; drop this then.
+exclude = [
+  "^https://crates\\.io/crates/praline-rs$",
+]

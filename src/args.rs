@@ -8,6 +8,7 @@ use crate::prelude::OptId;
 /// Argument parser powered by [`clap`].
 #[derive(Clone, Debug, Default, Parser)]
 #[clap(
+    name = "praline",
     version,
     author = clap::crate_authors!("\n"),
     about,
