@@ -84,10 +84,10 @@ mod tests {
         let slots = filled(&[], &["rust", "rust.common"]);
         assert_eq!(
             block(&slots, BUMP).as_deref(),
-            Some(
-                "echo \"▶ bump the version to $version\"\n\
-                 cargo set-version --workspace \"$version\"\n"
-            )
+            Some(concat!(
+                "echo \"▶ bump the version to $version\"\n",
+                "cargo set-version --workspace \"$version\"\n",
+            ))
         );
         assert_eq!(block(&slots, BINS).as_deref(), Some("\"demo\"\n"));
     }
@@ -116,11 +116,11 @@ mod tests {
         );
         assert_eq!(
             block(&slots, BUMP).as_deref(),
-            Some(
-                "echo \"▶ bump the version to $version\"\n\
-                 cargo set-version --workspace \"$version\"\n\
-                 (cd apps/site && npm pkg set version=\"$version\")\n"
-            )
+            Some(concat!(
+                "echo \"▶ bump the version to $version\"\n",
+                "cargo set-version --workspace \"$version\"\n",
+                "(cd apps/site && npm pkg set version=\"$version\")\n",
+            ))
         );
         assert_eq!(
             block(&slots, BINS).as_deref(),
