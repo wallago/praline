@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.1 - 2026-11-26
+
+### 🐛 Bug Fixes
+
+- *(release)* Pass git-cliff a SHA and write notes before publishing
+
+
+**Full Changelog**: https://github.com/wallago/praline/compare/v0.4.0...v0.4.1
+
 ## 0.4.0 - 2026-11-26
 
 ### 🚀 Features
