@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use strum::IntoEnumIterator;
 
+use crate::app::engine::release;
 use crate::app::engine::slot::{Slots, collect_slots};
 use crate::app::opt::{Emit, Scope};
 use crate::app::{App, opt::OptId};
@@ -74,6 +75,10 @@ impl Ctx {
                     !(repo_wide && APP_LOCAL_SLOTS.contains(&name))
                 });
             }
+        }
+        // With several apps, the release tool lives at the root.
+        if !multi {
+            release::fill(app, &mut slots);
         }
         let name = if multi {
             app.apps[at].name.clone()
@@ -150,6 +155,7 @@ impl Ctx {
                 ),
             );
         }
+        release::fill(app, &mut slots);
         Self {
             vars: vars(app, &app.name),
             active,

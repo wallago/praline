@@ -36,7 +36,8 @@ is not a reason to leave an option out: adding it is the point.
 | a websocket client, CAN bus, desktop notifications | `rust.client_ws`, `rust.can`, `rust.notif` |
 | `package.json` with Vite and React                 | `web`, `web.react` (+ `web.pages`, `web.pwa`) |
 | any Rust crate                                     | `cargo.deny`, `cargo.audit`, `cargo.udeps` |
-| any repo                                           | `just`, `flake`, `editorconfig`, `typos`, `lychee`, `git`, `github`, `github.ci`, `claude` |
+| a crate published on crates.io                     | `github.release.crates`          |
+| any repo                                           | `just`, `flake`, `editorconfig`, `typos`, `lychee`, `git`, `github`, `github.ci`, `github.release`, `claude` |
 
 Leave out `readme` when the repo already has a `README.md`.
 

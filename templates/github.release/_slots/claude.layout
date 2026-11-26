@@ -1,0 +1,4 @@
+- `just/release.just`: `just release X` opens the release PR (version bump and `CHANGELOG.md`), `just release-publish X` tags main once it is merged.
+<!-- {if:rust.common} -->
+- `.github/workflows/cd.yml`: on a `v*` tag, builds the binaries and attaches them to the GitHub release.
+<!-- {endif:rust.common} -->

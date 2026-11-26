@@ -1,0 +1,1 @@
+- A release tag publishes every crate on crates.io (`cd.yml`, `CARGO_REGISTRY_TOKEN` secret). A published version is permanent, so keep `Cargo.toml` metadata right before `just release`.

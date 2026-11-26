@@ -19,6 +19,11 @@ static GIT: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/git");
 static GITHUB: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/github");
 /// `github.ci` templates.
 static GITHUB_CI: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/github.ci");
+/// `github.release` templates.
+static GITHUB_RELEASE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/github.release");
+/// `github.release.crates` templates.
+static GITHUB_RELEASE_CRATES: Dir<'_> =
+    include_dir!("$CARGO_MANIFEST_DIR/templates/github.release.crates");
 /// `claude` templates.
 static CLAUDE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates/claude");
 
@@ -106,6 +111,34 @@ impl OptId {
             _category: Some(Category::Test),
             default: true,
             emit: Emit::Dir(&GITHUB_CI),
+            scope: Scope::Repo,
+            ..OptDef::default()
+        }
+    }
+
+    /// GitHub release option definition.
+    pub(super) fn def_github_release() -> OptDef {
+        OptDef {
+            parent: Some(Self::Github),
+            // The tool is two `just` recipes.
+            requires: &[Self::Just],
+            desc: "`just release` opens the release PR, `just release-publish` tags it.",
+            _category: Some(Category::Git),
+            default: true,
+            emit: Emit::Dir(&GITHUB_RELEASE),
+            scope: Scope::Repo,
+            ..OptDef::default()
+        }
+    }
+
+    /// GitHub release on crates.io option definition.
+    pub(super) fn def_github_release_crates() -> OptDef {
+        OptDef {
+            parent: Some(Self::GithubRelease),
+            requires: &[Self::RustCommon],
+            desc: "Publish the crates on crates.io when a release is tagged.",
+            _category: Some(Category::Git),
+            emit: Emit::Dir(&GITHUB_RELEASE_CRATES),
             scope: Scope::Repo,
             ..OptDef::default()
         }

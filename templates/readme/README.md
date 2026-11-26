@@ -65,6 +65,27 @@ the repo settings, with GitHub Actions as the source.
 <!-- {endif:web.pages} -->
 <!-- {endif:web.react} -->
 <!-- {endif:apps} -->
+<!-- {if:github.release} -->
+
+## Releasing
+
+A release takes two commands, with a PR between them, from an up-to-date
+`main` (both need `gh auth login`):
+
+```sh
+just release 1.2.0          # opens the release PR: version bump + CHANGELOG.md
+just release-publish 1.2.0  # once it is merged: tags main, creates the GitHub release
+```
+
+<!-- {if:rust.common} -->
+The tag starts `cd.yml`, which attaches the binaries to the release.
+<!-- {if:github.release.crates} -->
+It then publishes the crates on crates.io, except for a pre-release
+(`1.2.0-rc.1`); it needs a `CARGO_REGISTRY_TOKEN` repository secret.
+<!-- {endif:github.release.crates} -->
+
+<!-- {endif:rust.common} -->
+<!-- {endif:github.release} -->
 <!-- {if:git} -->
 
 ## License

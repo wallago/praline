@@ -35,6 +35,8 @@ const REPO_WIDE: &[OptId] = &[
     OptId::Git,
     OptId::Github,
     OptId::GithubCi,
+    OptId::GithubRelease,
+    OptId::GithubReleaseCrates,
     OptId::CargoDeny,
     OptId::CargoAudit,
     OptId::CargoUdeps,
@@ -519,7 +521,7 @@ fn every_slot_has_a_hub_and_a_contributor() {
         "contributed to, never declared: {orphans:?}"
     );
     // Filled by the engine itself, from the list of apps.
-    contributed.insert("workspace.apps");
+    contributed.extend(["workspace.apps", "release.bump", "release.bins"]);
     let empty: Vec<_> = hubs.difference(&contributed).collect();
     assert!(
         empty.is_empty(),
@@ -789,4 +791,36 @@ fn the_flake_merges_the_modules_after_the_systems() {
         ),
         "{flake}"
     );
+}
+
+#[test]
+fn cd_ships_binaries_only_for_a_crate_and_crates_io_only_when_asked() {
+    let release = ["just", "git", "github", "github.release"];
+    let cd = Path::new(".github/workflows/cd.yml");
+    let site = render_apps(&["site:web.react"], &release);
+    assert!(!site.contains_key(cd), "a site got a cd.yml");
+    let tree = render_apps(&["api:rust.server"], &release);
+    let workflow = text(&tree, ".github/workflows/cd.yml");
+    assert!(workflow.contains("\"demo-repo\""), "{workflow}");
+    assert!(!workflow.contains("cargo publish"), "{workflow}");
+    let with_crates: Vec<&str> = release
+        .iter()
+        .copied()
+        .chain(["github.release.crates"])
+        .collect();
+    let tree = render_apps(&["api:rust.server"], &with_crates);
+    assert!(text(&tree, ".github/workflows/cd.yml").contains("cargo publish"));
+}
+
+#[test]
+fn a_release_bumps_every_app_of_a_multi_app_repo() {
+    let tree = render_apps(
+        &["api:rust.server", "worker:rust.notif", "site:web.react"],
+        &["just", "git", "github", "github.release"],
+    );
+    let recipe = text(&tree, "just/release.just");
+    assert!(recipe.contains("cargo set-version --workspace"), "{recipe}");
+    assert!(recipe.contains("(cd apps/site && npm pkg set"), "{recipe}");
+    let workflow = text(&tree, ".github/workflows/cd.yml");
+    assert!(workflow.contains("\"api\"") && workflow.contains("\"worker\""));
 }
